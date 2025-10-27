@@ -52,3 +52,6 @@ Thumbs.db
 # Excel output
 excel/
 *.csv
+
+# PHM Dataset - exclude large dataset files
+phm-ieee-2012-data-challenge-dataset/

@@ -19,10 +19,6 @@
               <el-icon><Odometer /></el-icon>
               <span>儀表板</span>
             </el-menu-item>
-            <el-menu-item index="/analysis">
-              <el-icon><DataAnalysis /></el-icon>
-              <span>振動分析</span>
-            </el-menu-item>
             <el-menu-item index="/frequency">
               <el-icon><Connection /></el-icon>
               <span>頻率計算</span>
@@ -30,14 +26,6 @@
             <el-menu-item index="/algorithms">
               <el-icon><Operation /></el-icon>
               <span>演算法展示</span>
-            </el-menu-item>
-            <el-menu-item index="/guide-specs">
-              <el-icon><Setting /></el-icon>
-              <span>滑軌規格</span>
-            </el-menu-item>
-            <el-menu-item index="/history">
-              <el-icon><Clock /></el-icon>
-              <span>歷史記錄</span>
             </el-menu-item>
             <el-sub-menu index="phm">
               <template #title>
@@ -52,10 +40,6 @@
                 <el-icon><TrendCharts /></el-icon>
                 <span>訓練數據</span>
               </el-menu-item>
-              <el-menu-item index="/phm-testing">
-                <el-icon><Upload /></el-icon>
-                <span>測試分析</span>
-              </el-menu-item>
             </el-sub-menu>
           </el-menu>
         </el-aside>
@@ -69,7 +53,7 @@
 </template>
 
 <script setup>
-import { Odometer, DataAnalysis, Connection, Operation, Setting, Clock, TrendCharts, DataBoard, Upload } from '@element-plus/icons-vue'
+import { Odometer, Connection, Operation, TrendCharts, DataBoard } from '@element-plus/icons-vue'
 </script>
 
 <style>

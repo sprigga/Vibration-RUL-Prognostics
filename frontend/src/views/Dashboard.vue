@@ -93,6 +93,135 @@
       </el-col>
     </el-row>
 
+    <!-- IEEE PHM 2012 實驗摘要 -->
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
+            <div class="card-header">
+              <span>🔬 IEEE PHM 2012 數據挑戰實驗摘要</span>
+              <el-tag type="info">Remaining Useful Life 預測</el-tag>
+            </div>
+          </template>
+          
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-card shadow="never" class="summary-card">
+                <template #header>
+                  <div class="summary-header">
+                    <el-icon><Aim /></el-icon>
+                    <span>實驗目的</span>
+                  </div>
+                </template>
+                <div class="summary-content">
+                  <p><strong>軸承剩餘使用壽命（RUL）預測</strong></p>
+                  <p>專注於旋轉機械中軸承故障的預測，提高工業機械的可用性、安全性和成本效益。</p>
+                  <el-divider />
+                  <p><strong>失效標準：</strong>振動幅度超過 20g</p>
+                  <p><strong>平台：</strong>PRONOSTIA 實驗平台</p>
+                  <p><strong>地點：</strong>FEMTO-ST 研究所（法國）</p>
+                </div>
+              </el-card>
+            </el-col>
+
+            <el-col :span="8">
+              <el-card shadow="never" class="summary-card">
+                <template #header>
+                  <div class="summary-header">
+                    <el-icon><Tools /></el-icon>
+                    <span>測試方式</span>
+                  </div>
+                </template>
+                <div class="summary-content">
+                  <p><strong>軸承規格：</strong></p>
+                  <ul>
+                    <li>外徑：32mm，內徑：20mm，厚度：7mm</li>
+                    <li>13 個滾珠，直徑 3.5mm</li>
+                    <li>動態負載：4000N，靜態負載：2470N</li>
+                  </ul>
+                  <el-divider />
+                  <p><strong>三種操作條件：</strong></p>
+                  <el-tag size="small">1800 rpm, 4000 N</el-tag>
+                  <el-tag size="small" style="margin: 2px;">1650 rpm, 4200 N</el-tag>
+                  <el-tag size="small">1500 rpm, 5000 N</el-tag>
+                </div>
+              </el-card>
+            </el-col>
+
+            <el-col :span="8">
+              <el-card shadow="never" class="summary-card">
+                <template #header>
+                  <div class="summary-header">
+                    <el-icon><Folder /></el-icon>
+                    <span>資料集</span>
+                  </div>
+                </template>
+                <div class="summary-content">
+                  <p><strong>訓練資料：</strong>6 個完整的運行至失效實驗</p>
+                  <p><strong>測試資料：</strong>11 個截斷的監測資料</p>
+                  <el-divider />
+                  <p><strong>數據採集：</strong></p>
+                  <ul>
+                    <li>振動：25.6 kHz 採樣頻率</li>
+                    <li>溫度：0.1 Hz 採樣頻率</li>
+                    <li>兩個加速度計（水平/垂直）</li>
+                    <li>RTD 白金溫度感測器</li>
+                  </ul>
+                  <p><strong>實驗時長：</strong>1小時 - 7小時47分</p>
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+
+          <el-row style="margin-top: 15px;">
+            <el-col :span="24">
+              <el-card shadow="never" class="summary-card">
+                <template #header>
+                  <div class="summary-header">
+                    <el-icon><TrendCharts /></el-icon>
+                    <span>挑戰特色與技術重點</span>
+                  </div>
+                </template>
+                <div class="summary-content">
+                  <el-row :gutter="15">
+                    <el-col :span="6">
+                      <div class="challenge-item">
+                        <el-tag type="warning" size="small">小訓練集</el-tag>
+                        <p>僅6個運行至失效實驗</p>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="challenge-item">
+                        <el-tag type="danger" size="small">高變異性</el-tag>
+                        <p>軸承壽命差異極大</p>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="challenge-item">
+                        <el-tag type="info" size="small">多失效模式</el-tag>
+                        <p>滾珠、內/外環、保持架</p>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="challenge-item">
+                        <el-tag type="success" size="small">真實劣化</el-tag>
+                        <p>自然劣化無人工缺陷</p>
+                      </div>
+                    </el-col>
+                  </el-row>
+                  <el-divider />
+                  <div class="scoring-info">
+                    <strong>評分方法：</strong>非對稱評分函數，對早期和晚期預測採用不同懲罰機制
+                    <br><strong>獲獎者：</strong>工業組 - A.L.D. Ltd. (以色列)，學術組 - CALCE, University of Maryland
+                  </div>
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="24">
         <el-card>
@@ -116,6 +245,14 @@
               <el-icon><Setting /></el-icon>
               管理滑軌規格
             </el-button>
+            <el-button type="warning" @click="$router.push('/phm-database')">
+              <el-icon><Folder /></el-icon>
+              PHM 資料庫
+            </el-button>
+            <el-button @click="$router.push('/phm-training')">
+              <el-icon><TrendCharts /></el-icon>
+              PHM 訓練數據
+            </el-button>
           </el-space>
         </el-card>
       </el-col>
@@ -127,7 +264,7 @@
 import { ref, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
-import { Check, Warning, CircleClose, DataLine, DataAnalysis, Connection, Operation, Setting } from '@element-plus/icons-vue'
+import { Check, Warning, CircleClose, DataLine, DataAnalysis, Connection, Operation, Setting, Aim, Tools, Folder, TrendCharts } from '@element-plus/icons-vue'
 import api from '../stores/api'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -276,5 +413,75 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* IEEE PHM 2012 實驗摘要樣式 */
+.summary-card {
+  height: 100%;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.summary-card :deep(.el-card__header) {
+  background-color: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 16px;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.summary-content {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.summary-content p {
+  margin-bottom: 8px;
+  color: #606266;
+}
+
+.summary-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.summary-content li {
+  margin-bottom: 4px;
+  color: #606266;
+}
+
+.summary-content strong {
+  color: #303133;
+}
+
+.challenge-item {
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 6px;
+  background-color: #fafafa;
+  height: 100%;
+}
+
+.challenge-item p {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #606266;
+  line-height: 1.4;
+}
+
+.scoring-info {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #606266;
+  line-height: 1.5;
 }
 </style>

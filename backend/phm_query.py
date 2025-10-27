@@ -6,8 +6,11 @@ Provides query functionality for PHM IEEE 2012 data stored in SQLite.
 import sqlite3
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-import pandas as pd
-from datetime import datetime
+
+try:
+    from backend.config import PHM_DATABASE_PATH
+except ModuleNotFoundError:
+    from config import PHM_DATABASE_PATH
 
 
 class PHMDatabaseQuery:
@@ -15,8 +18,8 @@ class PHMDatabaseQuery:
 
     def __init__(self, db_path: str = None):
         if db_path is None:
-            # Default to backend/phm_data.db
-            self.db_path = Path(__file__).parent / "phm_data.db"
+            # 使用全域配置的資料庫路徑
+            self.db_path = Path(PHM_DATABASE_PATH)
         else:
             self.db_path = Path(db_path)
 
