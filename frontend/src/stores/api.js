@@ -32,10 +32,6 @@ api.interceptors.response.use(
 )
 
 export default {
-  // Frequency calculation
-  calculateFrequencies(params) {
-    return api.post('/api/calculate-frequencies', params)
-  },
 
   // Analysis
   analyzeVibration(data) {

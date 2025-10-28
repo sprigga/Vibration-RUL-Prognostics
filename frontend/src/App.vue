@@ -19,10 +19,6 @@
               <el-icon><Odometer /></el-icon>
               <span>儀表板</span>
             </el-menu-item>
-            <el-menu-item index="/frequency">
-              <el-icon><Connection /></el-icon>
-              <span>頻率計算</span>
-            </el-menu-item>
             <el-menu-item index="/algorithms">
               <el-icon><Operation /></el-icon>
               <span>演算法展示</span>
@@ -53,7 +49,7 @@
 </template>
 
 <script setup>
-import { Odometer, Connection, Operation, TrendCharts, DataBoard } from '@element-plus/icons-vue'
+import { Odometer, Operation, TrendCharts, DataBoard } from '@element-plus/icons-vue'
 </script>
 
 <style>

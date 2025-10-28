@@ -1,4 +1,5 @@
-FROM node:18-alpine
+# Multi-stage build for optimized production image
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
@@ -6,13 +7,29 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
-# Copy application code
+# Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 5173
+# Build for production
+RUN npm run build
 
-# Run development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Production stage
+FROM nginx:alpine
+
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -30,6 +30,10 @@ def init_db():
         from .phm_models import PHMBearing, PHMTestData, PHMPrediction
     except ImportError:
         pass  # Optional models
+    try:
+        from .phm_temperature_models import PHMTemperatureBearing, PHMTemperatureFile, PHMTemperatureMeasurement
+    except ImportError:
+        pass  # Optional models
     Base.metadata.create_all(bind=engine)
 
 

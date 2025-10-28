@@ -10,11 +10,17 @@ ENV/
 *.egg-info/
 dist/
 build/
+.pytest_cache/
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Database - Keep specific databases but ignore temp ones
+*.db-journal
+*.db-wal
+*.db-shm
+# Allow main database to be tracked if needed
+# vibration_analysis.db
+# Large databases should be excluded from Git
+backend/phm_data.db
+backend/phm_temperature_data.db
 
 # Node.js
 node_modules/
@@ -22,12 +28,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.npm
+.yarn
 
-# Vue
+# Vue/Vite
 .DS_Store
 dist/
 dist-ssr/
 *.local
+.vite-temp/
 
 # IDE
 .vscode/
@@ -35,19 +44,25 @@ dist-ssr/
 *.swp
 *.swo
 *~
+.history/
 
 # Environment
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # Logs
 logs/
 *.log
+lerna-debug.log*
 
 # OS
 .DS_Store
 Thumbs.db
+*.tmp
+*.temp
 
 # Excel output
 excel/
@@ -55,3 +70,48 @@ excel/
 
 # PHM Dataset - exclude large dataset files
 phm-ieee-2012-data-challenge-dataset/
+*.h5
+*.hdf5
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Temporary files
+tmp_*
+temp_*
+
+# Coverage reports
+coverage/
+*.coverage
+.nyc_output
+
+# Lock files (keep package-lock.json but ignore others)
+yarn.lock
+pnpm-lock.yaml
+
+# Database backups
+*.sql
+*.dump
+
+# Large data files
+*.bin
+*.dat
+*.raw
+
+# PyCharm
+.idea/
+*.iml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

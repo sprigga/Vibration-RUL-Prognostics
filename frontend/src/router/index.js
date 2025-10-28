@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
-import FrequencyCalculator from '../views/FrequencyCalculator.vue'
 import Algorithms from '../views/Algorithms.vue'
 import PHMTraining from '../views/PHMTraining.vue'
 import PHMDatabase from '../views/PHMDatabase.vue'
@@ -12,11 +11,6 @@ const router = createRouter({
       path: '/',
       name: 'dashboard',
       component: Dashboard
-    },
-    {
-      path: '/frequency',
-      name: 'frequency',
-      component: FrequencyCalculator
     },
     {
       path: '/algorithms',

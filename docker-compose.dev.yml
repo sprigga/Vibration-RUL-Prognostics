@@ -1,33 +1,36 @@
+# Development environment configuration
+version: '3.8'
+
 services:
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: vibration-backend
+    container_name: vibration-backend-dev
     restart: unless-stopped
     ports:
       - "8081:8081"
     volumes:
       # Development: Mount source code for hot reload
-      - ./backend:/app/backend:ro
+      - ./backend:/app/backend:rw
       # Mount legacy modules for hot reload during development
-      - ./timedomain.py:/app/timedomain.py:ro
-      - ./frequencydomain.py:/app/frequencydomain.py:ro
-      - ./filterprocess.py:/app/filterprocess.py:ro
-      - ./waveletprocess.py:/app/waveletprocess.py:ro
-      - ./hilbertransfer.py:/app/hilbertransfer.py:ro
-      - ./harmonic_sildband_table.py:/app/harmonic_sildband_table.py:ro
-      - ./x_parameter.py:/app/x_parameter.py:ro
-      - ./y_parameter.py:/app/y_parameter.py:ro
-      - ./z_parameter.py:/app/z_parameter.py:ro
-      - ./initialization.py:/app/initialization.py:ro
+      - ./timedomain.py:/app/timedomain.py:rw
+      - ./frequencydomain.py:/app/frequencydomain.py:rw
+      - ./filterprocess.py:/app/filterprocess.py:rw
+      - ./waveletprocess.py:/app/waveletprocess.py:rw
+      - ./hilbertransfer.py:/app/hilbertransfer.py:rw
+      - ./harmonic_sildband_table.py:/app/harmonic_sildband_table.py:rw
+      - ./x_parameter.py:/app/x_parameter.py:rw
+      - ./y_parameter.py:/app/y_parameter.py:rw
+      - ./z_parameter.py:/app/z_parameter.py:rw
+      - ./initialization.py:/app/initialization.py:rw
       # Mount PHM analysis results
       - ./phm_analysis_results:/app/phm_analysis_results:rw
       # Mount database files (persistent storage)
       - ./backend/phm_data.db:/app/phm_data.db:rw
       - ./backend/phm_temperature_data.db:/app/phm_temperature_data.db:rw
       # Create volume for main database
-      - vibration_db:/app/vibration_analysis.db
+      - vibration_db_dev:/app/vibration_analysis.db
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
@@ -36,19 +39,14 @@ services:
       - PHM_TEMPERATURE_DATABASE_PATH=/app/phm_temperature_data.db
       - API_HOST=0.0.0.0
       - API_PORT=8081
+      - ENVIRONMENT=development
     command: uvicorn main:app --host 0.0.0.0 --port 8081 --reload
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
-  frontend:
-    build: 
+  frontend-dev:
+    build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: vibration-frontend
+    container_name: vibration-frontend-dev
     restart: unless-stopped
     ports:
       - "5173:5173"
@@ -61,19 +59,12 @@ services:
       - NODE_ENV=development
     command: npm run dev -- --host 0.0.0.0 --port 5173
     depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      - backend
 
 volumes:
-  vibration_db:
+  vibration_db_dev:
     driver: local
 
 networks:
   default:
-    name: vibration-network
+    name: vibration-network-dev

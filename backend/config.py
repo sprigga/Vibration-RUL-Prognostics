@@ -10,6 +10,7 @@ BACKEND_DIR = Path(__file__).parent.absolute()
 
 # PHM 資料庫路徑 (全域變數)
 PHM_DATABASE_PATH = os.path.join(BACKEND_DIR, "phm_data.db")
+PHM_TEMPERATURE_DATABASE_PATH = os.path.join(BACKEND_DIR, "phm_temperature_data.db")
 
 # 其他可能的配置
 DATABASE_PATH = os.path.join(BACKEND_DIR, "vibration_analysis.db")
@@ -21,6 +22,7 @@ API_PORT = 8081
 # CORS 配置
 CORS_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:3000"
 ]
 
@@ -41,8 +43,12 @@ PHM_DATA_DIR = os.path.join(Path(__file__).parent.parent, "phm-ieee-2012-data-ch
 PHM_RESULTS_DIR = os.path.join(Path(__file__).parent.parent, "phm_analysis_results")
 
 def get_phm_db_path() -> str:
-    """獲取 PHM 資料庫路徑"""
+    """獲取 PHM 振動資料庫路徑"""
     return PHM_DATABASE_PATH
+
+def get_phm_temperature_db_path() -> str:
+    """獲取 PHM 溫度資料庫路徑"""
+    return PHM_TEMPERATURE_DATABASE_PATH
 
 def get_db_path() -> str:
     """獲取主資料庫路徑"""

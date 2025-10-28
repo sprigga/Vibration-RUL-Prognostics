@@ -11,11 +11,29 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true, // Allow external connections
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true
+        target: 'http://localhost:8081', // Fixed: Changed from 8000 to 8081
+        changeOrigin: true,
+        secure: false
       }
     }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          ui: ['element-plus', '@element-plus/icons-vue'],
+          charts: ['chart.js', 'vue-chartjs', 'echarts']
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'element-plus', 'axios']
   }
 })

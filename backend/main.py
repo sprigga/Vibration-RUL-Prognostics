@@ -16,16 +16,22 @@ try:
     from backend.phm_models import PHMBearing
     from backend.phm_processor import PHMDataProcessor
     from backend.phm_query import PHMDatabaseQuery
-    from backend.config import PHM_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
+    from backend.phm_temperature_query import PHMTemperatureQuery
+    from backend.config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
     from backend.timefrequency import TimeFrequency
+    from backend.hilberttransform import HilbertTransform
+    from backend.filterprocess import FilterProcess
 except ModuleNotFoundError:
     from database import init_db, get_db
     from models import AnalysisResult, GuideSpec
     from phm_models import PHMBearing
     from phm_processor import PHMDataProcessor
     from phm_query import PHMDatabaseQuery
-    from config import PHM_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
+    from phm_temperature_query import PHMTemperatureQuery
+    from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
     from timefrequency import TimeFrequency
+    from hilberttransform import HilbertTransform
+    from filterprocess import FilterProcess
 import json
 
 app = FastAPI(
@@ -52,13 +58,6 @@ class AnalysisRequest(BaseModel):
     guide_spec_id: int
 
 
-class FrequencyCalculationRequest(BaseModel):
-    v: float  # velocity m/s
-    D: float  # ball diameter mm
-    L: float  # slider length mm
-    n_balls: int
-    contact_angle: float
-    raceway_diameter: float
 
 
 # Initialize database
@@ -77,37 +76,6 @@ async def root():
     }
 
 
-# Frequency calculation endpoint
-@app.post("/api/calculate-frequencies", response_model=Dict)
-async def calculate_frequencies(params: FrequencyCalculationRequest):
-    """Calculate theoretical fault frequencies for linear guide"""
-    try:
-        v = params.v
-        D = params.D / 1000  # convert to meters
-        ball_spacing = params.L / params.n_balls / 1000  # meters
-
-        # Ball Pass Frequency
-        BPF = v / ball_spacing if ball_spacing > 0 else 0
-
-        # Ball Spin Frequency
-        BSF = v / (np.pi * D) if D > 0 else 0
-
-        # Cage Frequency
-        cage_freq = v / (params.L / 1000) if params.L > 0 else 0
-
-        return {
-            "BPF": round(BPF, 2),
-            "BSF": round(BSF, 2),
-            "Cage_Freq": round(cage_freq, 2),
-            "2xBPF": round(2 * BPF, 2),
-            "3xBPF": round(3 * BPF, 2),
-            "harmonics": [
-                {"order": i, "frequency": round(i * BPF, 2)}
-                for i in range(1, 6)
-            ]
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Calculation error: {str(e)}")
 
 
 # Analysis endpoints (commented out - requires VibrationAnalyzer)
@@ -795,9 +763,15 @@ async def calculate_cwt(
 async def calculate_higher_order_stats(
     bearing_name: str,
     file_number: int,
-    sampling_rate: int = DEFAULT_SAMPLING_RATE
+    sampling_rate: int = DEFAULT_SAMPLING_RATE,
+    segment_count: int = 10
 ):
-    """計算高階統計特徵"""
+    """
+    計算高階統計特徵 (已整合至進階濾波特徵)
+
+    此端點已整合至 /api/algorithms/filter-features
+    為了向後兼容性保留，內部委託給 FilterProcess
+    """
     try:
         import sqlite3
 
@@ -820,18 +794,19 @@ async def calculate_higher_order_stats(
         horiz = df['horizontal_acceleration'].values
         vert = df['vertical_acceleration'].values
 
-        tf = TimeFrequency()
-
-        # 計算高階統計
-        horiz_stats = tf.higher_order_statistics(horiz, fs=sampling_rate)
-        vert_stats = tf.higher_order_statistics(vert, fs=sampling_rate)
+        # 使用 FilterProcess 的統一實現（更精確）
+        horiz_stats = FilterProcess.calculate_all_features(horiz, sampling_rate, segment_count)
+        vert_stats = FilterProcess.calculate_all_features(vert, sampling_rate, segment_count)
 
         features = {
             "bearing_name": bearing_name,
             "file_number": file_number,
             "data_points": len(df),
+            "sampling_rate": sampling_rate,
+            "segment_count": segment_count,
             "horizontal": horiz_stats,
-            "vertical": vert_stats
+            "vertical": vert_stats,
+            "_note": "此 API 已整合至 /api/algorithms/filter-features，建議使用該端點"
         }
 
         return features
@@ -1055,6 +1030,353 @@ async def calculate_frequency_tsa(bearing_name: str, file_number: int, sampling_
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/algorithms/hilbert/{bearing_name}/{file_number}", response_model=Dict)
+async def calculate_hilbert_transform(
+    bearing_name: str,
+    file_number: int,
+    segment_count: int = 10
+):
+    """計算希爾伯特轉換特徵（包絡分析與NB4）"""
+    try:
+        import sqlite3
+
+        # 連接資料庫（使用全域配置）
+        conn = sqlite3.connect(PHM_DATABASE_PATH)
+
+        query = """
+        SELECT m.horizontal_acceleration, m.vertical_acceleration
+        FROM measurements m
+        JOIN measurement_files mf ON m.file_id = mf.file_id
+        JOIN bearings b ON mf.bearing_id = b.bearing_id
+        WHERE b.bearing_name = ? AND mf.file_number = ?
+        """
+
+        df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
+        conn.close()
+
+        if df.empty:
+            raise HTTPException(status_code=404, detail="No data found")
+
+        horiz = df['horizontal_acceleration'].values
+        vert = df['vertical_acceleration'].values
+
+        ht = HilbertTransform()
+
+        # 計算水平和垂直方向的希爾伯特轉換
+        horiz_result = ht.analyze_signal(horiz, segment_count)
+        vert_result = ht.analyze_signal(vert, segment_count)
+
+        features = {
+            "bearing_name": bearing_name,
+            "file_number": file_number,
+            "data_points": len(df),
+            "segment_count": segment_count,
+            "horizontal": {
+                "nb4": float(horiz_result['nb4']),
+                "envelope_mean": float(horiz_result['envelope_stats']['mean']),
+                "envelope_std": float(horiz_result['envelope_stats']['std']),
+                "envelope_max": float(horiz_result['envelope_stats']['max']),
+                "envelope_min": float(horiz_result['envelope_stats']['min']),
+                "envelope_rms": float(horiz_result['envelope_stats']['rms']),
+                "envelope_peak_to_peak": float(horiz_result['envelope_stats']['peak_to_peak'])
+            },
+            "vertical": {
+                "nb4": float(vert_result['nb4']),
+                "envelope_mean": float(vert_result['envelope_stats']['mean']),
+                "envelope_std": float(vert_result['envelope_stats']['std']),
+                "envelope_max": float(vert_result['envelope_stats']['max']),
+                "envelope_min": float(vert_result['envelope_stats']['min']),
+                "envelope_rms": float(vert_result['envelope_stats']['rms']),
+                "envelope_peak_to_peak": float(vert_result['envelope_stats']['peak_to_peak'])
+            },
+            "envelope_data": {
+                "horizontal": horiz_result['envelope'][:1000].tolist(),
+                "vertical": vert_result['envelope'][:1000].tolist(),
+                "time": list(range(min(1000, len(horiz_result['envelope']))))
+            },
+            "instantaneous_frequency": {
+                "horizontal": horiz_result['instantaneous_frequency'][:1000].tolist(),
+                "vertical": vert_result['instantaneous_frequency'][:1000].tolist()
+            }
+        }
+
+        return features
+
+    except Exception as e:
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in calculate_hilbert_transform: {error_detail}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================================
+# Advanced Filter Process Endpoints (NA4, FM4, M6A, M8A, ER)
+# ========================================
+
+@app.get("/api/algorithms/filter-features/{bearing_name}/{file_number}",
+         response_model=Dict)
+async def calculate_filter_features(
+    bearing_name: str,
+    file_number: int,
+    sampling_rate: int = DEFAULT_SAMPLING_RATE,
+    segment_count: int = 10
+):
+    """計算進階濾波特徵 (NA4, FM4, M6A, M8A, ER)"""
+    try:
+        import sqlite3
+
+        # 連接資料庫
+        conn = sqlite3.connect(PHM_DATABASE_PATH)
+
+        query = """
+        SELECT m.horizontal_acceleration, m.vertical_acceleration
+        FROM measurements m
+        JOIN measurement_files mf ON m.file_id = mf.file_id
+        JOIN bearings b ON mf.bearing_id = b.bearing_id
+        WHERE b.bearing_name = ? AND mf.file_number = ?
+        """
+
+        df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
+        conn.close()
+
+        if df.empty:
+            raise HTTPException(status_code=404, detail="No data found")
+
+        horiz = df['horizontal_acceleration'].values
+        vert = df['vertical_acceleration'].values
+
+        # 計算水平和垂直方向的進階特徵
+        horiz_features = FilterProcess.calculate_all_features(
+            horiz, sampling_rate, segment_count
+        )
+        vert_features = FilterProcess.calculate_all_features(
+            vert, sampling_rate, segment_count
+        )
+
+        features = {
+            "bearing_name": bearing_name,
+            "file_number": file_number,
+            "data_points": len(df),
+            "sampling_rate": sampling_rate,
+            "segment_count": segment_count,
+            "horizontal": horiz_features,
+            "vertical": vert_features
+        }
+
+        return features
+
+    except Exception as e:
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in calculate_filter_features: {error_detail}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/algorithms/filter-trend/{bearing_name}", response_model=Dict)
+async def calculate_filter_trend(
+    bearing_name: str,
+    max_files: int = 50,
+    sampling_rate: int = DEFAULT_SAMPLING_RATE
+):
+    """計算進階濾波特徵趨勢（多個檔案）"""
+    try:
+        import sqlite3
+
+        # 連接資料庫
+        conn = sqlite3.connect(PHM_DATABASE_PATH)
+
+        # 獲取檔案列表
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT mf.file_number, mf.file_id
+            FROM measurement_files mf
+            JOIN bearings b ON mf.bearing_id = b.bearing_id
+            WHERE b.bearing_name = ?
+            ORDER BY mf.file_number
+            LIMIT ?
+        """, (bearing_name, max_files))
+
+        files = cursor.fetchall()
+
+        if not files:
+            raise HTTPException(status_code=404, detail="No files found")
+
+        trend_data = {
+            "bearing_name": bearing_name,
+            "file_count": len(files),
+            "horizontal": {
+                "na4": [],
+                "fm4": [],
+                "m6a": [],
+                "m8a": [],
+                "er": []
+            },
+            "vertical": {
+                "na4": [],
+                "fm4": [],
+                "m6a": [],
+                "m8a": [],
+                "er": []
+            },
+            "file_numbers": []
+        }
+
+        for file_num, file_id in files:
+            # 查詢該檔案的數據
+            query = f"""
+            SELECT horizontal_acceleration, vertical_acceleration
+            FROM measurements
+            WHERE file_id = {file_id}
+            """
+            df = pd.read_sql_query(query, conn)
+
+            if not df.empty:
+                horiz = df['horizontal_acceleration'].values
+                vert = df['vertical_acceleration'].values
+
+                horiz_features = FilterProcess.calculate_all_features(
+                    horiz, sampling_rate
+                )
+                vert_features = FilterProcess.calculate_all_features(
+                    vert, sampling_rate
+                )
+
+                trend_data["file_numbers"].append(file_num)
+                trend_data["horizontal"]["na4"].append(horiz_features["na4"])
+                trend_data["horizontal"]["fm4"].append(horiz_features["fm4"])
+                trend_data["horizontal"]["m6a"].append(horiz_features["m6a"])
+                trend_data["horizontal"]["m8a"].append(horiz_features["m8a"])
+                trend_data["horizontal"]["er"].append(horiz_features["er"])
+
+                trend_data["vertical"]["na4"].append(vert_features["na4"])
+                trend_data["vertical"]["fm4"].append(vert_features["fm4"])
+                trend_data["vertical"]["m6a"].append(vert_features["m6a"])
+                trend_data["vertical"]["m8a"].append(vert_features["m8a"])
+                trend_data["vertical"]["er"].append(vert_features["er"])
+
+        conn.close()
+        return trend_data
+
+    except Exception as e:
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in calculate_filter_trend: {error_detail}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Temperature Data API Endpoints ====================
+
+# Initialize temperature query instance
+temp_query = PHMTemperatureQuery()
+
+@app.get("/api/temperature/bearings")
+async def get_temperature_bearings():
+    """獲取所有有溫度資料的軸承"""
+    try:
+        bearings = temp_query.get_all_bearings()
+        return {"bearings": bearings}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving temperature bearings: {str(e)}")
+
+@app.get("/api/temperature/bearing/{bearing_name}")
+async def get_temperature_bearing_info(bearing_name: str):
+    """獲取特定軸承的溫度資訊"""
+    try:
+        bearing_info = temp_query.get_bearing_info(bearing_name)
+        if not bearing_info:
+            raise HTTPException(status_code=404, detail=f"Bearing {bearing_name} not found")
+        
+        # 獲取文件列表
+        files = temp_query.get_bearing_files(bearing_name)
+        
+        # 獲取統計資訊
+        stats = temp_query.get_temperature_statistics(bearing_name)
+        
+        return {
+            "bearing_info": bearing_info,
+            "files": files,
+            "statistics": stats[0] if stats else None
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving bearing info: {str(e)}")
+
+@app.get("/api/temperature/data/{bearing_name}")
+async def get_temperature_data(
+    bearing_name: str, 
+    file_number: Optional[int] = None,
+    limit: int = 1000
+):
+    """獲取溫度測量資料"""
+    try:
+        data = temp_query.get_temperature_data(bearing_name, file_number, limit)
+        return {"data": data, "count": len(data)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving temperature data: {str(e)}")
+
+@app.get("/api/temperature/trends/{bearing_name}")
+async def get_temperature_trends(bearing_name: str, file_count: int = 50):
+    """獲取溫度趨勢資料"""
+    try:
+        trends = temp_query.get_temperature_trends(bearing_name, file_count)
+        return {"trends": trends}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving temperature trends: {str(e)}")
+
+@app.get("/api/temperature/statistics")
+async def get_temperature_statistics(bearing_name: Optional[str] = None):
+    """獲取溫度統計資訊"""
+    try:
+        stats = temp_query.get_temperature_statistics(bearing_name)
+        return {"statistics": stats}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving temperature statistics: {str(e)}")
+
+@app.get("/api/temperature/database/info")
+async def get_temperature_database_info():
+    """獲取溫度資料庫基本資訊"""
+    try:
+        info = temp_query.get_database_info()
+        return info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving database info: {str(e)}")
+
+@app.get("/api/temperature/search")
+async def search_temperature_data(
+    bearing_name: Optional[str] = None,
+    min_temperature: Optional[float] = None,
+    max_temperature: Optional[float] = None,
+    file_start: Optional[int] = None,
+    file_end: Optional[int] = None,
+    limit: int = 1000
+):
+    """搜尋溫度資料"""
+    try:
+        file_range = (file_start, file_end) if file_start is not None and file_end is not None else None
+        
+        results = temp_query.search_temperature_data(
+            bearing_name=bearing_name,
+            min_temperature=min_temperature,
+            max_temperature=max_temperature,
+            file_number_range=file_range,
+            limit=limit
+        )
+        
+        return {
+            "results": results,
+            "count": len(results),
+            "search_params": {
+                "bearing_name": bearing_name,
+                "min_temperature": min_temperature,
+                "max_temperature": max_temperature,
+                "file_range": file_range,
+                "limit": limit
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching temperature data: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8081, reload=True)
