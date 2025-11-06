@@ -8,19 +8,8 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      # Development: Mount source code for hot reload
-      - ./backend:/app/backend:ro
-      # Mount legacy modules for hot reload during development
-      - ./timedomain.py:/app/timedomain.py:ro
-      - ./frequencydomain.py:/app/frequencydomain.py:ro
-      - ./filterprocess.py:/app/filterprocess.py:ro
-      - ./waveletprocess.py:/app/waveletprocess.py:ro
-      - ./hilbertransfer.py:/app/hilbertransfer.py:ro
-      - ./harmonic_sildband_table.py:/app/harmonic_sildband_table.py:ro
-      - ./x_parameter.py:/app/x_parameter.py:ro
-      - ./y_parameter.py:/app/y_parameter.py:ro
-      - ./z_parameter.py:/app/z_parameter.py:ro
-      - ./initialization.py:/app/initialization.py:ro
+      # Development: Mount backend source code for hot reload
+      - ./backend:/app/backend_src:ro
       # Mount PHM analysis results
       - ./phm_analysis_results:/app/phm_analysis_results:rw
       # Mount database files (persistent storage)

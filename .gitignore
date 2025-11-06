@@ -115,3 +115,6 @@ pnpm-lock.yaml
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Legacy Module
+legacy_module/**

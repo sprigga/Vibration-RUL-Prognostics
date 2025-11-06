@@ -5,7 +5,7 @@ try:
     from backend.timedomain import TimeDomain as td
     from backend.harmonic_sildband_table import HarmonicSildband as hs
 except ModuleNotFoundError:
-    from initialization import InitParameter as ip
+    from legacy_module.initialization import InitParameter as ip
     from timedomain import TimeDomain as td
     from harmonic_sildband_table import HarmonicSildband as hs
 

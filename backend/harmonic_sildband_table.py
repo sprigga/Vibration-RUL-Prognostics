@@ -3,7 +3,7 @@ import numpy as np
 try:
     from backend.initialization import InitParameter as ip
 except ModuleNotFoundError:
-    from initialization import InitParameter as ip
+    from legacy_module.initialization import InitParameter as ip
 
 ip = ip()
 class HarmonicSildband():

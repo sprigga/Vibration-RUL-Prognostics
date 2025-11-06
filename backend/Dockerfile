@@ -22,6 +22,9 @@ COPY timedomain.py frequencydomain.py filterprocess.py \
      x_parameter.py y_parameter.py z_parameter.py \
      initialization.py ./
 
+# Copy legacy_module directory
+COPY legacy_module/ ./legacy_module/
+
 # Copy backend application code
 COPY backend/ .
 

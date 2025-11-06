@@ -9,30 +9,18 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import os
-
-try:
-    from backend.database import init_db, get_db
-    from backend.models import AnalysisResult, GuideSpec
-    from backend.phm_models import PHMBearing
-    from backend.phm_processor import PHMDataProcessor
-    from backend.phm_query import PHMDatabaseQuery
-    from backend.phm_temperature_query import PHMTemperatureQuery
-    from backend.config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
-    from backend.timefrequency import TimeFrequency
-    from backend.hilberttransform import HilbertTransform
-    from backend.filterprocess import FilterProcess
-except ModuleNotFoundError:
-    from database import init_db, get_db
-    from models import AnalysisResult, GuideSpec
-    from phm_models import PHMBearing
-    from phm_processor import PHMDataProcessor
-    from phm_query import PHMDatabaseQuery
-    from phm_temperature_query import PHMTemperatureQuery
-    from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
-    from timefrequency import TimeFrequency
-    from hilberttransform import HilbertTransform
-    from filterprocess import FilterProcess
 import json
+
+from database import init_db
+from phm_processor import PHMDataProcessor
+from phm_query import PHMDatabaseQuery
+from phm_temperature_query import PHMTemperatureQuery
+from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
+from timefrequency import TimeFrequency
+from hilberttransform import HilbertTransform
+from filterprocess import FilterProcess
+from timedomain import TimeDomain
+from frequencydomain import FrequencyDomain
 
 app = FastAPI(
     title="Linear Guide Vibration Analysis API",
@@ -116,12 +104,24 @@ async def get_phm_analysis_data():
     """獲取預處理的 PHM 分析數據（從 JSON 文件）"""
     try:
         # 獲取項目根目錄
+        # 在容器中，main.py 位於 /app/backend/main.py 或 /app/main.py
+        # phm_analysis_results 目錄掛載在 /app/phm_analysis_results
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(current_dir)
+
+        # 判斷是否在 backend 子目錄中
+        if os.path.basename(current_dir) == 'backend':
+            project_root = os.path.dirname(current_dir)
+        else:
+            project_root = current_dir
 
         # 讀取生成的分析結果
         summary_path = os.path.join(project_root, "phm_analysis_results", "summary.json")
         stats_path = os.path.join(project_root, "phm_analysis_results", "vibration_statistics.csv")
+
+        print(f"Looking for summary at: {summary_path}")
+        print(f"Looking for stats at: {stats_path}")
+        print(f"Summary exists: {os.path.exists(summary_path)}")
+        print(f"Stats exists: {os.path.exists(stats_path)}")
 
         if not os.path.exists(summary_path):
             raise HTTPException(
@@ -298,10 +298,6 @@ async def calculate_time_domain_features(bearing_name: str, file_number: int):
     """計算時域特徵"""
     try:
         import sqlite3
-        try:
-            from backend.timedomain import TimeDomain
-        except ModuleNotFoundError:
-            from timedomain import TimeDomain
 
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
@@ -366,10 +362,6 @@ async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
     """計算時域特徵趨勢（多個檔案）"""
     try:
         import sqlite3
-        try:
-            from backend.timedomain import TimeDomain
-        except ModuleNotFoundError:
-            from timedomain import TimeDomain
 
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
@@ -897,10 +889,6 @@ async def calculate_frequency_fft(bearing_name: str, file_number: int, sampling_
     """計算低頻FFT特徵（FM0）"""
     try:
         import sqlite3
-        try:
-            from backend.frequencydomain import FrequencyDomain
-        except ModuleNotFoundError:
-            from frequencydomain import FrequencyDomain
 
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
@@ -963,10 +951,6 @@ async def calculate_frequency_tsa(bearing_name: str, file_number: int, sampling_
     """計算TSA高頻FFT特徵（FM0）"""
     try:
         import sqlite3
-        try:
-            from backend.frequencydomain import FrequencyDomain
-        except ModuleNotFoundError:
-            from frequencydomain import FrequencyDomain
 
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
