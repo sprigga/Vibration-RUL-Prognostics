@@ -3,8 +3,8 @@
     <el-container>
       <el-header>
         <div class="header-content">
-          <h1>🔧 CPC 線性滑軌振動分析系統</h1>
-          <p>Linear Guide Vibration Analysis System</p>
+          <h1>軸承 RUL 預測系統</h1>
+          <p>振動信號分析工具 - IEEE PHM 2012 Data Challenge</p>
         </div>
       </el-header>
 
@@ -17,13 +17,37 @@
           >
             <el-menu-item index="/">
               <el-icon><Odometer /></el-icon>
-              <span>儀表板</span>
+              <span>PHM 2012</span>
             </el-menu-item>
-            <el-menu-item index="/algorithms">
+            <el-menu-item index="/time-domain">
+              <el-icon><DataLine /></el-icon>
+              <span>時域特徵分析</span>
+            </el-menu-item>
+            <el-menu-item index="/frequency-domain">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>頻域特徵分析</span>
+            </el-menu-item>
+            <el-menu-item index="/envelope-analysis">
+              <el-icon><TrendCharts /></el-icon>
+              <span>包絡分析</span>
+            </el-menu-item>
+            <el-menu-item index="/time-frequency">
+              <el-icon><TrendCharts /></el-icon>
+              <span>時頻分析</span>
+            </el-menu-item>
+            <el-menu-item index="/higher-order-statistics">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>高階統計特徵</span>
+            </el-menu-item>
+            <el-menu-item index="/project-analysis">
+              <el-icon><Document /></el-icon>
+              <span>專案分析</span>
+            </el-menu-item>
+            <!-- <el-menu-item index="/algorithms">
               <el-icon><Operation /></el-icon>
               <span>演算法展示</span>
-            </el-menu-item>
-            <el-sub-menu index="phm">
+            </el-menu-item> -->
+            <!-- <el-sub-menu index="phm">
               <template #title>
                 <el-icon><TrendCharts /></el-icon>
                 <span>PHM 2012</span>
@@ -36,7 +60,7 @@
                 <el-icon><TrendCharts /></el-icon>
                 <span>訓練數據</span>
               </el-menu-item>
-            </el-sub-menu>
+            </el-sub-menu> -->
           </el-menu>
         </el-aside>
 
@@ -49,7 +73,7 @@
 </template>
 
 <script setup>
-import { Odometer, Operation, TrendCharts, DataBoard } from '@element-plus/icons-vue'
+import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@element-plus/icons-vue'
 </script>
 
 <style>

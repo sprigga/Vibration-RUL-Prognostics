@@ -1,154 +1,80 @@
-# IEEE PHM 2012 Data Challenge - Experimental Setup and Conditions
+# IEEE PHM 2012 挑戰賽實驗詳情摘要
 
-## Overview
-The IEEE PHM 2012 Data Challenge was organized by the IEEE Reliability Society and FEMTO-ST Institute to focus on the **estimation of the Remaining Useful Life (RUL) of bearings**. This challenge addressed a critical industrial problem since most failures of rotating machines are related to bearings, strongly affecting availability, security, and cost-effectiveness of mechanical systems in industries such as power and transportation.
+本文檔總結了 IEEE PHM 2012 預測與健康管理挑戰賽的關鍵細節，該挑戰賽專注於估算軸承的剩餘使用壽命 (RUL)。資訊來源於官方挑戰賽詳細文件 `IEEEPHM2012-Challenge-Details.pdf`。
 
-## PRONOSTIA Experimental Platform
+## 1. 挑戰賽目標
 
-### Platform Description
-The experiments were conducted on the PRONOSTIA platform at FEMTO-ST Institute (Besançon, France), an experimental platform dedicated to test and validate bearings fault detection, diagnostic, and prognostic approaches. The platform enables accelerated degradation of bearings under constant and/or variable operating conditions while gathering online health monitoring data.
+主要目標是基於提供的軸承加速壽命測試數據，準確預測 11 個測試軸承的 RUL。這是一個關鍵問題，因為軸承故障是旋轉機械中最常見的故障模式之一。
 
-### Key Platform Components
+## 2. 實驗平台：PRONOSTIA
 
-#### 1. Rotating Part
-- **Motor**: Asynchronous motor with 250W power
-- **Gearbox**: Allows motor to reach rated speed of 2830 rpm while maintaining secondary shaft speed less than 2000 rpm
-- **Shaft Support**: Made of one piece, held by two pillow blocks with large bearings
-- **Human Machine Interface**: Allows operators to set speed, rotation direction, and monitoring parameters
+實驗數據由 FEMTO-ST 研究所的 PRONOSTIA 平台產生。
 
-#### 2. Loading Part  
-- **Pneumatic Jack**: Generates radial force up to bearing's maximum dynamic load (4000 N)
-- **Force Amplification**: Uses lever arm to amplify force from pneumatic jack
-- **Force Application**: Radial force applied indirectly on external ring of test bearing through clamping ring
-- **Digital Control**: Force controlled by digital electro-pneumatic regulator
+- **目的**: 該平台旨在對軸承進行加速老化測試，以在數小時內完成從正常到失效的完整退化過程。
+- **組成**:
+    - **旋轉部分**: 由一個非同步馬達驅動，最高轉速可達 2000 rpm。
+    - **加載部分**: 一個氣動頂管通過槓桿臂對測試軸承施加徑向負載，最大可達 4000 N。
+    - **測量部分**: 用於收集健康監測數據。
 
-#### 3. Measurement Part
-- **Operating Conditions Monitoring**: Radial force, rotation speed, and torque measured at 100 Hz
-- **Vibration Sensors**: Two miniature accelerometers (DYTRAN 3035B) positioned at 90° to each other
-- **Temperature Sensor**: RTD platinum PT100 probe placed near external bearing ring
-- **Data Acquisition**: Acceleration sampled at 25.6 kHz, temperature at 0.1 Hz
+## 3. 數據集
 
-## Experimental Conditions
+挑戰賽提供了學習和測試兩組數據，涵蓋三種不同的操作條件。
 
-### Test Bearings Specifications
-- **Type**: Ball bearings with synthetic rubber seals
-- **Dimensions**: 
-  - Outside Race Diameter: 32 mm
-  - Inside Diameter: 20 mm  
-  - Thickness: 7 mm
-- **Load Ratings**:
-  - Static: 2470 N
-  - Dynamic: 4000 N
-- **Maximum Speed**: 13000 rpm
-- **Rolling Elements**: 13 balls, 3.5 mm diameter
+### 操作條件
 
-### Operating Conditions
-Three different load conditions were tested:
-1. **Condition 1**: 1800 rpm and 4000 N
-2. **Condition 2**: 1650 rpm and 4200 N  
-3. **Condition 3**: 1500 rpm and 5000 N
+1.  **條件 1**: 1800 rpm, 4000 N
+2.  **條件 2**: 1650 rpm, 4200 N
+3.  **條件 3**: 1500 rpm, 5000 N
 
-### Failure Criteria
-- Experiments stopped when vibration amplitude exceeded 20g
-- RUL defined as time to accelerometer exceeding 20g
-- Tests stopped for security reasons to avoid damage propagation to test bed
+### 學習集 (Learning Set)
 
-## Dataset Organization
+- 包含 6 個完整的“運行至失效”的軸承數據。
+- 用於建立和訓練預測模型。
+- 數據分佈：
+    - 條件 1: `Bearing1_1`, `Bearing1_2`
+    - 條件 2: `Bearing2_1`, `Bearing2_2`
+    - 條件 3: `Bearing3_1`, `Bearing3_2`
 
-### Learning Dataset (Training Data)
-The learning set consisted of 6 complete run-to-failure experiments:
+### 測試集 (Test Set)
 
-| Operating Condition | Condition 1 (1800 rpm, 4000 N) | Condition 2 (1650 rpm, 4200 N) | Condition 3 (1500 rpm, 5000 N) |
-|-------------------|--------------------------------|--------------------------------|--------------------------------|
-| **Learning Set** | Bearing1_1, Bearing1_2 | Bearing2_1, Bearing2_2 | Bearing3_1, Bearing3_2 |
+- 包含 11 個軸承的數據，其監測數據在失效前被截斷。
+- 參賽者的任務是預測這些軸承的 RUL。
+- **失效定義**: 當振動信號幅值超過 20g 時，認為軸承失效。RUL 被定義為從數據截斷點到失效點的時間。
 
-**Learning Dataset Characteristics:**
-- **Bearing1_1**: 7h47m duration, 3269 files (vibration + temperature)
-- **Bearing1_2**: 2h25m duration, 1015 files (vibration + temperature)
-- **Bearing2_1**: 2h31m duration, 1062 files (vibration + temperature)
-- **Bearing2_2**: 2h12m duration, 797 files (vibration only)
-- **Bearing3_1**: 1h25m duration, 604 files (vibration + temperature)
-- **Bearing3_2**: 4h32m duration, 1637 files (vibration only)
+## 4. 數據採集與組織
 
-### Test Dataset (Prediction Target)
-The test set included 11 bearings with truncated monitoring data:
+### 測量信號
 
-| Bearing | Operating Condition | Duration | Files | Actual RUL | Signals |
-|---------|-------------------|----------|-------|------------|---------|
-| Bearing1_3 | 1800 rpm, 4000 N | 5h00m | 1802 | 5730 s | Vibration |
-| Bearing1_4 | 1800 rpm, 4000 N | 3h09m | 1327 | 339 s | Vibration + Temperature |
-| Bearing1_5 | 1800 rpm, 4000 N | 6h23m | 2685 | 1610 s | Vibration + Temperature |
-| Bearing1_6 | 1800 rpm, 4000 N | 6h23m | 2685 | 1460 s | Vibration + Temperature |
-| Bearing1_7 | 1800 rpm, 4000 N | 4h10m | 1752 | 7570 s | Vibration + Temperature |
-| Bearing2_3 | 1650 rpm, 4200 N | 3h20m | 1202 | 7530 s | Vibration |
-| Bearing2_4 | 1650 rpm, 4200 N | 1h41m | 713 | 1390 s | Vibration + Temperature |
-| Bearing2_5 | 1650 rpm, 4200 N | 5h33m | 2337 | 3090 s | Vibration + Temperature |
-| Bearing2_6 | 1650 rpm, 4200 N | 1h35m | 572 | 1290 s | Vibration |
-| Bearing2_7 | 1650 rpm, 4200 N | 0h28m | 200 | 580 s | Vibration |
-| Bearing3_3 | 1500 rpm, 5000 N | 0h58m | 410 | 820 s | Vibration + Temperature |
+- **振動信號**:
+    - **傳感器**: 兩個 DYTRAN 3035B 加速度計，一個垂直安裝，一個水平安裝。
+    - **採樣頻率**: 25.6 kHz。
+    - **記錄方式**: 每 10 秒記錄一次，每次記錄 0.1 秒（即 2560 個樣本）。
+- **溫度信號**:
+    - **傳感器**: 一個 PT100 電阻溫度探測器 (RTD)。
+    - **採樣頻率**: 10 Hz。
+    - **記錄方式**: 每分鐘記錄 600 個樣本。
+- **其他**: 徑向力、轉速和扭矩以 100 Hz 的頻率被採集。
 
-## Data Acquisition Specifications
+### 文件組織
 
-### Vibration Data
-- **Sampling Frequency**: 25.6 kHz
-- **Recording Pattern**: 2560 samples (1/10 second) recorded every 10 seconds
-- **Sensors**: Two DYTRAN 3035B accelerometers (±50g range, 100 mV/g)
-- **Positioning**: 90° apart - one horizontal, one vertical
-- **File Format**: ASCII files named "acc_xxxxx.csv"
-- **Data Columns**: Hour, Minute, Second, Microsecond, Horizontal Acceleration, Vertical Acceleration
+- 數據以 `.csv` 格式的 ASCII 文件提供。
+- 振動數據文件名: `acc_XXXXX.csv`。
+- 溫度數據文件名: `temp_XXXXX.csv`。
 
-### Temperature Data  
-- **Sampling Frequency**: 10 Hz
-- **Recording Pattern**: 600 samples recorded every minute
-- **Sensor**: RTD platinum PT100 (Class 1/3 DIN, -200°C to +600°C range)
-- **File Format**: ASCII files named "temp_xxxxx.csv" 
-- **Data Columns**: Hour, Minute, Second, 0.x second, RTD sensor reading
+## 5. 評分機制
 
-### Accelerometer Specifications (DYTRAN 3035B)
-- **Range**: ±50g
-- **Sensitivity**: 100 mV/g
-- **Frequency Response**: 0.5 Hz to 10 kHz (±5%)
-- **Resonant Frequency**: 45 kHz
-- **Weight**: 2.5 grams
-- **Temperature Range**: -60°F to +225°F
+- 評分基於預測 RUL 與實際 RUL 之間的百分比誤差 (`%Er`)。
+- 評分函數是非對稱的：
+    - **提前預測 (Overestimation, `%Er > 0`)**: 預測的 RUL 小於實際 RUL，懲罰較輕。
+    - **延後預測 (Underestimation, `%Er < 0`)**: 預測的 RUL 大於實際 RUL，被視為更嚴重的錯誤，懲罰更重。
+- 最終得分是所有 11 個測試軸承得分的平均值。
 
-## Challenge Design and Scoring
+## 6. 附錄關鍵資訊
 
-### Scoring Methodology
-Teams were evaluated using an asymmetric scoring function that penalized early and late predictions differently:
-
-**Error Calculation:**
-```
-%Eri = 100 × (ActRULi - RUL_esti) / ActRULi
-```
-
-**Scoring Function:**
-- **Early Predictions** (Eri ≤ 0): Ai = exp(-ln(0.5) × (Eri/5))
-- **Late Predictions** (Eri > 0): Ai = exp(-ln(0.5) × (Eri/20))
-
-**Final Score:** Average of all 11 experiment scores
-
-### Key Challenge Characteristics
-1. **Small Training Set**: Only 6 run-to-failure experiments for model development
-2. **High Variability**: Bearing life varied dramatically (1h to 7h duration)  
-3. **Multi-failure Modes**: Bearings exhibited various defect types (balls, inner/outer races, cage)
-4. **Realistic Degradation**: Natural degradation without artificially induced defects
-5. **Theoretical Model Limitations**: Standard bearing theory (L10, BPFI, BPFE) did not match experimental observations
-6. **Cross-condition Robustness**: Algorithms needed to work across different operating conditions
-
-## Challenge Winners
-
-### Industrial Category
-- **Winner**: A.L.D. Ltd. (Israel) - Sergey Porotsky
-- **Runner-up**: GE Global Research (NY) - Tianyi Wang
-
-### Academic Category  
-- **Winner**: CALCE, University of Maryland - Arvind Sai Sarathi Vasan
-- **Runner-up**: Jožef Stefan Institute (Slovenia) - Matej Gasperin
-
-## Technical Notes
-- Degradation patterns showed very different behaviors across bearings
-- Frequency signature-based detection was difficult due to simultaneous multiple component degradation
-- Platform designed for both constant and variable operating conditions (challenge used constant conditions)
-- Data compression provided in 7z format
-- FEMTO-ST team members excluded from competition for fairness
+- **測試軸承**:
+    - 外徑: 32 mm
+    - 內徑: 20 mm
+    - 厚度: 7 mm
+    - 動態額定載荷: 4000 N
+- **加速度計**: DYTRAN 3035B，量程 50g，靈敏度 100 mV/g。
+- **溫度傳感器**: PT100 RTD。
