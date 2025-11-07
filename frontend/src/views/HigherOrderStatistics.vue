@@ -452,6 +452,7 @@ const drawFilterTrendChart = () => {
 <style scoped>
 .higher-order-stats-page {
   padding: 20px;
+  min-height: 100%;
 }
 
 .card-header {
@@ -460,24 +461,35 @@ const drawFilterTrendChart = () => {
   align-items: center;
 }
 
+.card-header h2 {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
 h3 {
   color: #303133;
   margin-top: 15px;
   margin-bottom: 10px;
+  font-weight: 600;
 }
 
 h4 {
-  color: #606266;
+  color: #667eea;
   margin-top: 15px;
   margin-bottom: 10px;
+  font-weight: 600;
 }
 
 code {
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 6px;
   font-family: 'Courier New', monospace;
-  color: #e6a23c;
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 p {

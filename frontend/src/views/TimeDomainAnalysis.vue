@@ -334,16 +334,19 @@ const drawTrendChart = () => {
 <style scoped>
 .time-domain-page {
   padding: 20px;
+  min-height: 100%;
 }
 
 h3 {
   margin-top: 0;
   color: #303133;
+  font-weight: 600;
 }
 
 h4 {
   margin-top: 20px;
-  color: #606266;
+  color: #667eea;
+  font-weight: 600;
 }
 
 p {
@@ -352,10 +355,11 @@ p {
 }
 
 code {
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
   padding: 2px 8px;
-  border-radius: 3px;
-  color: #e6a23c;
+  border-radius: 6px;
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.2);
   font-family: 'Consolas', 'Monaco', monospace;
 }
 </style>

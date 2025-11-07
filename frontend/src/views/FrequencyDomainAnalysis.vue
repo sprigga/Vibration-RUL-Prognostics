@@ -299,6 +299,7 @@ const drawFrequencyDomainChart = () => {
 <style scoped>
 .frequency-domain-page {
   padding: 20px;
+  min-height: 100%;
 }
 
 .card-header {
@@ -310,18 +311,25 @@ const drawFrequencyDomainChart = () => {
 .card-header h2 {
   margin: 0;
   font-size: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
 }
 
 h3 {
   margin: 0 0 15px;
   font-size: 18px;
   color: #303133;
+  font-weight: 600;
 }
 
 h4 {
   margin: 15px 0 10px;
   font-size: 16px;
-  color: #606266;
+  color: #667eea;
+  font-weight: 600;
 }
 
 p {
@@ -332,11 +340,12 @@ p {
 
 code {
   display: block;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
   padding: 8px 12px;
   margin: 8px 0;
-  border-radius: 4px;
+  border-radius: 8px;
   font-family: 'Courier New', monospace;
-  color: #e6a23c;
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 </style>

@@ -676,6 +676,7 @@ const completedModules = ref([
 <style scoped>
 .project-analysis {
   padding: 20px;
+  min-height: 100%;
 }
 
 .card-header {
@@ -687,6 +688,10 @@ const completedModules = ref([
 .card-header span {
   font-size: 18px;
   font-weight: bold;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .stats-card {

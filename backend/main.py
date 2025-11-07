@@ -11,7 +11,6 @@ from datetime import datetime
 import os
 import json
 
-from database import init_db
 from phm_processor import PHMDataProcessor
 from phm_query import PHMDatabaseQuery
 from phm_temperature_query import PHMTemperatureQuery
@@ -46,12 +45,6 @@ class AnalysisRequest(BaseModel):
     guide_spec_id: int
 
 
-
-
-# Initialize database
-@app.on_event("startup")
-async def startup_event():
-    init_db()
 
 
 # Health check

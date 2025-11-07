@@ -710,22 +710,26 @@ const drawHilbertFreqChart = () => {
 <style scoped>
 .envelope-analysis-page {
   padding: 20px;
+  min-height: 100%;
 }
 
 h3 {
   margin-top: 20px;
   margin-bottom: 10px;
   color: #303133;
+  font-weight: 600;
 }
 
 h4 {
   margin-top: 15px;
   margin-bottom: 10px;
-  color: #606266;
+  color: #667eea;
+  font-weight: 600;
 }
 
 h5 {
-  color: #909399;
+  color: #764ba2;
+  font-weight: 600;
 }
 
 p {
@@ -735,10 +739,11 @@ p {
 }
 
 code {
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
   padding: 2px 8px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
-  color: #e6a23c;
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 </style>
