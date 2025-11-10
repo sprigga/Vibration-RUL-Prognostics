@@ -44,6 +44,17 @@
 - 健康趨勢追蹤
 - 詳細報告檢視
 
+## 📸 系統截圖
+
+![image1.png](screenshot/image1.png)
+![image2.png](screenshot/image2.png)
+![image3.png](screenshot/image3.png)
+![image4.png](screenshot/image4.png)
+![image5.png](screenshot/image5.png)
+![image6.png](screenshot/image6.png)
+![image7.png](screenshot/image7.png)
+![image8.png](screenshot/image8.png)
+
 ## 🏗️ 技術架構
 
 ### 前端（Frontend）

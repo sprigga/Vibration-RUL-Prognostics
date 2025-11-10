@@ -17,7 +17,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy legacy_module directory
-COPY legacy_module/ ./legacy_module/
+# COPY legacy_module/ ./legacy_module/
 
 # Copy backend application code
 COPY backend/ .

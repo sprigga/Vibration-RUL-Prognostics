@@ -813,6 +813,7 @@ const loadBearings = async () => {
     bearings.value = response.data.bearings
   } catch (err) {
     error.value = err.response?.data?.detail || err.message
+    console.warn('Failed to load bearings:', err.response?.data?.detail || err.message)
   } finally {
     loading.value = false
   }
@@ -968,13 +969,25 @@ const loadTrainingData = async () => {
 }
 
 const renderCharts = () => {
-  renderVibrationChart()
-  renderKurtosisChart()
+  // 只在容器和數據都準備好時才渲染
+  if (chartContainer.value && kurtosisChartContainer.value && statisticsData.value.length > 0) {
+    renderVibrationChart()
+    renderKurtosisChart()
+  } else {
+    console.log('Charts not rendered - containers or data not ready')
+  }
 }
 
 const renderVibrationChart = () => {
+  // 檢查容器是否存在
   if (!chartContainer.value) {
-    console.error('Chart container not found')
+    console.warn('Chart container not found - DOM may not be ready yet')
+    return
+  }
+
+  // 檢查是否有統計數據
+  if (!statisticsData.value || statisticsData.value.length === 0) {
+    console.warn('No statistics data available yet')
     return
   }
 
@@ -1053,8 +1066,15 @@ const renderVibrationChart = () => {
 }
 
 const renderKurtosisChart = () => {
+  // 檢查容器是否存在
   if (!kurtosisChartContainer.value) {
-    console.error('Kurtosis chart container not found')
+    console.warn('Kurtosis chart container not found - DOM may not be ready yet')
+    return
+  }
+
+  // 檢查是否有統計數據
+  if (!statisticsData.value || statisticsData.value.length === 0) {
+    console.warn('No statistics data available yet')
     return
   }
 
@@ -1140,19 +1160,26 @@ const renderKurtosisChart = () => {
   console.log('Kurtosis chart rendered successfully')
 }
 
-const viewBearingDetails = (bearing) => {
+const viewBearingDetails = async (bearing) => {
   selectedTrainingBearing.value = bearing.name
+
+  // 等待 DOM 更新後再渲染圖表
+  await nextTick()
+
   renderVibrationChart()
   renderKurtosisChart()
 
   // 滾動到圖表區域
+  await nextTick()
   const chartCard = document.querySelector('.chart-card')
   if (chartCard) {
     chartCard.scrollIntoView({ behavior: 'smooth' })
   }
 }
 
-watch(selectedTrainingBearing, () => {
+watch(selectedTrainingBearing, async () => {
+  // 等待 DOM 更新後再渲染圖表
+  await nextTick()
   renderVibrationChart()
   renderKurtosisChart()
 })

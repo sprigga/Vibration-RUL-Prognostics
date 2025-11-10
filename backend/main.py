@@ -159,9 +159,19 @@ async def get_phm_database_bearings():
             "bearings": bearings
         }
     except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        # 資料庫不存在時返回友善訊息
+        raise HTTPException(
+            status_code=404,
+            detail="PHM 資料庫尚未建立。請先執行資料庫建立腳本來導入 PHM 數據。"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in get_phm_database_bearings: {error_detail}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"資料庫查詢錯誤: {str(e)}"
+        )
 
 
 @app.get("/api/phm/database/bearing/{bearing_name}", response_model=Dict)
