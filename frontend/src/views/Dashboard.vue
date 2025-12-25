@@ -761,8 +761,14 @@ import { Aim, Tools, Folder, TrendCharts, DataBoard, DataLine, Loading, Document
 import { ElMessage } from 'element-plus'
 import api from '@/stores/api'
 import { Chart } from 'chart.js/auto'
+import { getApiUrl } from '@/config/api'
 
-const API_BASE = 'http://localhost:8081'
+// 使用環境變數配置 API_BASE URL，避免硬編碼
+// 原始配置: const API_BASE = 'http://localhost:8000'
+// 第一次修改: Backend 伺服器運行在 port 8000，更新 API_BASE 以匹配
+// 修改: 統一 Backend 伺服器運行在 port 8081
+// 現在: 使用環境變數 VITE_API_BASE_URL 從 .env 檔案讀取
+const API_BASE = getApiUrl('api')
 
 // State
 const loading = ref(false)
@@ -942,18 +948,24 @@ const loadTrainingData = async () => {
   try {
     trainingLoading.value = true
 
-    // 載入摘要數據
-    const summaryData = await api.getPHMTrainingSummary()
-    trainingData.value = summaryData
-    console.log('Training summary loaded:', summaryData)
-
-    // 載入統計數據
+    // 載入分析數據（包含完整的 summary 和 statistics）
+    // 原始代碼: 使用 getPHMTrainingSummary() 和 getPHMAnalysisData() 兩個 API
+    // 修改原因: getPHMTrainingSummary() 返回的數據缺少 num_files 和 total_duration_min 字段
+    // 解決方案: 改用 getPHMAnalysisData() 返回的 summary.bearings，該數據包含所有必要字段
     const analysisData = await api.getPHMAnalysisData()
-    const stats = analysisData.statistics
 
-    statisticsData.value = stats
-    trainingBearingOptions.value = [...new Set(stats.map(s => s.bearing_name))]
-    console.log('Statistics data loaded:', stats.length, 'records')
+    // 使用 summary.bearings 作為訓練數據（包含 num_files 和 total_duration_min）
+    trainingData.value = {
+      total_bearings: analysisData.summary.total_bearings,
+      bearings: analysisData.summary.bearings
+    }
+
+    // 使用 statistics 用於圖表渲染
+    statisticsData.value = analysisData.statistics
+    trainingBearingOptions.value = [...new Set(analysisData.statistics.map(s => s.bearing_name))]
+
+    console.log('Training summary loaded:', trainingData.value)
+    console.log('Statistics data loaded:', analysisData.statistics.length, 'records')
     console.log('Bearing options:', trainingBearingOptions.value)
 
     trainingLoading.value = false

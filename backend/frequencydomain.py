@@ -210,4 +210,158 @@ class FrequencyDomain():
         total_tsa_fft_bi = (np.sum(tsa_fft_bi1['tsa_abs_fft_n']) + np.sum(tsa_fft_bi2['tsa_abs_fft_n'])) / rms_val
 
         return tsa_fftoutput,total_tsa_fft_mgs,total_tsa_fft_bi,high_fm0
-    
+
+    #==================================================================
+    # 計算頻域特徵趨勢（所有檔案）
+    #==================================================================
+    def calculate_frequency_domain_trend(
+        self,
+        bearing_name: str,
+        sampling_rate: int = 25600,
+        progress_callback=None
+    ):
+        """
+        計算頻域特徵趨勢（所有檔案）
+
+        計算所有檔案的頻域特徵,包括低頻和高頻 FM0、
+        Motor Gear Sideband Index (MGS)、Belt/Bearing Index (BI)
+
+        Args:
+            bearing_name: 軸承名稱 (例如: "Bearing1_1")
+            sampling_rate: 採樣頻率 (默認 25600 Hz)
+            progress_callback: 進度回調函數 callback(current, total, file_number)
+
+        Returns:
+            包含所有檔案頻域特徵的字典,格式適合圖表和表格顯示
+        """
+        import sqlite3
+        import time
+        try:
+            from backend.config import PHM_DATABASE_PATH
+        except ModuleNotFoundError:
+            from config import PHM_DATABASE_PATH
+
+        start_time = time.time()
+
+        # 連接資料庫
+        conn = sqlite3.connect(PHM_DATABASE_PATH)
+        cursor = conn.cursor()
+
+        # 獲取所有檔案（不使用 LIMIT）
+        cursor.execute("""
+            SELECT mf.file_number, mf.file_id
+            FROM measurement_files mf
+            JOIN bearings b ON mf.bearing_id = b.bearing_id
+            WHERE b.bearing_name = ?
+            ORDER BY mf.file_number
+        """, (bearing_name,))
+
+        files = cursor.fetchall()
+
+        if not files:
+            conn.close()
+            raise ValueError(f"No files found for {bearing_name}")
+
+        total_files = len(files)
+
+        # 初始化結果結構
+        feature_keys = ["low_fm0", "high_fm0", "mgs_low", "bi_low", "mgs_high", "bi_high"]
+
+        trend_data = {
+            "bearing_name": bearing_name,
+            "file_count": total_files,
+            "horizontal": {key: [] for key in feature_keys},
+            "vertical": {key: [] for key in feature_keys},
+            "file_numbers": [],
+            "table_data": []
+        }
+
+        # 處理每個檔案
+        for idx, (file_num, file_id) in enumerate(files):
+            try:
+                # 更新進度
+                if progress_callback:
+                    progress_callback(idx + 1, total_files, file_num)
+
+                # 查詢資料
+                query = f"""
+                    SELECT horizontal_acceleration, vertical_acceleration
+                    FROM measurements
+                    WHERE file_id = {file_id}
+                """
+                df = pd.read_sql_query(query, conn)
+
+                if df.empty:
+                    print(f"Warning: File {file_num} has no data, skipping")
+                    # 插入 NaN 值
+                    for key in feature_keys:
+                        trend_data["horizontal"][key].append(float('nan'))
+                        trend_data["vertical"][key].append(float('nan'))
+                    trend_data["file_numbers"].append(file_num)
+                    continue
+
+                # 提取資料
+                horiz = df['horizontal_acceleration'].values
+                vert = df['vertical_acceleration'].values
+
+                # 計算低頻特徵
+                horiz_fftoutput, horiz_mgs_low, horiz_bi_low, horiz_low_fm0 = \
+                    self.fft_fm0_si(horiz, sampling_rate)
+                vert_fftoutput, vert_mgs_low, vert_bi_low, vert_low_fm0 = \
+                    self.fft_fm0_si(vert, sampling_rate)
+
+                # 計算高頻特徵
+                horiz_tsa_fftoutput, horiz_mgs_high, horiz_bi_high, horiz_high_fm0 = \
+                    self.tsa_fft_fm0_slf(horiz, sampling_rate, horiz_fftoutput)
+                vert_tsa_fftoutput, vert_mgs_high, vert_bi_high, vert_high_fm0 = \
+                    self.tsa_fft_fm0_slf(vert, sampling_rate, vert_fftoutput)
+
+                # 儲存結果
+                trend_data["horizontal"]["low_fm0"].append(float(horiz_low_fm0))
+                trend_data["horizontal"]["high_fm0"].append(float(horiz_high_fm0))
+                trend_data["horizontal"]["mgs_low"].append(float(horiz_mgs_low))
+                trend_data["horizontal"]["bi_low"].append(float(horiz_bi_low))
+                trend_data["horizontal"]["mgs_high"].append(float(horiz_mgs_high))
+                trend_data["horizontal"]["bi_high"].append(float(horiz_bi_high))
+
+                trend_data["vertical"]["low_fm0"].append(float(vert_low_fm0))
+                trend_data["vertical"]["high_fm0"].append(float(vert_high_fm0))
+                trend_data["vertical"]["mgs_low"].append(float(vert_mgs_low))
+                trend_data["vertical"]["bi_low"].append(float(vert_bi_low))
+                trend_data["vertical"]["mgs_high"].append(float(vert_mgs_high))
+                trend_data["vertical"]["bi_high"].append(float(vert_bi_high))
+
+                trend_data["file_numbers"].append(file_num)
+
+                # 添加到表格資料
+                trend_data["table_data"].append({
+                    "file_number": file_num,
+                    "h_low_fm0": float(horiz_low_fm0),
+                    "h_high_fm0": float(horiz_high_fm0),
+                    "h_mgs_low": float(horiz_mgs_low),
+                    "h_bi_low": float(horiz_bi_low),
+                    "h_mgs_high": float(horiz_mgs_high),
+                    "h_bi_high": float(horiz_bi_high),
+                    "v_low_fm0": float(vert_low_fm0),
+                    "v_high_fm0": float(vert_high_fm0),
+                    "v_mgs_low": float(vert_mgs_low),
+                    "v_bi_low": float(vert_bi_low),
+                    "v_mgs_high": float(vert_mgs_high),
+                    "v_bi_high": float(vert_bi_high)
+                })
+
+            except Exception as e:
+                print(f"Error processing file {file_num}: {str(e)}")
+                # 插入 NaN 值
+                for key in feature_keys:
+                    trend_data["horizontal"][key].append(float('nan'))
+                    trend_data["vertical"][key].append(float('nan'))
+                trend_data["file_numbers"].append(file_num)
+                continue
+
+        conn.close()
+
+        # 計算處理時間
+        trend_data["processing_time"] = time.time() - start_time
+
+        return trend_data

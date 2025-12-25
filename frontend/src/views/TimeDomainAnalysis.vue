@@ -11,8 +11,12 @@
       <h4>主要特徵:</h4>
       <el-descriptions :column="1" border>
         <el-descriptions-item label="Peak（峰值）">
-          <code>Peak = max(|signal|)</code>
+          <code>Peak = max(signal) - min(signal)</code>
           <p>反映最大振動幅度,用於檢測衝擊</p>
+        </el-descriptions-item>
+        <el-descriptions-item label="Average（平均值）">
+          <code>Avg = mean(signal)</code>
+          <p>信號的平均值,反映直流分量偏移</p>
         </el-descriptions-item>
         <el-descriptions-item label="RMS（均方根值）">
           <code>RMS = sqrt(mean(signal²))</code>
@@ -25,6 +29,10 @@
         <el-descriptions-item label="Crest Factor（波峰因數）">
           <code>CF = Peak / RMS</code>
           <p>反映峰值與平均值的比值</p>
+        </el-descriptions-item>
+        <el-descriptions-item label="Energy Operator（能量運算元）">
+          <code>EO = (n²Σδ⁴) / (Σδ²)²</code>
+          <p>反映信號能量變化率,用於檢測非線性特徵</p>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -41,6 +49,7 @@
         <ul style="margin: 5px 0; padding-left: 20px;">
           <li>RMS 緩慢上升 → 磨損加劇</li>
           <li>Kurtosis > 8 → 嚴重衝擊,可能存在缺陷</li>
+          <li>EO 值顯著變化 → 能量分佈異常,檢測非線性故障</li>
         </ul>
       </el-alert>
 
@@ -85,29 +94,41 @@
               <el-descriptions-item label="軸承名稱">
                 {{ timeDomainResult.bearing_name }}
               </el-descriptions-item>
-              <el-descriptions-item label="水平 Peak">
+              <el-descriptions-item label="水平 Peak（峰值）">
                 {{ timeDomainResult.horizontal.peak.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="垂直 Peak">
+              <el-descriptions-item label="垂直 Peak（峰值）">
                 {{ timeDomainResult.vertical.peak.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="水平 RMS">
+              <el-descriptions-item label="水平 Average（平均值）">
+                {{ timeDomainResult.horizontal.avg.toFixed(4) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="垂直 Average（平均值）">
+                {{ timeDomainResult.vertical.avg.toFixed(4) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="水平 RMS（均方根）">
                 {{ timeDomainResult.horizontal.rms.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="垂直 RMS">
+              <el-descriptions-item label="垂直 RMS（均方根）">
                 {{ timeDomainResult.vertical.rms.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="水平 Crest Factor">
+              <el-descriptions-item label="水平 Crest Factor（波峰因數）">
                 {{ timeDomainResult.horizontal.crest_factor.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="垂直 Crest Factor">
+              <el-descriptions-item label="垂直 Crest Factor（波峰因數）">
                 {{ timeDomainResult.vertical.crest_factor.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="水平峰度">
+              <el-descriptions-item label="水平 Kurtosis（峰度）">
                 {{ timeDomainResult.horizontal.kurtosis.toFixed(4) }}
               </el-descriptions-item>
-              <el-descriptions-item label="垂直峰度">
+              <el-descriptions-item label="垂直 Kurtosis（峰度）">
                 {{ timeDomainResult.vertical.kurtosis.toFixed(4) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="水平 EO（能量運算元）">
+                {{ timeDomainResult.horizontal.eo.toFixed(4) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="垂直 EO（能量運算元）">
+                {{ timeDomainResult.vertical.eo.toFixed(4) }}
               </el-descriptions-item>
             </el-descriptions>
           </el-card>
@@ -262,20 +283,33 @@ const drawTrendChart = () => {
 
   const option = {
     title: {
-      text: '時域特徵趨勢'
+      text: '時域特徵趨勢',
+      left: 'center',
+      top: '1%',
+      textStyle: {
+        fontSize: 16
+      }
     },
     tooltip: {
       trigger: 'axis'
     },
     legend: {
-      data: ['水平 RMS', '垂直 RMS', '水平峰度', '垂直峰度'],
-      top: '1%',
-      right: '5%'
+      data: ['水平 Peak', '垂直 Peak', '水平 Avg', '垂直 Avg', '水平 RMS', '垂直 RMS', '水平 Kurtosis', '垂直 Kurtosis', '水平 CF', '垂直 CF', '水平 EO', '垂直 EO'],
+      top: '8%',
+      right: '2%',
+      type: 'scroll',
+      textStyle: {
+        fontSize: 11
+      },
+      itemGap: 8,
+      itemWidth: 20,
+      itemHeight: 12
     },
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '3%',
+      bottom: '8%',
+      top: '25%',
       containLabel: true
     },
     xAxis: {
@@ -286,16 +320,44 @@ const drawTrendChart = () => {
     yAxis: [
       {
         type: 'value',
-        name: 'RMS',
+        name: '振幅值',
         position: 'left'
       },
       {
         type: 'value',
-        name: '峰度',
+        name: '峰度/波峰因數',
         position: 'right'
       }
     ],
     series: [
+      {
+        name: '水平 Peak',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.horizontal.peak,
+        smooth: true
+      },
+      {
+        name: '垂直 Peak',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.vertical.peak,
+        smooth: true
+      },
+      {
+        name: '水平 Avg',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.horizontal.avg,
+        smooth: true
+      },
+      {
+        name: '垂直 Avg',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.vertical.avg,
+        smooth: true
+      },
       {
         name: '水平 RMS',
         type: 'line',
@@ -311,17 +373,45 @@ const drawTrendChart = () => {
         smooth: true
       },
       {
-        name: '水平峰度',
+        name: '水平 Kurtosis',
         type: 'line',
         yAxisIndex: 1,
         data: trendResult.value.horizontal.kurtosis,
         smooth: true
       },
       {
-        name: '垂直峰度',
+        name: '垂直 Kurtosis',
         type: 'line',
         yAxisIndex: 1,
         data: trendResult.value.vertical.kurtosis,
+        smooth: true
+      },
+      {
+        name: '水平 CF',
+        type: 'line',
+        yAxisIndex: 1,
+        data: trendResult.value.horizontal.crest_factor,
+        smooth: true
+      },
+      {
+        name: '垂直 CF',
+        type: 'line',
+        yAxisIndex: 1,
+        data: trendResult.value.vertical.crest_factor,
+        smooth: true
+      },
+      {
+        name: '水平 EO',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.horizontal.eo,
+        smooth: true
+      },
+      {
+        name: '垂直 EO',
+        type: 'line',
+        yAxisIndex: 0,
+        data: trendResult.value.vertical.eo,
         smooth: true
       }
     ]

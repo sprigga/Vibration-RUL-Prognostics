@@ -121,3 +121,6 @@ Desktop.ini
 
 # Legacy Module
 legacy_module/**
+
+# Terminal Paste Image folder
+.cp-images/

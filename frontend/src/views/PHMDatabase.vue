@@ -329,8 +329,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { getApiUrl } from '@/config/api'
 
-const API_BASE = 'http://localhost:8081'
+// 使用環境變數配置 API_BASE URL，避免硬編碼
+// 原始配置: const API_BASE = 'http://localhost:8000'
+// 修改: 統一 Backend 伺服器運行在 port 8081
+// 現在: 使用環境變數 VITE_API_BASE_URL 從 .env 檔案讀取
+const API_BASE = getApiUrl('api')
 
 // State
 const loading = ref(false)

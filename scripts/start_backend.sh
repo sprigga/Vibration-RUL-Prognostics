@@ -30,11 +30,12 @@ fi
 
 # 顯示啟動資訊
 echo -e "${GREEN}✓ 專案根目錄: $(pwd)${NC}"
-echo -e "${GREEN}✓ API 文件: http://localhost:8000/docs${NC}"
-echo -e "${GREEN}✓ API 端點: http://localhost:8000${NC}"
+echo -e "${GREEN}✓ API 文件: http://localhost:8081/docs${NC}"
+echo -e "${GREEN}✓ API 端點: http://localhost:8081${NC}"
 echo -e "${YELLOW}ℹ 按 Ctrl+C 停止伺服器${NC}"
 echo ""
 
 # 啟動 FastAPI 開發伺服器 (含自動重新載入)
 # 原始指令: uv run uvicorn backend.main:app --reload --port 8000
-uv run uvicorn backend.main:app --reload --port 8000
+# 修改: 統一使用 port 8081
+uv run uvicorn backend.main:app --reload --port 8081

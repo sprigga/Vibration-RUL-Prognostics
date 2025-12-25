@@ -71,11 +71,14 @@ class HarmonicSildband():
         max_mortor = tsa_fftoutput[tsa_fftoutput['tsa_abs_fft']==np.max(max_mortor['tsa_abs_fft'])]
         max_mortor1=max_mortor.iloc[0:1]
         
-#        計算Sideband的頻率，從2.75倍到14.25倍，以0.25逐漸增加
+#        計算Sideband的頻率，從2倍到16倍 (整數步長)
+#        [PHM 2012] Physics-Based: 軸承邊帶諧波範圍 2×-16× BPFI
+#        適用於軸承故障檢測，覆蓋 467 Hz - 3735 Hz (基於 BPFI=233.43 Hz)
+#        原MFP參數: 2.75-14.25倍，以0.25逐漸增加
         max_filter_list=[]
         max_filter_freq_list=[]
         max_filter_freq_combine=pd.DataFrame()
-        for i in np.arange(2.75,14.25,0.25):
+        for i in np.arange(2,17,1):
             f1 = tsa_fftoutput['multiply_freqs']>=(float(max_mortor1['multiply_freqs'].values[0]) * i) - ip.high_hamonic_range
             f2 = tsa_fftoutput['multiply_freqs']<(float(max_mortor1['multiply_freqs'].values[0]) * i) + ip.high_hamonic_range
             filter_tsa=tsa_fftoutput[f1 & f2]
@@ -115,11 +118,14 @@ class HarmonicSildband():
         max_mortor = fftoutput[fftoutput['abs_fft']==np.max(max_mortor['abs_fft'])]
         max_mortor1=max_mortor.iloc[0:1]
 
-        #計算Harmonic的頻率，從0.25倍到2.75倍，以0.25逐漸增加
+        #計算Harmonic的頻率，從1倍到10倍 (整數步長)
+        # [PHM 2012] Physics-Based: 軸承諧波範圍 1×-10× BPFI
+        # 適用於早期軸承故障檢測，覆蓋 233 Hz - 2334 Hz (基於 BPFI=233.43 Hz)
+        # 原MFP參數: 0.25-2.75倍，以0.25逐漸增加
         max_harmonic_list=[]
         max_harmonic_freq_list=[]
         max_harmonic_freq_combine = pd.DataFrame()
-        for i in np.arange(0.25,2.75,0.25):
+        for i in np.arange(1,11,1):
             f1 = fftoutput['freqs']>=(float(max_mortor1['freqs'].values[0]) * i) - ip.harmonic_gmf_range
             f2 = fftoutput['freqs']<(float(max_mortor1['freqs'].values[0]) * i) + ip.harmonic_gmf_range
             harmonic_filter=fftoutput[f1 & f2]
@@ -149,11 +155,15 @@ class HarmonicSildband():
 
         max_mortor = tsa_fftoutput[tsa_fftoutput['tsa_abs_fft']==np.max(max_mortor['tsa_abs_fft'])]
         max_mortor1=max_mortor.iloc[0:1]
-        
+
+        #計算實時同步訊號的Harmonic，從1倍到10倍 (整數步長)
+        # [PHM 2012] Physics-Based: 軸承諧波範圍 1×-10× BPFI
+        # 適用於早期軸承故障檢測，覆蓋 233 Hz - 2334 Hz (基於 BPFI=233.43 Hz)
+        # 原MFP參數: 0.25-2.75倍，以0.25逐漸增加
         max_harmonic_list=[]
         max_harmonic_freq_list=[]
         max_harmonic_freq_combine = pd.DataFrame()
-        for i in np.arange(0.25,2.75,0.25):
+        for i in np.arange(1,11,1):
             f1 = tsa_fftoutput['multiply_freqs']>=(float(max_mortor1['multiply_freqs'].values[0]) * i) - ip.harmonic_gmf_range
             f2 = tsa_fftoutput['multiply_freqs']<(float(max_mortor1['multiply_freqs'].values[0]) * i) + ip.harmonic_gmf_range
             harmonic_filter=tsa_fftoutput[f1 & f2]

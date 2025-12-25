@@ -1,12 +1,25 @@
 {
+  "env": {
+    "ANTHROPIC_MODEL": "GLM-4.7"
+  },
   "permissions": {
     "allow": [
-      "Bash(source:*)",
-      "Bash(python:*)",
-      "Bash(pip install:*)",
-      "Bash(.venv/bin/pip install:*)",
+      "Bash(source .venv/bin/activate)",
       "Bash(uv pip install:*)",
-      "Bash(uv run:*)"
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(source backend/.venv/bin/activate)",
+      "Bash(uvicorn:*)",
+      "Bash(cat:*)",
+      "mcp__filesystem__write_file",
+      "mcp__web-search-prime__webSearchPrime",
+      "Bash(git push:*)",
+      "Bash(ssh:*)",
+      "mcp__microsoft-learn__microsoft_docs_search",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__list_directory"
     ],
     "deny": [],
     "ask": []

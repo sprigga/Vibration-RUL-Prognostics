@@ -32,7 +32,8 @@ class TimeDomain:
         num2 = pd.concat([num, num.iloc[[0]]], ignore_index=True)
         pdatadelta1 = (num2[label].shift() ** 2) - (num2[label] ** 2)
         pdatadelta1 = pdatadelta1.dropna()
-        pdatadelta2 = num[label].agg(np.sum) / len(num)
+        # 原本使用 np.sum,改為字串 "sum" 以避免 pandas FutureWarning
+        pdatadelta2 = num[label].agg("sum") / len(num)
         pdata_combine = pd.DataFrame({'delta1': pdatadelta1, 'delta2': pdatadelta2})
         pdatadelta3 = pdata_combine['delta1'] - pdata_combine['delta2']
         return ((len(pdatadelta3) ** 2) * np.sum(pdatadelta3 ** 4)) / (np.sum(pdatadelta3 ** 2) ** 2)

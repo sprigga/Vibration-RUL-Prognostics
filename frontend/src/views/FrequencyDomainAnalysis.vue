@@ -135,14 +135,93 @@
           <div ref="frequencyDomainChart" style="width: 100%; height: 400px;"></div>
         </el-card>
       </div>
+
+      <!-- ==================== 完整頻域特徵趨勢分析 ==================== -->
+      <el-divider>完整頻域特徵趨勢分析</el-divider>
+
+      <el-card shadow="never" style="margin-bottom: 20px;">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form label-width="120px">
+              <el-form-item label="選擇軸承">
+                <el-select v-model="trendParams.bearingName" placeholder="請選擇軸承">
+                  <el-option label="Bearing1_1" value="Bearing1_1" />
+                  <el-option label="Bearing1_2" value="Bearing1_2" />
+                  <el-option label="Bearing2_1" value="Bearing2_1" />
+                  <el-option label="Bearing2_2" value="Bearing2_2" />
+                  <el-option label="Bearing3_1" value="Bearing3_1" />
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="success" @click="calculateTrend" :loading="trendLoading" :disabled="trendLoading">
+                  <el-icon v-if="trendLoading"><Loading /></el-icon>
+                  計算完整頻域特徵
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-col>
+          <el-col :span="16" v-if="trendResult">
+            <el-card shadow="hover">
+              <template #header>
+                <h4>處理摘要</h4>
+              </template>
+              <el-descriptions :column="3" border size="small">
+                <el-descriptions-item label="軸承名稱">
+                  {{ trendResult.bearing_name }}
+                </el-descriptions-item>
+                <el-descriptions-item label="檔案數量">
+                  {{ trendResult.file_count }}
+                </el-descriptions-item>
+                <el-descriptions-item label="處理時間">
+                  {{ trendResult.processing_time?.toFixed(2) }} 秒
+                </el-descriptions-item>
+              </el-descriptions>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <!-- 進度提示 -->
+        <el-alert
+          v-if="trendLoading"
+          title="正在計算所有檔案的頻域特徵，請稍候..."
+          type="info"
+          :closable="false"
+          show-icon
+          style="margin-top: 15px;"
+        >
+          此過程可能需要較長時間，取決於檔案數量。
+        </el-alert>
+      </el-card>
+
+      <!-- 趨勢圖表區域 -->
+      <!-- [原代碼] 使用 :span="12" 雙列布局 -->
+      <!-- [修改] 改為 :span="24" 單列布局，圖表垂直排列 -->
+      <div v-if="trendResult" style="margin-top: 20px;">
+        <el-row :gutter="20">
+          <el-col :span="24" v-for="feature in featureConfig" :key="feature.key">
+            <el-card style="margin-bottom: 20px;">
+              <template #header>
+                <h4>{{ feature.title }}</h4>
+              </template>
+              <div :ref="el => setTrendChartRef(feature.key, el)" style="width: 100%; height: 350px;"></div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </div>
+
+      <!-- [已移除] 表格資料 - 完整資料表格區域已刪除 -->
     </el-card>
   </div>
 </template>
 
 <script setup>
+// [原代碼] import { ref, nextTick, computed } from 'vue'
+// [修改] 移除 computed (表格分頁已移除)
 import { ref, nextTick } from 'vue'
+import { Loading } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
+// ==================== 原有頻域計算 ====================
 // 頻域計算參數
 const frequencyDomainParams = ref({
   bearingName: 'Bearing1_1',
@@ -154,6 +233,38 @@ const frequencyDomainResult = ref(null)
 
 // Chart refs
 const frequencyDomainChart = ref(null)
+
+// ==================== 新增趨勢分析 ====================
+// 趨勢計算參數
+const trendParams = ref({
+  bearingName: 'Bearing1_1'
+})
+const trendLoading = ref(false)
+const trendResult = ref(null)
+
+// 趨勢圖表 refs
+const trendChartRefs = ref({})
+
+// 特徵配置
+// [原代碼] 包含 6 個特徵：low_fm0, high_fm0, mgs_low, bi_low, mgs_high, bi_high
+// [修改] 移除 Motor Gear Sideband (mgs_low, mgs_high) 和 Belt Index (bi_low, bi_high) 相關特徵
+const featureConfig = [
+  { key: 'low_fm0', title: '低頻 FM0 趨勢' },
+  { key: 'high_fm0', title: '高頻 FM0 趨勢' }
+  // { key: 'mgs_low', title: 'Motor Gear Sideband (低頻) 趨勢' },  // [已移除]
+  // { key: 'bi_low', title: 'Belt Index (低頻) 趨勢' },  // [已移除]
+  // { key: 'mgs_high', title: 'Motor Gear Sideband (高頻) 趨勢' },  // [已移除]
+  // { key: 'bi_high', title: 'Belt Index (高頻) 趨勢' }  // [已移除]
+]
+
+// [已移除] 表格分頁相關程式碼 - paginatedTableData, tablePagination
+
+// 設置趨勢圖表 ref
+const setTrendChartRef = (key, el) => {
+  if (el) {
+    trendChartRefs.value[key] = el
+  }
+}
 
 // 故障頻率表格數據
 const faultFrequencies = [
@@ -293,6 +404,175 @@ const drawFrequencyDomainChart = () => {
   }
 
   chart.setOption(option)
+}
+
+// ==================== 趨勢計算方法 ====================
+
+// 計算完整頻域特徵趨勢
+const calculateTrend = async () => {
+  trendLoading.value = true
+  try {
+    const url = `http://localhost:8081/api/algorithms/frequency-domain-trend/${trendParams.value.bearingName}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('計算失敗')
+
+    trendResult.value = await response.json()
+
+    // [已移除] 重置分頁 - tablePagination 已移除
+
+    // 繪製趨勢圖
+    await nextTick()
+    drawAllTrendCharts()
+  } catch (error) {
+    console.error('計算趨勢失敗:', error)
+    alert('計算失敗: ' + error.message)
+  } finally {
+    trendLoading.value = false
+  }
+}
+
+// 繪製所有趨勢圖
+const drawAllTrendCharts = () => {
+  if (!trendResult.value) return
+
+  featureConfig.forEach(feature => {
+    drawTrendChart(feature.key, feature.title)
+  })
+}
+
+// 繪製單個趨勢圖
+const drawTrendChart = (feature, title) => {
+  const chartEl = trendChartRefs.value[feature]
+  if (!chartEl || !trendResult.value) return
+
+  // 銷毀舊圖表實例（如果存在）
+  const existingChart = echarts.getInstanceByDom(chartEl)
+  if (existingChart) {
+    existingChart.dispose()
+  }
+
+  const chart = echarts.init(chartEl)
+
+  const fileNumbers = trendResult.value.file_numbers || []
+  const horizontalData = trendResult.value.horizontal?.[feature] || []
+  const verticalData = trendResult.value.vertical?.[feature] || []
+
+  const option = {
+    title: {
+      text: title,
+      left: 'center',
+      textStyle: {
+        fontSize: 14,
+        fontWeight: 'normal'
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        const index = params[0].dataIndex
+        let result = `檔案編號: ${fileNumbers[index]}<br/>`
+        params.forEach(param => {
+          result += `${param.seriesName}: ${param.value?.toFixed(6) || 'N/A'}<br/>`
+        })
+        return result
+      }
+    },
+    legend: {
+      data: ['水平方向', '垂直方向'],
+      top: '8%',
+      right: '5%',
+      textStyle: {
+        fontSize: 11
+      }
+    },
+    grid: {
+      left: '8%',
+      right: '4%',
+      bottom: '12%',
+      top: '25%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      name: '檔案編號',
+      nameTextStyle: {
+        fontSize: 11
+      },
+      data: fileNumbers,
+      axisLabel: {
+        fontSize: 10,
+        rotate: fileNumbers.length > 50 ? 45 : 0
+      }
+    },
+    yAxis: {
+      type: 'value',
+      name: '特徵值',
+      nameTextStyle: {
+        fontSize: 11
+      },
+      axisLabel: {
+        fontSize: 10,
+        formatter: function(value) {
+          return value.toFixed(2)
+        }
+      }
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100
+      },
+      {
+        type: 'slider',
+        show: fileNumbers.length > 20,
+        xAxisIndex: [0],
+        start: 0,
+        end: 100,
+        height: 20,
+        bottom: '5%'
+      }
+    ],
+    series: [
+      {
+        name: '水平方向',
+        type: 'line',
+        data: horizontalData,
+        smooth: true,
+        showSymbol: fileNumbers.length <= 50,
+        symbolSize: 4,
+        lineStyle: {
+          width: 2,
+          color: '#409EFF'
+        },
+        itemStyle: {
+          color: '#409EFF'
+        }
+      },
+      {
+        name: '垂直方向',
+        type: 'line',
+        data: verticalData,
+        smooth: true,
+        showSymbol: fileNumbers.length <= 50,
+        symbolSize: 4,
+        lineStyle: {
+          width: 2,
+          color: '#67C23A'
+        },
+        itemStyle: {
+          color: '#67C23A'
+        }
+      }
+    ]
+  }
+
+  chart.setOption(option)
+
+  // 響應式調整
+  window.addEventListener('resize', () => {
+    chart.resize()
+  })
 }
 </script>
 

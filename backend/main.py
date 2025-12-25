@@ -536,6 +536,46 @@ async def calculate_frequency_domain(bearing_name: str, file_number: int, sampli
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/algorithms/frequency-domain-trend/{bearing_name}", response_model=Dict)
+async def calculate_frequency_domain_trend(
+    bearing_name: str,
+    sampling_rate: int = DEFAULT_SAMPLING_RATE
+):
+    """計算頻域特徵趨勢（所有檔案）"""
+    try:
+        import sqlite3
+        try:
+            from backend.frequencydomain import FrequencyDomain
+        except ModuleNotFoundError:
+            from frequencydomain import FrequencyDomain
+
+        # 創建 FrequencyDomain 實例
+        fd = FrequencyDomain()
+
+        # 定義進度追蹤函數
+        def progress_tracker(current: int, total: int, file_number: int):
+            """追蹤處理進度"""
+            percentage = (current / total) * 100
+            print(f"Processing: {current}/{total} ({percentage:.1f}%) - File {file_number}")
+
+        # 計算趨勢
+        result = fd.calculate_frequency_domain_trend(
+            bearing_name=bearing_name,
+            sampling_rate=sampling_rate,
+            progress_callback=progress_tracker
+        )
+
+        return result
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in calculate_frequency_domain_trend: {error_detail}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/algorithms/envelope/{bearing_name}/{file_number}", response_model=Dict)
 async def calculate_envelope_spectrum(
     bearing_name: str,

@@ -1,5 +1,8 @@
 import axios from 'axios'
 
+// 原始配置: const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// 第一次修改: Backend 伺服器運行在 port 8000，更新預設 URL 以匹配
+// 修改: 統一 Backend 伺服器運行在 port 8081
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081'
 
 const api = axios.create({
