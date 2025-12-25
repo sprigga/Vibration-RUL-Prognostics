@@ -11,15 +11,27 @@ from datetime import datetime
 import os
 import json
 
-from phm_processor import PHMDataProcessor
-from phm_query import PHMDatabaseQuery
-from phm_temperature_query import PHMTemperatureQuery
-from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
-from timefrequency import TimeFrequency
-from hilberttransform import HilbertTransform
-from filterprocess import FilterProcess
-from timedomain import TimeDomain
-from frequencydomain import FrequencyDomain
+# 原始導入方式 (無法找到模組)
+# from phm_processor import PHMDataProcessor
+# from phm_query import PHMDatabaseQuery
+# from phm_temperature_query import PHMTemperatureQuery
+# from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
+# from timefrequency import TimeFrequency
+# from hilberttransform import HilbertTransform
+# from filterprocess import FilterProcess
+# from timedomain import TimeDomain
+# from frequencydomain import FrequencyDomain
+
+# 修改為相對導入以解決模組查找問題
+from .phm_processor import PHMDataProcessor
+from .phm_query import PHMDatabaseQuery
+from .phm_temperature_query import PHMTemperatureQuery
+from .config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
+from .timefrequency import TimeFrequency
+from .hilberttransform import HilbertTransform
+from .filterprocess import FilterProcess
+from .timedomain import TimeDomain
+from .frequencydomain import FrequencyDomain
 
 app = FastAPI(
     title="Linear Guide Vibration Analysis API",
@@ -324,6 +336,10 @@ async def calculate_time_domain_features(bearing_name: str, file_number: int):
         horiz = df['horizontal_acceleration'].values
         vert = df['vertical_acceleration'].values
 
+        # 原始數據轉換為 DataFrame 以供 EO 方法使用
+        horiz_df = pd.DataFrame({'horizontal_acceleration': horiz})
+        vert_df = pd.DataFrame({'vertical_acceleration': vert})
+
         td = TimeDomain()
 
         features = {
@@ -335,14 +351,16 @@ async def calculate_time_domain_features(bearing_name: str, file_number: int):
                 "avg": float(td.avg(horiz)),
                 "rms": float(td.rms(horiz)),
                 "crest_factor": float(td.cf(horiz)),
-                "kurtosis": float(td.kurt(horiz))
+                "kurtosis": float(td.kurt(horiz)),
+                "eo": float(td.eo(horiz_df, 'horizontal_acceleration'))
             },
             "vertical": {
                 "peak": float(td.peak(vert)),
                 "avg": float(td.avg(vert)),
                 "rms": float(td.rms(vert)),
                 "crest_factor": float(td.cf(vert)),
-                "kurtosis": float(td.kurt(vert))
+                "kurtosis": float(td.kurt(vert)),
+                "eo": float(td.eo(vert_df, 'vertical_acceleration'))
             },
             "signal_data": {
                 "horizontal": horiz[:1000].tolist(),  # 只返回前1000個點用於繪圖
@@ -391,14 +409,18 @@ async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
             "horizontal": {
                 "rms": [],
                 "peak": [],
+                "avg": [],
                 "kurtosis": [],
-                "crest_factor": []
+                "crest_factor": [],
+                "eo": []
             },
             "vertical": {
                 "rms": [],
                 "peak": [],
+                "avg": [],
                 "kurtosis": [],
-                "crest_factor": []
+                "crest_factor": [],
+                "eo": []
             },
             "file_numbers": []
         }
@@ -418,16 +440,24 @@ async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
                 horiz = df['horizontal_acceleration'].values
                 vert = df['vertical_acceleration'].values
 
+                # 轉換為 DataFrame 以供 EO 方法使用
+                horiz_df = pd.DataFrame({'horizontal_acceleration': horiz})
+                vert_df = pd.DataFrame({'vertical_acceleration': vert})
+
                 trend_data["file_numbers"].append(file_num)
                 trend_data["horizontal"]["rms"].append(float(td.rms(horiz)))
                 trend_data["horizontal"]["peak"].append(float(td.peak(horiz)))
+                trend_data["horizontal"]["avg"].append(float(td.avg(horiz)))
                 trend_data["horizontal"]["kurtosis"].append(float(td.kurt(horiz)))
                 trend_data["horizontal"]["crest_factor"].append(float(td.cf(horiz)))
+                trend_data["horizontal"]["eo"].append(float(td.eo(horiz_df, 'horizontal_acceleration')))
 
                 trend_data["vertical"]["rms"].append(float(td.rms(vert)))
                 trend_data["vertical"]["peak"].append(float(td.peak(vert)))
+                trend_data["vertical"]["avg"].append(float(td.avg(vert)))
                 trend_data["vertical"]["kurtosis"].append(float(td.kurt(vert)))
                 trend_data["vertical"]["crest_factor"].append(float(td.cf(vert)))
+                trend_data["vertical"]["eo"].append(float(td.eo(vert_df, 'vertical_acceleration')))
 
         conn.close()
         return trend_data
