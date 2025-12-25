@@ -1,48 +1,71 @@
-# 🔧 振動信號分析系統
+# 🔧 振動信號分析系統 - 軸承RUL預測平台
 
-現代化的 Web 應用程式，整合 Vue 3 前端與 FastAPI 後端，用於設備振動信號分析與故障診斷。
+基於 IEEE PHM 2012 數據挑戰的軸承剩餘使用壽命（Remaining Useful Life, RUL）預測與振動信號分析平台。整合 Vue 3 前端與 FastAPI 後端，提供完整的軸承健康監測與故障診斷解決方案。
 
 ## ✨ 主要功能
 
-### 1. 儀表板
-- 實時健康狀態總覽
-- 健康趨勢圖表
-- 設備統計資訊
-- 快速操作入口
+### 1. 儀表板（Dashboard）
+- IEEE PHM 2012 實驗數據總覽
+- PRONOSTIA 平台實驗資訊展示
+- 軸承測試條件與失效標準說明
+- 快速導航至各分析功能
 
-### 2. 振動分析
-- CSV 檔案上傳分析
-- 完整的診斷報告
-- 六大特徵分析：
-  - 時域特徵（Peak, RMS, Kurtosis, CF）
-  - 頻域特徵（FM0, BPF檢測）
-  - 包絡分析（滾動體缺陷）
-  - 高階統計（NA4, FM4, M6A, M8A）
-  - 小波分析（STFT, CWT）
-  - 狀態評估
+### 2. 演算法原理說明（Algorithms）
+- 時域分析（Time Domain）：Peak, RMS, Kurtosis, Crest Factor, EO
+- 頻域分析（Frequency Domain）：FFT, FM0, TSA-FFT
+- 包絡分析（Envelope Analysis）：希爾伯特轉換, NB4
+- 時頻分析（Time-Frequency）：STFT, CWT, Spectrogram
+- 高階統計（Higher-Order Statistics）：NA4, FM4, M6A, M8A, ER
+- 診斷準則與故障類型對應表
 
-### 3. 頻率計算器
-- 理論故障頻率計算
-- BPF（滾動體通過頻率）
-- BSF（滾動體自轉頻率）
-- Cage Frequency（保持鏈頻率）
+### 3. 時域分析（Time Domain Analysis）
+- 即時計算時域特徵值（水平與垂直方向）
+- Peak, Average, RMS, Crest Factor, Kurtosis, EO
+- 時域特徵趨勢分析（多檔案）
+- 信號波形可視化
 
-### 4. 演算法展示
-- 詳細的演算法原理說明
-- 時域、頻域、小波、包絡分析
-- 診斷準則與應用場景
-- 故障類型對應表
+### 4. 頻域分析（Frequency Domain Analysis）
+- FFT 頻譜分析
+- 低頻 FM0 特徵計算
+- TSA 高頻 FFT 分析
+- 頻域特徵趨勢追蹤
+- 峰值頻率檢測與功率譜分析
 
-### 5. 設備規格管理
-- 新增/查看設備規格
-- 負荷參數設定
-- 狀態等級設定
-- 密封與潤滑類型
+### 5. 包絡分析（Envelope Analysis）
+- 帶通濾波（4-10kHz 頻段）
+- 希爾伯特轉換提取包絡
+- 包絡頻譜分析
+- 包絡統計（均值、標準差、RMS、峰峰值）
 
-### 6. 歷史記錄
-- 分析結果查詢
-- 健康趨勢追蹤
-- 詳細報告檢視
+### 6. 時頻分析（Time-Frequency Analysis）
+- 短時傅立葉轉換（STFT）
+- 連續小波轉換（CWT）
+- 頻譜圖分析（Spectrogram）
+- NP4 特徵計算
+- 能量分佈分析
+
+### 7. 高階統計分析（Higher-Order Statistics）
+- 進階濾波特徵計算（NA4, FM4, M6A, M8A, ER）
+- 分段統計分析
+- 高階特徵趨勢追蹤
+- 早期故障檢測指標
+
+### 8. PHM 數據庫管理（PHM Database）
+- 查看所有軸承資料庫記錄
+- 檔案列表與測量數據查詢
+- 軸承統計資訊檢視
+- 異常振動數據搜尋
+
+### 9. PHM 訓練資料（PHM Training）
+- 訓練集摘要資訊
+- 預處理分析結果
+- 振動統計數據檢視
+
+### 10. 溫度數據分析
+- 溫度資料庫查詢（支持水平與垂直方向）
+- 溫度趨勢追蹤
+- 溫度統計資訊
+- 區間搜尋功能
 
 ## 📸 系統截圖
 
@@ -62,50 +85,66 @@
 - **UI 組件**: Element Plus
 - **路由**: Vue Router 4
 - **狀態管理**: Pinia
-- **圖表**: Chart.js + vue-chartjs
-- **建構工具**: Vite
+- **圖表**: Chart.js + vue-chartjs, ECharts
+- **建構工具**: Vite 5
+- **HTTP 客戶端**: Axios
 
 ### 後端（Backend）
-- **框架**: FastAPI
-- **資料庫**: SQLite (輕量化部署)
-- **ORM**: SQLAlchemy
+- **框架**: FastAPI 0.104+
+- **伺服器**: Uvicorn
+- **資料庫**: SQLite (PHM 振動數據庫 + 溫度數據庫)
 - **數據處理**: NumPy, Pandas, SciPy
 - **小波分析**: PyWavelets
+- **CORS 中間件**: 支持跨域請求
+
+### 容器化部署（Docker）
+- **容器編排**: Docker Compose
+- **後端服務**: Python 3.11 基於映像
+- **前端服務**: Node.js 開發環境
+- **健康檢查**: 自動服務監控
+- **持久化存儲**: Volume 掛載數據庫
 
 ### 核心演算法模組
-整合原有的振動分析模組：
-- `timedomain.py` - 時域特徵
-- `frequencydomain.py` - 頻域特徵與 FFT
-- `filterprocess.py` - 濾波與高階統計
-- `waveletprocess.py` - STFT 與 CWT
-- `hilbertransfer.py` - 希爾伯特轉換
-- `harmonic_sildband_table.py` - 諧波與邊帶分析
+整合完整的振動分析模組：
+- `timedomain.py` - 時域特徵（Peak, RMS, Kurtosis, CF, EO）
+- `frequencydomain.py` - 頻域特徵（FFT, FM0, TSA-FFT）
+- `filterprocess.py` - 濾波與高階統計（NA4, FM4, M6A, M8A, ER）
+- `timefrequency.py` - 時頻分析（STFT, CWT, Spectrogram）
+- `hilberttransform.py` - 希爾伯特轉換（包絡分析, NB4）
+- `phm_query.py` - PHM 數據庫查詢模組
+- `phm_temperature_query.py` - 溫度數據查詢模組
+- `phm_processor.py` - PHM 數據處理器
 
 ## 📦 安裝與運行
 
 ### 前置需求
 - Python 3.8+
 - Node.js 16+
+- Docker & Docker Compose（可選，用於容器化部署）
 - npm 或 yarn
 
-### 1. 後端設置
+### 1. 本地開發（推薦使用 uv）
 
+#### 後端設置
 ```bash
+# 安裝 uv（如果尚未安裝）
+pip install uv
+
+# 創建虛擬環境並安裝依賴
 cd backend
+uv venv
+source .venv/bin/activate  # Linux/Mac
+# 或 .venv\Scripts\activate  # Windows
 
-# 安裝依賴
-pip install -r requirements.txt
-
-# 啟動後端服務
-python main.py
+# 使用 uv 運行後端
+uv run python main.py
 ```
 
-後端將運行於 `http://localhost:8000`
+後端將運行於 `http://localhost:8081`
 
-API 文檔: `http://localhost:8000/docs`
+API 文檔: `http://localhost:8081/docs`
 
-### 2. 前端設置
-
+#### 前端設置
 ```bash
 cd frontend
 
@@ -118,6 +157,24 @@ npm run dev
 
 前端將運行於 `http://localhost:5173`
 
+### 2. Docker 容器化部署（推薦）
+
+```bash
+# 啟動所有服務（前端 + 後端）
+docker-compose up -d
+
+# 查看日誌
+docker-compose logs -f
+
+# 停止服務
+docker-compose down
+```
+
+服務訪問地址：
+- 前端：`http://localhost:5173`
+- 後端 API：`http://localhost:8081`
+- API 文檔：`http://localhost:8081/docs`
+
 ### 3. 生產環境建構
 
 ```bash
@@ -127,130 +184,215 @@ npm run build
 
 # 後端使用 Uvicorn 部署
 cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8081
 ```
 
 ## 📊 資料庫結構
 
-### EquipmentSpec (設備規格)
+### PHM 振動數據庫（phm_data.db）
 ```sql
-- id: Integer (主鍵)
-- series: String (如 "Series A")
-- type: String (如 "Type 1")
-- load_rating: String (如 "Standard")
-- C0: Float (基本靜負荷)
-- C100: Float (基本動負荷)
-- seal_type: String
-- speed_max: Float
-- lubrication: String
+bearings (軸承表)
+- bearing_id: Integer (主鍵)
+- bearing_name: String (如 "Bearing1_1")
+- description: String
+
+measurement_files (測量檔案表)
+- file_id: Integer (主鍵)
+- bearing_id: Integer (外鍵)
+- file_number: Integer (檔案編號)
+- created_at: DateTime
+
+measurements (測量數據表)
+- measurement_id: Integer (主鍵)
+- file_id: Integer (外鍵)
+- horizontal_acceleration: Float (水平加速度)
+- vertical_acceleration: Float (垂直加速度)
 ```
 
-### AnalysisResult (分析結果)
+### PHM 溫度數據庫（phm_temperature_data.db）
 ```sql
-- id: Integer (主鍵)
-- equipment_spec_id: Integer (外鍵)
-- timestamp: DateTime
-- velocity: Float
-- health_score: Float (0-100)
-- time_features: JSON
-- frequency_features: JSON
-- envelope_features: JSON
-- higher_order_features: JSON
-- findings: JSON (診斷發現列表)
-- recommendations: JSON (維護建議列表)
+bearings (軸承表)
+- bearing_id: Integer (主鍵)
+- bearing_name: String
+- description: String
+
+measurement_files (測量檔案表)
+- file_id: Integer (主鍵)
+- bearing_id: Integer (外鍵)
+- file_number: Integer
+
+temperature_measurements (溫度測量表)
+- measurement_id: Integer (主鍵)
+- file_id: Integer (外鍵)
+- horizontal_temperature: Float
+- vertical_temperature: Float
 ```
 
 ## 🔌 API 端點
 
-### 設備規格
-- `POST /api/equipment-specs` - 新增規格
-- `GET /api/equipment-specs` - 獲取所有規格
-- `GET /api/equipment-specs/{id}` - 獲取特定規格
+### PHM 數據管理
+- `GET /api/phm/training-summary` - 獲取訓練集摘要
+- `GET /api/phm/analysis-data` - 獲取預處理分析數據
 
-### 分析
-- `POST /api/calculate-frequencies` - 計算故障頻率
-- `POST /api/analyze` - 執行振動分析
-- `POST /api/upload-csv` - 上傳 CSV 檔案分析
+### PHM 數據庫查詢
+- `GET /api/phm/database/bearings` - 獲取所有軸承列表
+- `GET /api/phm/database/bearing/{bearing_name}` - 獲取特定軸承資訊
+- `GET /api/phm/database/bearing/{bearing_name}/files` - 獲取檔案列表（分頁）
+- `GET /api/phm/database/bearing/{bearing_name}/measurements` - 獲取測量數據（分頁）
+- `GET /api/phm/database/bearing/{bearing_name}/file/{file_number}/data` - 獲取完整檔案數據
+- `GET /api/phm/database/bearing/{bearing_name}/statistics` - 獲取統計資訊
+- `GET /api/phm/database/bearing/{bearing_name}/anomalies` - 搜尋異常振動數據
 
-### 結果
-- `GET /api/results` - 獲取分析結果列表
-- `GET /api/results/{id}` - 獲取特定結果
-- `GET /api/health-trend/{equipment_spec_id}` - 獲取健康趨勢
+### 時域分析
+- `GET /api/algorithms/time-domain/{bearing_name}/{file_number}` - 計算時域特徵
+- `GET /api/algorithms/time-domain-trend/{bearing_name}` - 計算時域特徵趨勢
 
-## 📝 CSV 檔案格式
+### 頻域分析
+- `GET /api/algorithms/frequency-domain/{bearing_name}/{file_number}` - 計算 FFT 頻譜
+- `GET /api/algorithms/frequency-domain-trend/{bearing_name}` - 計算頻域特徵趨勢
+- `GET /api/algorithms/frequency-fft/{bearing_name}/{file_number}` - 計算低頻 FM0 特徵
+- `GET /api/algorithms/frequency-tsa/{bearing_name}/{file_number}` - 計算 TSA 高頻 FFT
 
-上傳的 CSV 檔案應包含以下欄位：
-```
-time, x, y, z, label, 12m, 60m
-0.00002, 0.123, -0.456, 0.789, ...
-0.00004, 0.124, -0.455, 0.788, ...
-...
-```
+### 包絡分析
+- `GET /api/algorithms/envelope/{bearing_name}/{file_number}` - 計算包絡頻譜
+- `GET /api/algorithms/hilbert/{bearing_name}/{file_number}` - 希爾伯特轉換與 NB4
 
-系統會自動提取 X 軸數據（第2欄）進行分析。
+### 時頻分析
+- `GET /api/algorithms/stft/{bearing_name}/{file_number}` - 短時傅立葉轉換
+- `GET /api/algorithms/cwt/{bearing_name}/{file_number}` - 連續小波轉換
+- `GET /api/algorithms/spectrogram/{bearing_name}/{file_number}` - 頻譜圖分析
+
+### 高階統計分析
+- `GET /api/algorithms/higher-order/{bearing_name}/{file_number}` - 計算高階統計特徵（舊版，已整合至 filter-features）
+- `GET /api/algorithms/filter-features/{bearing_name}/{file_number}` - 計算進階濾波特徵（NA4, FM4, M6A, M8A, ER）
+- `GET /api/algorithms/filter-trend/{bearing_name}` - 計算進階濾波特徵趨勢
+
+### 溫度數據查詢
+- `GET /api/temperature/bearings` - 獲取所有有溫度資料的軸承
+- `GET /api/temperature/bearing/{bearing_name}` - 獲取特定軸承溫度資訊
+- `GET /api/temperature/data/{bearing_name}` - 獲取溫度測量資料
+- `GET /api/temperature/trends/{bearing_name}` - 獲取溫度趨勢
+- `GET /api/temperature/statistics` - 獲取溫度統計資訊
+- `GET /api/temperature/search` - 搜尋溫度資料
+- `GET /api/temperature/database/info` - 獲取溫度資料庫資訊
 
 ## 🎯 使用流程
 
-### 1. 新增設備規格
-進入「設備規格」頁面，新增您要監測的旋轉設備參數。
+### 1. 查看 PHM 數據庫
+進入「PHM Database」頁面，查看可用的軸承與測量數據。
 
-### 2. 計算理論頻率
-使用「頻率計算」工具，根據設備參數和運行速度計算 BPF、BSF 等理論頻率。
+### 2. 演算法學習
+在「Algorithms」頁面學習各種振動分析演算法的原理與應用。
 
 ### 3. 執行振動分析
-1. 選擇設備規格
-2. 設定採樣頻率（建議 25.6 kHz）
-3. 輸入運行速度
-4. 上傳 CSV 振動信號檔案
-5. 查看完整診斷報告
+1. 選擇分析類型（時域/頻域/包絡/時頻/高階統計）
+2. 選擇軸承與檔案編號
+3. 調整參數（採樣率、濾波器頻段等）
+4. 查看分析結果與可視化圖表
 
-### 4. 查看歷史記錄
-在「歷史記錄」頁面追蹤設備健康趨勢，及早發現故障徵兆。
+### 4. 追蹤趨勢
+使用各種趨勢分析功能，追蹤軸承健康狀態變化。
+
+### 5. 溫度監測
+在溫度數據分析頁面查看軸承溫度變化趨勢。
 
 ## 🔍 診斷準則
 
-### 健康分數評級
-- **90-100**: 健康（綠色）
-- **75-90**: 輕微異常（黃色）
-- **60-75**: 中等異常（橙色）
-- **0-60**: 嚴重異常（紅色）
+### IEEE PHM 2012 失效標準
+- **振動幅度 > 20g**: 軸承失效
+- **加速度超過閾值**: 觸發告警
 
 ### 關鍵指標閾值
 - **Kurtosis > 8**: 嚴重缺陷
 - **NA4 > 3**: 早期故障
-- **包絡譜 SNR > 3**: 顯著缺陷
+- **NB4 顯著增加**: 包絡異常
+- **FM4 > 1.5**: 頻域異常
+- **M6A/M8A**: 高階矩特徵監測
 - **RMS 持續上升**: 磨損加劇
+
+### PRONOSTIA 實驗平台
+- **軸承規格**: 外徑 32mm，內徑 20mm，厚度 7mm
+- **滾珠數量**: 13 個，直徑 3.5mm
+- **負載條件**: 4000N (動態), 2470N (靜態)
+- **採樣頻率**: 25.6 kHz
+- **測量方向**: 水平與垂直加速度
 
 ## 🚀 進階功能
 
-### 狀態評估
-系統會根據設備參數自動評估狀態：
-- RMS 過低 → 狀態異常（鬆動）
-- Kurtosis 過高 → 狀態異常（缺陷）
+### 趨勢分析
+- 時域特徵趨勢（RMS, Peak, Kurtosis 變化）
+- 頻域特徵趨勢（FM0 變化）
+- 高階統計趨勢（NA4, FM4, M6A, M8A）
+- 溫度趨勢追蹤
 
-### 多軸分析
-目前實現 X 軸分析，可擴展至 Y、Z 軸同時分析。
+### 多檔案批量分析
+- 支持一次性分析多個檔案
+- 自動生成趨勢圖表
+- 快速定位異常檔案
 
-### 趨勢預測
-基於歷史數據預測剩餘使用壽命（開發中）。
+### 異常檢測
+- 基於閾值的異常振動搜尋
+- 支持自訂檢測閾值
+- 快速定位潛在故障點
 
 ## 🛠️ 開發指南
 
 ### 新增演算法
-1. 在 `backend/analysis.py` 中新增分析方法
-2. 更新 `_integrated_diagnosis` 整合新特徵
-3. 在前端 `Algorithms.vue` 新增說明
+1. 在 `backend/` 下新增或修改演算法模組
+2. 在 `main.py` 中新增 API 端點
+3. 在前端 `views/` 下新增對應分析頁面
+4. 更新路由配置 `router/index.js`
 
-### 自訂設備型號
-在 `backend/analysis.py` 的 `_get_equipment_parameters` 方法中新增參數。
+### 數據庫擴展
+- 修改 `phm_query.py` 添加新的查詢方法
+- 更新 API 端點支持新功能
+- 前端添加對應的數據展示組件
 
-### 修改診斷邏輯
-調整 `backend/analysis.py` 中的閾值和權重。
+### 參數調整
+- 修改 `backend/config.py` 調整全域配置
+- 在各演算法模組中調整閾值參數
+- 前端通過 API 參數傳遞自訂配置
 
-## 📚 參考文檔
+## 📁 專案結構
 
-詳細的技術文檔請參考：
+```
+Viberation-RUL-Prognostics/
+├── backend/                 # FastAPI 後端
+│   ├── main.py             # API 主入口
+│   ├── config.py           # 配置文件
+│   ├── timedomain.py       # 時域分析
+│   ├── frequencydomain.py  # 頻域分析
+│   ├── filterprocess.py    # 高階統計
+│   ├── timefrequency.py    # 時頻分析
+│   ├── hilberttransform.py # 希爾伯特轉換
+│   ├── phm_query.py        # PHM 數據庫查詢
+│   └── requirements.txt    # Python 依賴
+├── frontend/               # Vue 3 前端
+│   ├── src/
+│   │   ├── views/         # 頁面組件
+│   │   ├── router/        # 路由配置
+│   │   ├── stores/        # Pinia 狀態管理
+│   │   └── config/        # API 配置
+│   ├── package.json       # Node 依賴
+│   └── vite.config.js     # Vite 配置
+├── phm_analysis_results/   # 預處理分析結果
+├── phm-ieee-2012-data-challenge-dataset/ # 原始數據集
+├── docker-compose.yml      # Docker 編排配置
+├── scripts/               # 工具腳本
+└── docs/                  # 文檔資源
+```
+
+## 📚 參考資源
+
+### IEEE PHM 2012 Data Challenge
+- **主辦單位**: FEMTO-ST 研究所（法國）
+- **實驗平台**: PRONOSTIA
+- **研究目標**: 軸承剩餘使用壽命（RUL）預測
+- **數據集**: 包含完整的軸承退化過程數據
+
+### 相關文檔
 - [CLAUDE.md](CLAUDE.md) - 開發指南
+- [docs/](docs/) - 詳細技術文檔
 
 ## 🤝 貢獻
 
@@ -266,4 +408,4 @@ Lin Hung Chuan
 
 ---
 
-**🎉 開始您的預測性維護之旅！**
+**🎉 開始您的軸承 RUL 預測之旅！**
