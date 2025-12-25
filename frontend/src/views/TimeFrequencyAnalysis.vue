@@ -593,33 +593,12 @@ const drawSpectrogramChart = () => {
 </script>
 
 <style scoped>
+/* ===== 參照 FONT.md 和 common-styles.css 統一樣式 ===== */
+/* 基礎樣式(h3, h4, p, code)已由 common-styles.css 統一管理 */
+
 .time-frequency-page {
   padding: 20px;
 }
 
-h3 {
-  color: #303133;
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-
-h4 {
-  color: #606266;
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-
-code {
-  background-color: #f5f7fa;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-family: 'Courier New', monospace;
-  color: #e6a23c;
-}
-
-p {
-  color: #606266;
-  line-height: 1.6;
-  margin: 8px 0;
-}
+/* 組件特定樣式保留 */
 </style>

@@ -674,21 +674,27 @@ const completedModules = ref([
 </script>
 
 <style scoped>
+/* ===== 參照 FONT.md 和 common-styles.css 統一樣式 ===== */
+/* 基礎樣式(h3, h4, p, code)已由 common-styles.css 統一管理 */
+
 .project-analysis {
   padding: 20px;
   min-height: 100%;
 }
 
+/* 組件特定樣式保留 */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .card-header span {
   font-size: 18px;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  /* 深色主題漸層文字效果 */
+  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -704,12 +710,13 @@ const completedModules = ref([
 
 .method-analysis h3 {
   margin-bottom: 15px;
+  color: var(--text-primary);
 }
 
 .method-analysis h4 {
   margin-top: 15px;
   margin-bottom: 10px;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .method-analysis ul,
@@ -720,6 +727,7 @@ const completedModules = ref([
 
 .method-analysis li {
   margin: 8px 0;
+  color: var(--text-secondary);
 }
 
 .priority-title {
@@ -728,6 +736,7 @@ const completedModules = ref([
   gap: 15px;
   font-size: 16px;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .priority-content {
@@ -737,7 +746,7 @@ const completedModules = ref([
 .priority-content h4 {
   margin-top: 15px;
   margin-bottom: 10px;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .priority-content ol {
@@ -747,6 +756,7 @@ const completedModules = ref([
 
 .priority-content li {
   margin: 8px 0;
+  color: var(--text-secondary);
 }
 
 .module-card {
@@ -764,6 +774,7 @@ const completedModules = ref([
 .module-header h4 {
   margin: 0;
   font-size: 16px;
+  color: var(--text-primary);
 }
 
 .module-features {
@@ -774,13 +785,13 @@ const completedModules = ref([
 
 .module-features li {
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary);
 }
 
 .module-files {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--border-color);
 }
 
 .summary-list {
@@ -791,10 +802,11 @@ const completedModules = ref([
 .summary-list li {
   margin: 8px 0;
   font-size: 15px;
+  color: var(--text-secondary);
 }
 
 .summary-list.gap li {
-  color: #f56c6c;
+  color: var(--accent-danger);
 }
 
 .method-title {
@@ -802,6 +814,7 @@ const completedModules = ref([
   align-items: center;
   gap: 12px;
   font-size: 15px;
+  color: var(--text-primary);
 }
 
 :deep(.el-collapse-item__header) {
@@ -815,11 +828,12 @@ const completedModules = ref([
 
 :deep(.el-statistic__head) {
   font-size: 14px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 :deep(.el-statistic__content) {
   font-size: 28px;
   font-weight: bold;
+  color: var(--text-primary);
 }
 </style>

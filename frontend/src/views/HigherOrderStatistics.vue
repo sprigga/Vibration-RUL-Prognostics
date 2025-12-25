@@ -247,11 +247,19 @@ const drawFilterChart = () => {
       trigger: 'axis',
       axisPointer: {
         type: 'shadow'
-      }
+      },
+      // 原始：繼承預設顏色
+      // 修改：深色主題 tooltip
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: 'var(--border-color)',
+      textStyle: { color: '#ffffff' }
     },
     legend: {
       data: ['水平方向', '垂直方向'],
-      top: '5%'
+      top: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff' }
     },
     grid: {
       left: '3%',
@@ -261,10 +269,21 @@ const drawFilterChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['水平', '垂直']
+      data: ['水平', '垂直'],
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } }
     },
     yAxis: {
-      type: 'value'
+      type: 'value',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     }
   }
 
@@ -392,15 +411,26 @@ const drawFilterTrendChart = () => {
 
   const option = {
     title: {
-      text: '進階濾波特徵趨勢'
+      text: '進階濾波特徵趨勢',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色標題
+      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      // 原始：繼承預設顏色
+      // 修改：深色主題 tooltip
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: 'var(--border-color)',
+      textStyle: { color: '#ffffff' }
     },
     legend: {
       data: ['水平 NA4', '垂直 NA4', '水平 FM4', '垂直 FM4'],
       top: '5%',
-      right: '5%'
+      right: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff' }
     },
     grid: {
       left: '3%',
@@ -411,11 +441,27 @@ const drawFilterTrendChart = () => {
     xAxis: {
       type: 'category',
       data: filterTrendResult.value.file_numbers,
-      name: '檔案編號'
+      name: '檔案編號',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     yAxis: {
       type: 'value',
-      name: '特徵值'
+      name: '特徵值',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     series: [
       {
@@ -450,51 +496,318 @@ const drawFilterTrendChart = () => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 .higher-order-stats-page {
   padding: 20px;
   min-height: 100%;
 }
 
+/* ===== 表單區域樣式 ===== */
+.higher-order-stats-page :deep(.el-form) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題表單樣式 */
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-form-item__label) {
+  /* 表單標籤文字顏色 */
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+
+/* ===== 輸入框樣式 ===== */
+.higher-order-stats-page :deep(.el-input__wrapper) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.higher-order-stats-page :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-input__inner) {
+  /* 輸入框內部樣式 */
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* ===== 下拉選擇框樣式 ===== */
+.higher-order-stats-page :deep(.el-select) {
+  /* 確保下拉框繼承正確的顏色 */
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-select .el-input__wrapper) {
+  /* 下拉選擇框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.higher-order-stats-page :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-select .el-input__inner) {
+  /* 下拉選擇框文字 */
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-select__placeholder) {
+  /* 下拉選擇框佔位符 */
+  color: var(--text-secondary);
+}
+
+.higher-order-stats-page :deep(.el-select__caret) {
+  /* 下拉選擇框箭頭圖標 */
+  color: var(--text-secondary);
+}
+
+/* ===== 下拉選單選項樣式 ===== */
+.higher-order-stats-page :deep(.el-select-dropdown) {
+  /* 下拉選單背景 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.higher-order-stats-page :deep(.el-select-dropdown__item) {
+  /* 下拉選單選項 */
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.higher-order-stats-page :deep(.el-select-dropdown__item:hover) {
+  /* 下拉選單選項懸停 */
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+}
+
+.higher-order-stats-page :deep(.el-select-dropdown__item.is-selected) {
+  /* 下拉選單選項已選中 */
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/* ===== 數字輸入框樣式 ===== */
+.higher-order-stats-page :deep(.el-input-number) {
+  /* 數字輸入框整體 */
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-input-number .el-input__wrapper) {
+  /* 數字輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.higher-order-stats-page :deep(.el-input-number .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-input-number .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.higher-order-stats-page :deep(.el-input-number__decrease),
+.higher-order-stats-page :deep(.el-input-number__increase) {
+  /* 數字輸入框 +/- 按鈕 */
+  background-color: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-input-number__decrease:hover),
+.higher-order-stats-page :deep(.el-input-number__increase:hover) {
+  /* 按鈕懸停效果 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.higher-order-stats-page :deep(.el-input-number__decrease.is-disabled),
+.higher-order-stats-page :deep(.el-input-number__increase.is-disabled) {
+  /* 禁用狀態按鈕 */
+  color: var(--text-disabled);
+  background-color: var(--bg-secondary);
+}
+
+/* ===== 按鈕樣式 ===== */
+.higher-order-stats-page :deep(.el-button) {
+  /* 按鈕整體樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.higher-order-stats-page :deep(.el-button--primary) {
+  /* 主要按鈕 */
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.higher-order-stats-page :deep(.el-button--primary:hover) {
+  /* 主要按鈕懸停 */
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.higher-order-stats-page :deep(.el-button--default) {
+  /* 預設按鈕 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.higher-order-stats-page :deep(.el-button--default:hover) {
+  /* 預設按鈕懸停 */
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* ===== 分隔線樣式 ===== */
+.higher-order-stats-page :deep(.el-divider) {
+  /* 分隔線整體樣式 */
+  border-top-color: var(--border-color);
+}
+
+.higher-order-stats-page :deep(.el-divider__text) {
+  /* 分隔線文字樣式 */
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0 20px;
+}
+
+.higher-order-stats-page :deep(.el-divider--horizontal) {
+  /* 水平分隔線 */
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+/* ===== 標題樣式 ===== */
+.higher-order-stats-page h3 {
+  margin-top: 0;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.higher-order-stats-page h4 {
+  margin-top: 20px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  font-weight: 600;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
+}
+
+.higher-order-stats-page p {
+  line-height: 1.6;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
+}
+
+.higher-order-stats-page code {
+  /* 原始：linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) */
+  /* 修改：深色主題代碼背景 */
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  /* 原始：rgba(102, 126, 234, 0.2) */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* ===== 表格樣式修正 ===== */
+.higher-order-stats-page :deep(.el-descriptions) {
+  /* 確保表格在深色背景下可讀 */
+  background-color: transparent;
+}
+
+.higher-order-stats-page :deep(.el-descriptions__label) {
+  /* 表格標籤列樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
+}
+
+.higher-order-stats-page :deep(.el-descriptions__content) {
+  /* 表格內容列樣式 */
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+}
+
+.higher-order-stats-page :deep(.el-descriptions__cell) {
+  /* 表格單元格邊框 */
+  border-color: var(--border-color) !important;
+}
+
+.higher-order-stats-page :deep(.el-descriptions--bordered .el-descriptions__cell) {
+  /* 邊框表格的單元格樣式 */
+  border: 1px solid var(--border-color);
+}
+
+/* 表格標題優化 */
+.higher-order-stats-page :deep(.el-card__header) {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.higher-order-stats-page :deep(.el-card__body) {
+  background-color: var(--bg-primary);
+}
+
+/* ===== Alert 樣式 ===== */
+.higher-order-stats-page :deep(.el-alert--success) {
+  background: var(--bg-secondary);
+  border-color: var(--accent-success);
+}
+
+/* ===== Tag 樣式 ===== */
+.higher-order-stats-page :deep(.el-tag) {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* 組件特定樣式保留 */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .card-header h2 {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  /* 深色主題漸層文字效果 */
+  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
-}
-
-h3 {
-  color: #303133;
-  margin-top: 15px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-h4 {
-  color: #667eea;
-  margin-top: 15px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-code {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-family: 'Courier New', monospace;
-  color: #667eea;
-  border: 1px solid rgba(102, 126, 234, 0.2);
-}
-
-p {
-  color: #606266;
-  line-height: 1.6;
-  margin: 8px 0;
 }
 </style>

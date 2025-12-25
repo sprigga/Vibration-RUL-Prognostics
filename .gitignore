@@ -74,7 +74,7 @@ phm-ieee-2012-data-challenge-dataset/
 *.hdf5
 
 # Documentation
-docs/
+# docs/
 
 # Docker
 .dockerignore

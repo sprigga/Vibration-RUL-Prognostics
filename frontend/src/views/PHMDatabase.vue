@@ -482,6 +482,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+/* ===== 參照 FONT.md 和 common-styles.css 統一樣式 ===== */
+/* 基礎樣式(h1, h2, h3, p, code)已由 common-styles.css 統一管理 */
+
+/* ===== CSS 變數定義 ===== */
+:root {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-disabled: rgba(255, 255, 255, 0.3);
+  --bg-primary: rgba(30, 30, 30, 0.8);
+  --bg-secondary: rgba(50, 50, 50, 0.6);
+  --bg-tertiary: rgba(70, 70, 70, 0.5);
+  --bg-card: rgba(40, 40, 40, 0.7);
+  --border-color: rgba(255, 255, 255, 0.15);
+  --border-color-light: rgba(255, 255, 255, 0.08);
+  --accent-primary: #667eea;
+  --accent-hover: #5568d3;
+  --accent-success: #48bb78;
+  --accent-warning: #ed8936;
+  --accent-danger: #f56565;
+  --accent-info: #4299e1;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
 .phm-database {
   padding: 2rem;
   max-width: 1400px;
@@ -493,27 +519,27 @@ onMounted(() => {
 }
 
 .header h1 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: #7f8c8d;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
 .section {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow-sm);
 }
 
 .section h2 {
-  color: #34495e;
+  color: var(--text-primary);
   margin-bottom: 1rem;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid var(--accent-primary);
   padding-bottom: 0.5rem;
 }
 
@@ -522,11 +548,11 @@ onMounted(() => {
 .empty {
   text-align: center;
   padding: 2rem;
-  color: #7f8c8d;
+  color: var(--text-secondary);
 }
 
 .error {
-  color: #e74c3c;
+  color: var(--accent-danger);
 }
 
 /* Bearings Grid */
@@ -537,26 +563,27 @@ onMounted(() => {
 }
 
 .bearing-card {
-  border: 2px solid #ecf0f1;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
   transition: all 0.3s;
+  background: var(--bg-card);
 }
 
 .bearing-card:hover {
-  border-color: #3498db;
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px var(--shadow-md);
 }
 
 .bearing-card.active {
-  border-color: #2ecc71;
-  background: #ecfdf5;
+  border-color: var(--accent-success);
+  background: var(--bg-secondary);
 }
 
 .bearing-card h3 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -573,12 +600,12 @@ onMounted(() => {
 }
 
 .stat .label {
-  color: #7f8c8d;
+  color: var(--text-secondary);
 }
 
 .stat .value {
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 /* Tabs */
@@ -586,27 +613,29 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  border-bottom: 2px solid #ecf0f1;
+  border-bottom: 2px solid var(--border-color);
 }
 
+/* 原始：繼承預設顏色 */
+/* 修改：深色主題按鈕樣式 */
 .tabs button {
   padding: 0.75rem 1.5rem;
   border: none;
   background: none;
   cursor: pointer;
-  color: #7f8c8d;
+  color: var(--text-secondary);
   font-size: 1rem;
   border-bottom: 2px solid transparent;
   transition: all 0.3s;
 }
 
 .tabs button:hover {
-  color: #3498db;
+  color: var(--accent-primary);
 }
 
 .tabs button.active {
-  color: #3498db;
-  border-bottom-color: #3498db;
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
 }
 
 .tab-content {
@@ -621,13 +650,14 @@ onMounted(() => {
 }
 
 .info-card {
-  border: 1px solid #ecf0f1;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
+  background: var(--bg-card);
 }
 
 .info-card h3 {
-  color: #3498db;
+  color: var(--accent-primary);
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
@@ -636,7 +666,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f8f9fa;
+  border-bottom: 1px solid var(--border-color-light);
 }
 
 .info-item:last-child {
@@ -644,12 +674,12 @@ onMounted(() => {
 }
 
 .info-item .label {
-  color: #7f8c8d;
+  color: var(--text-secondary);
 }
 
 .info-item .value {
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 /* Controls */
@@ -665,19 +695,31 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
+/* 原始：繼承預設顏色 */
+/* 修改：深色主題輸入框樣式 */
 .controls input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   width: 150px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
+.controls input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* 原始：繼承預設顏色 */
+/* 修改：深色主題按鈕樣式 */
 .controls button {
   padding: 0.5rem 1rem;
-  background: #3498db;
+  background: var(--accent-info);
   color: white;
   border: none;
   border-radius: 4px;
@@ -686,16 +728,17 @@ onMounted(() => {
 }
 
 .controls button:hover:not(:disabled) {
-  background: #2980b9;
+  background: var(--accent-primary);
 }
 
 .controls button:disabled {
-  background: #95a5a6;
+  background: var(--text-disabled);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .page-info {
-  color: #7f8c8d;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
@@ -714,22 +757,24 @@ onMounted(() => {
 .data-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .data-table th {
-  background: #f8f9fa;
-  color: #2c3e50;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-weight: bold;
 }
 
 .data-table tr:hover {
-  background: #f8f9fa;
+  background: var(--bg-secondary);
 }
 
+/* 原始：繼承預設顏色 */
+/* 修改：深色主題按鈕樣式 */
 .btn-small {
   padding: 0.25rem 0.75rem;
-  background: #3498db;
+  background: var(--accent-info);
   color: white;
   border: none;
   border-radius: 4px;
@@ -738,7 +783,7 @@ onMounted(() => {
 }
 
 .btn-small:hover {
-  background: #2980b9;
+  background: var(--accent-primary);
 }
 
 /* Pagination */
@@ -749,38 +794,42 @@ onMounted(() => {
   margin-top: 1rem;
 }
 
+/* 原始：繼承預設顏色 */
+/* 修改：深色主題按鈕樣式 */
 .pagination button {
   padding: 0.5rem 1rem;
-  background: #3498db;
+  background: var(--accent-info);
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
 .pagination button:hover:not(:disabled) {
-  background: #2980b9;
+  background: var(--accent-primary);
 }
 
 .pagination button:disabled {
-  background: #95a5a6;
+  background: var(--text-disabled);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Anomalies */
 .anomaly-count {
   margin-bottom: 1rem;
   font-weight: bold;
-  color: #e74c3c;
+  color: var(--accent-danger);
 }
 
 .data-table tr.anomaly-h,
 .data-table tr.anomaly-v {
-  background: #fff3cd;
+  background: var(--bg-secondary);
 }
 
 .data-table td.highlight {
-  color: #e74c3c;
+  color: var(--accent-danger);
   font-weight: bold;
 }
 </style>

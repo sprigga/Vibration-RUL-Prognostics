@@ -1,0 +1,256 @@
+/**
+ * Apple Keynote Gradient Dark Theme
+ *
+ * 原始主題：淺色漸層動畫背景
+ * 修改為：Apple Keynote 風格深色漸層主題
+ *
+ * 特徵：
+ * - 深色到淺色的垂直漸層（#030406 → #0f1330 → #40404a → #8b8b93）
+ * - 白色文字
+ * - Vignette 內陰影效果
+ * - 玻璃態（Glassmorphism）卡片效果
+ */
+
+:root {
+  /* ===== Apple Keynote Dark Gradient Colors ===== */
+  --theme-top: #030406;          /* 近黑（上方） */
+  --theme-mid: #0f1330;          /* 深藍 */
+  --theme-lower-mid: #40404a;    /* 深藍灰 */
+  --theme-bottom: #8b8b93;       /* 灰色（底部） */
+
+  /* ===== Text Colors ===== */
+  --text-primary: #ffffff;              /* 白色主要文字 */
+  --text-secondary: rgba(255, 255, 255, 0.75);  /* 次要文字 */
+  --text-tertiary: rgba(255, 255, 255, 0.6);    /* 第三級文字 */
+  --text-disabled: rgba(255, 255, 255, 0.4);    /* 禁用文字 */
+
+  /* ===== Background Colors ===== */
+  --bg-primary: rgba(3, 4, 6, 0.85);
+  --bg-secondary: rgba(15, 19, 48, 0.75);
+  --bg-tertiary: rgba(64, 64, 74, 0.65);
+  --bg-card: rgba(20, 25, 50, 0.7);
+  --bg-card-hover: rgba(30, 35, 65, 0.8);
+
+  /* ===== Border Colors ===== */
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-color-light: rgba(255, 255, 255, 0.08);
+  --border-color-focus: rgba(139, 139, 147, 0.5);
+
+  /* ===== Accent Colors ===== */
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --accent-success: #67c23a;
+  --accent-warning: #e6a23c;
+  --accent-danger: #f56c6c;
+  --accent-info: #409eff;
+
+  /* ===== Shadow Colors ===== */
+  --shadow-sm: rgba(0, 0, 0, 0.3);
+  --shadow-md: rgba(0, 0, 0, 0.4);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --shadow-glow: rgba(102, 126, 234, 0.25);
+
+  /* ===== Overlay Effects ===== */
+  --overlay-vignette: rgba(0, 0, 0, 0.35);
+  --overlay-radial: rgba(255, 255, 255, 0.02);
+
+  /* ===== Animation ===== */
+  --transition-speed: 0.3s;
+  --transition-timing: ease;
+}
+
+/* ===== Global Reset & Base Styles ===== */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, "Helvetica Neue", "Segoe UI", Roboto, "Noto Sans", Arial, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text-secondary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+p, span, div {
+  color: var(--text-secondary);
+}
+
+/* ===== Dark Gradient Background with Animation ===== */
+#app {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    var(--theme-top) 0%,
+    var(--theme-mid) 30%,
+    var(--theme-lower-mid) 65%,
+    var(--theme-bottom) 100%
+  );
+  background-size: 200% 200%;
+  animation: bgFlowDark 15s ease-in-out infinite alternate;
+  color: var(--text-primary);
+}
+
+/* Dark theme animation - 慢速流動的深色漸層 */
+@keyframes bgFlowDark {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 50% 50%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* ===== Vignette Effect (深度感) ===== */
+#app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 50% 10%, var(--overlay-radial), transparent 20%),
+    linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.15) 65%, var(--overlay-vignette) 100%);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+/* ===== Inner Shadow Vignette ===== */
+#app::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+/* ===== Container Z-Index ===== */
+.el-container {
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== Element Plus Dark Theme CSS Variables Override ===== */
+:root {
+  /* Card */
+  --el-card-bg-color: var(--bg-card);
+  --el-card-border-color: var(--border-color);
+  --el-card-text-color-primary: var(--text-primary);
+  --el-card-text-color-regular: var(--text-secondary);
+
+  /* Button */
+  --el-button-text-color: var(--text-primary);
+  --el-button-bg-color: var(--bg-card);
+  --el-button-border-color: var(--border-color);
+  --el-button-hover-text-color: #ffffff;
+  --el-button-hover-bg-color: var(--bg-card-hover);
+  --el-button-hover-border-color: var(--border-color-focus);
+
+  /* Input */
+  --el-input-bg-color: var(--bg-card);
+  --el-input-text-color: var(--text-primary);
+  --el-input-border-color: var(--border-color);
+  --el-input-placeholder-color: var(--text-tertiary);
+  --el-input-hover-border-color: var(--border-color-focus);
+  --el-input-focus-border-color: var(--accent-primary);
+
+  /* Select */
+  --el-select-bg-color: var(--bg-card);
+  --el-select-input-focus-border-color: var(--accent-primary);
+
+  /* Table */
+  --el-table-bg-color: var(--bg-card);
+  --el-table-tr-bg-color: var(--bg-card);
+  --el-table-header-bg-color: var(--bg-secondary);
+  --el-table-text-color: var(--text-secondary);
+  --el-table-header-text-color: var(--text-primary);
+  --el-table-border-color: var(--border-color);
+  --el-table-row-hover-bg-color: var(--bg-card-hover);
+
+  /* Menu */
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: var(--text-secondary);
+  --el-menu-hover-bg-color: var(--bg-card);
+  --el-menu-active-color: var(--accent-primary);
+
+  /* Tag */
+  --el-tag-text-color: var(--text-primary);
+  --el-tag-bg-color: var(--bg-secondary);
+  --el-tag-border-color: var(--border-color);
+
+  /* Alert */
+  --el-alert-text-color: var(--text-secondary);
+
+  /* Descriptions */
+  --el-descriptions-text-color-primary: var(--text-primary);
+  --el-descriptions-text-color-regular: var(--text-secondary);
+  --el-descriptions-fill-color-blank: var(--bg-card);
+  --el-descriptions-border-color-lighter: var(--border-color);
+
+  /* Dialog */
+  --el-dialog-bg-color: var(--bg-secondary);
+  --el-dialog-text-color-primary: var(--text-primary);
+
+  /* Form */
+  --el-form-label-color: var(--text-secondary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-primary: var(--text-primary);
+  --el-fill-color-blank: var(--bg-card);
+  --el-border-color-lighter: var(--border-color);
+
+  /* Pagination */
+  --el-pagination-button-bg-color: var(--bg-card);
+  --el-pagination-button-color: var(--text-secondary);
+  --el-pagination-button-disabled-bg-color: var(--bg-tertiary);
+  --el-pagination-button-disabled-color: var(--text-disabled);
+
+  /* Collapse */
+  --el-collapse-border-color: var(--border-color);
+  --el-collapse-header-text-color: var(--text-primary);
+  --el-collapse-header-bg-color: var(--bg-secondary);
+  --el-collapse-content-bg-color: var(--bg-card);
+  --el-collapse-content-text-color: var(--text-secondary);
+}
+
+/* ===== Additional Global Styles ===== */
+
+/* Code blocks */
+code {
+  background: var(--bg-tertiary);
+  color: var(--accent-info);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Links */
+a {
+  color: var(--accent-info);
+  text-decoration: none;
+  transition: color var(--transition-speed) var(--transition-timing);
+}
+
+a:hover {
+  color: var(--accent-primary);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color-focus);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}

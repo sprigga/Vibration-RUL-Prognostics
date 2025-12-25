@@ -400,26 +400,25 @@ const drawEnvelopeChart = () => {
   const option = {
     title: {
       text: `包絡頻譜 - ${bearingName}`,
-      subtext: bearingInfo ? `轉速: ${bearingInfo.rpm} RPM, 軸頻率: ${bearingInfo.shaft_freq.toFixed(2)} Hz` : ''
+      subtext: bearingInfo ? `轉速: ${bearingInfo.rpm} RPM, 軸頻率: ${bearingInfo.shaft_freq.toFixed(2)} Hz` : '',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 },
+      subtextStyle: { color: '#ffffff', fontSize: 12 }
     },
     tooltip: {
       trigger: 'axis',
-      formatter: (params) => {
-        if (!params || params.length === 0) return ''
-        const dataIndex = params[0].dataIndex
-        const freq = frequency[dataIndex]
-        let result = `頻率: ${freq.toFixed(2)} Hz<br/>`
-        params.forEach(p => {
-          const value = Array.isArray(p.value) ? p.value[1] : p.value
-          result += `${p.seriesName}: ${value.toFixed(6)}<br/>`
-        })
-        return result
-      }
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: 'var(--border-color)',
+      textStyle: { color: '#ffffff' }
     },
     legend: {
       data: ['水平方向', '垂直方向'],
       top: '5%',
-      right: '5%'
+      right: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff' }
     },
     grid: {
       left: '60px',
@@ -434,7 +433,15 @@ const drawEnvelopeChart = () => {
       nameLocation: 'middle',
       nameGap: 30,
       min: 0,
-      max: Math.max(...frequency)
+      max: Math.max(...frequency),
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     yAxis: {
       type: 'value',
@@ -442,7 +449,15 @@ const drawEnvelopeChart = () => {
       nameLocation: 'middle',
       nameGap: 40,
       min: 0,
-      max: 0.05
+      max: 0.05,
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     dataZoom: [
       {
@@ -544,7 +559,11 @@ const drawFaultFreqReferenceChart = () => {
       text: `故障頻率參考 - ${bearingName}`,
       subtext: `轉速: ${bearingInfo.rpm} RPM`,
       left: 'left',
-      top: '1%'
+      top: '1%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 },
+      subtextStyle: { color: '#ffffff', fontSize: 12 }
     },
     grid: {
       left: '3%',
@@ -558,11 +577,16 @@ const drawFaultFreqReferenceChart = () => {
       name: '頻率 (Hz)',
       min: 0,
       max: maxFreq,
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         show: true,
         lineStyle: {
           type: 'dotted',
-          color: '#e0e0e0'
+          color: 'rgba(255, 255, 255, 0.1)'
         }
       }
     },
@@ -602,15 +626,24 @@ const drawHilbertEnvelopeChart = () => {
 
   const option = {
     title: {
-      text: '包絡線波形'
+      text: '包絡線波形',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: 'var(--border-color)',
+      textStyle: { color: '#ffffff' }
     },
     legend: {
       data: ['水平方向', '垂直方向'],
       top: '5%',
-      right: '5%'
+      right: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff' }
     },
     grid: {
       left: '3%',
@@ -621,11 +654,27 @@ const drawHilbertEnvelopeChart = () => {
     xAxis: {
       type: 'category',
       data: time,
-      name: '樣本點'
+      name: '樣本點',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     yAxis: {
       type: 'value',
-      name: '包絡振幅'
+      name: '包絡振幅',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     series: [
       {
@@ -658,15 +707,24 @@ const drawHilbertFreqChart = () => {
 
   const option = {
     title: {
-      text: '瞬時頻率'
+      text: '瞬時頻率',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: 'var(--border-color)',
+      textStyle: { color: '#ffffff' }
     },
     legend: {
       data: ['水平方向', '垂直方向'],
       top: '5%',
-      right: '5%'
+      right: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: { color: '#ffffff' }
     },
     grid: {
       left: '3%',
@@ -677,11 +735,27 @@ const drawHilbertFreqChart = () => {
     xAxis: {
       type: 'category',
       data: time,
-      name: '樣本點'
+      name: '樣本點',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     yAxis: {
       type: 'value',
-      name: '頻率 (Hz)'
+      name: '頻率 (Hz)',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      nameTextStyle: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff' },
+      axisLine: { lineStyle: { color: 'var(--border-color)' } },
+      splitLine: {
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     series: [
       {
@@ -708,42 +782,334 @@ const drawHilbertFreqChart = () => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 .envelope-analysis-page {
   padding: 20px;
   min-height: 100%;
 }
 
-h3 {
+/* ===== 表單區域樣式 ===== */
+.envelope-analysis-page :deep(.el-form) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題表單樣式 */
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-form-item__label) {
+  /* 表單標籤文字顏色 */
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+
+/* ===== 輸入框樣式 ===== */
+.envelope-analysis-page :deep(.el-input__wrapper) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.envelope-analysis-page :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-input__inner) {
+  /* 輸入框內部樣式 */
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* ===== 下拉選擇框樣式 ===== */
+.envelope-analysis-page :deep(.el-select) {
+  /* 確保下拉框繼承正確的顏色 */
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-select .el-input__wrapper) {
+  /* 下拉選擇框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.envelope-analysis-page :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-select .el-input__inner) {
+  /* 下拉選擇框文字 */
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-select__placeholder) {
+  /* 下拉選擇框佔位符 */
+  color: var(--text-secondary);
+}
+
+.envelope-analysis-page :deep(.el-select__caret) {
+  /* 下拉選擇框箭頭圖標 */
+  color: var(--text-secondary);
+}
+
+/* ===== 下拉選單選項樣式 ===== */
+.envelope-analysis-page :deep(.el-select-dropdown) {
+  /* 下拉選單背景 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-select-dropdown__item) {
+  /* 下拉選單選項 */
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.envelope-analysis-page :deep(.el-select-dropdown__item:hover) {
+  /* 下拉選單選項懸停 */
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+}
+
+.envelope-analysis-page :deep(.el-select-dropdown__item.is-selected) {
+  /* 下拉選單選項已選中 */
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/* ===== 數字輸入框樣式 ===== */
+.envelope-analysis-page :deep(.el-input-number) {
+  /* 數字輸入框整體 */
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-input-number .el-input__wrapper) {
+  /* 數字輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.envelope-analysis-page :deep(.el-input-number .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-input-number .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.envelope-analysis-page :deep(.el-input-number__decrease),
+.envelope-analysis-page :deep(.el-input-number__increase) {
+  /* 數字輸入框 +/- 按鈕 */
+  background-color: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-input-number__decrease:hover),
+.envelope-analysis-page :deep(.el-input-number__increase:hover) {
+  /* 按鈕懸停效果 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.envelope-analysis-page :deep(.el-input-number__decrease.is-disabled),
+.envelope-analysis-page :deep(.el-input-number__increase.is-disabled) {
+  /* 禁用狀態按鈕 */
+  color: var(--text-disabled);
+  background-color: var(--bg-secondary);
+}
+
+/* ===== 按鈕樣式 ===== */
+.envelope-analysis-page :deep(.el-button) {
+  /* 按鈕整體樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-button--primary) {
+  /* 主要按鈕 */
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.envelope-analysis-page :deep(.el-button--primary:hover) {
+  /* 主要按鈕懸停 */
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.envelope-analysis-page :deep(.el-button--default) {
+  /* 預設按鈕 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-button--default:hover) {
+  /* 預設按鈕懸停 */
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* ===== 分隔線樣式 ===== */
+.envelope-analysis-page :deep(.el-divider) {
+  /* 分隔線整體樣式 */
+  border-top-color: var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-divider__text) {
+  /* 分隔線文字樣式 */
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0 20px;
+}
+
+.envelope-analysis-page :deep(.el-divider--horizontal) {
+  /* 水平分隔線 */
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+/* ===== 標題樣式 ===== */
+.envelope-analysis-page h3 {
+  margin-top: 0;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.envelope-analysis-page h4 {
   margin-top: 20px;
-  margin-bottom: 10px;
-  color: #303133;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
   font-weight: 600;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
 }
 
-h4 {
-  margin-top: 15px;
-  margin-bottom: 10px;
-  color: #667eea;
+.envelope-analysis-page h5 {
+  color: var(--accent-info);
   font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 15px;
 }
 
-h5 {
-  color: #764ba2;
-  font-weight: 600;
-}
-
-p {
+.envelope-analysis-page p {
   line-height: 1.6;
-  color: #606266;
-  margin-bottom: 10px;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
-code {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+.envelope-analysis-page code {
+  /* 原始：linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) */
+  /* 修改：深色主題代碼背景 */
+  background: var(--bg-tertiary);
   padding: 2px 8px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  color: #667eea;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 6px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  /* 原始：rgba(102, 126, 234, 0.2) */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
 }
+
+/* ===== 表格樣式修正 ===== */
+.envelope-analysis-page :deep(.el-descriptions) {
+  /* 確保表格在深色背景下可讀 */
+  background-color: transparent;
+}
+
+.envelope-analysis-page :deep(.el-descriptions__label) {
+  /* 表格標籤列樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
+}
+
+.envelope-analysis-page :deep(.el-descriptions__content) {
+  /* 表格內容列樣式 */
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+}
+
+.envelope-analysis-page :deep(.el-descriptions__cell) {
+  /* 表格單元格邊框 */
+  border-color: var(--border-color) !important;
+}
+
+.envelope-analysis-page :deep(.el-descriptions--bordered .el-descriptions__cell) {
+  /* 邊框表格的單元格樣式 */
+  border: 1px solid var(--border-color);
+}
+
+/* 表格標題優化 */
+.envelope-analysis-page :deep(.el-card__header) {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-card__body) {
+  background-color: var(--bg-primary);
+}
+
+/* ===== Steps 步驟條樣式 ===== */
+.envelope-analysis-page :deep(.el-step__title) {
+  color: var(--text-primary) !important;
+}
+
+.envelope-analysis-page :deep(.el-step__description) {
+  color: var(--text-secondary) !important;
+}
+
+/* ===== Alert 樣式 ===== */
+.envelope-analysis-page :deep(.el-alert--info) {
+  background: var(--bg-secondary);
+  border-color: var(--accent-info);
+}
+
+.envelope-analysis-page :deep(.el-alert--warning) {
+  background: var(--bg-secondary);
+  border-color: var(--accent-warning);
+}
+
+.envelope-analysis-page :deep(.el-alert--success) {
+  background: var(--bg-secondary);
+  border-color: var(--accent-success);
+}
+
+/* ===== Tag 樣式 ===== */
+.envelope-analysis-page :deep(.el-tag) {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* ===== Empty 狀態 ===== */
+.envelope-analysis-page :deep(.el-empty) {
+  --empty-description-color: var(--text-secondary);
+}
+
+/* 組件特定樣式保留 */
 </style>

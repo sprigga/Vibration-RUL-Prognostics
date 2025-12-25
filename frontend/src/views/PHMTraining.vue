@@ -368,6 +368,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== 參照 FONT.md 和 common-styles.css 統一樣式 ===== */
+/* 基礎樣式(h2, h4, p, code)已由 common-styles.css 統一管理 */
+
 .phm-training {
   max-width: 1400px;
   margin: 0 auto;
@@ -375,7 +378,8 @@ onMounted(() => {
 
 .header-card {
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* 深色主題漸層背景 */
+  background: linear-gradient(135deg, var(--theme-mid), var(--theme-lower-mid));
   color: white;
 }
 
@@ -409,11 +413,12 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .info-card h4 {
   margin: 16px 0 8px 0;
-  color: #409EFF;
+  color: var(--accent-info);
 }
 
 .info-card ul {
@@ -424,5 +429,6 @@ onMounted(() => {
 .info-card li {
   margin: 8px 0;
   line-height: 1.6;
+  color: var(--text-secondary);
 }
 </style>

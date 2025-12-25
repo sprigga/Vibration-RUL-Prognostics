@@ -1051,23 +1051,78 @@ const renderVibrationChart = () => {
       plugins: {
         title: {
           display: true,
-          text: `${selectedTrainingBearing.value} - 振動 RMS 趨勢`
+          text: `${selectedTrainingBearing.value} - 振動 RMS 趨勢`,
+          // 原始：繼承預設顏色
+          // 修改：深色主題白色文字
+          color: '#ffffff',
+          font: {
+            size: 16,
+            weight: '600'
+          }
         },
         legend: {
-          position: 'top'
+          position: 'top',
+          // 原始：繼承預設顏色
+          // 修改：深色主題白色文字
+          labels: {
+            color: '#ffffff',
+            font: {
+              size: 12
+            }
+          }
         }
       },
       scales: {
         x: {
           title: {
             display: true,
-            text: '時間 (分鐘)'
+            text: '時間 (分鐘)',
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 14,
+              weight: '500'
+            }
+          },
+          ticks: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 11
+            }
+          },
+          grid: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題淺色網格
+            color: 'rgba(255, 255, 255, 0.1)'
           }
         },
         y: {
           title: {
             display: true,
-            text: 'RMS 值'
+            text: 'RMS 值',
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 14,
+              weight: '500'
+            }
+          },
+          ticks: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 11
+            }
+          },
+          grid: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題淺色網格
+            color: 'rgba(255, 255, 255, 0.1)'
           },
           beginAtZero: false
         }
@@ -1146,23 +1201,78 @@ const renderKurtosisChart = () => {
       plugins: {
         title: {
           display: true,
-          text: `${selectedTrainingBearing.value} - 峰度趨勢（故障指標）`
+          text: `${selectedTrainingBearing.value} - 峰度趨勢（故障指標）`,
+          // 原始：繼承預設顏色
+          // 修改：深色主題白色文字
+          color: '#ffffff',
+          font: {
+            size: 16,
+            weight: '600'
+          }
         },
         legend: {
-          position: 'top'
+          position: 'top',
+          // 原始：繼承預設顏色
+          // 修改：深色主題白色文字
+          labels: {
+            color: '#ffffff',
+            font: {
+              size: 12
+            }
+          }
         }
       },
       scales: {
         x: {
           title: {
             display: true,
-            text: '時間 (分鐘)'
+            text: '時間 (分鐘)',
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 14,
+              weight: '500'
+            }
+          },
+          ticks: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 11
+            }
+          },
+          grid: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題淺色網格
+            color: 'rgba(255, 255, 255, 0.1)'
           }
         },
         y: {
           title: {
             display: true,
-            text: '峰度值'
+            text: '峰度值',
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 14,
+              weight: '500'
+            }
+          },
+          ticks: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題白色文字
+            color: '#ffffff',
+            font: {
+              size: 11
+            }
+          },
+          grid: {
+            // 原始：繼承預設顏色
+            // 修改：深色主題淺色網格
+            color: 'rgba(255, 255, 255, 0.1)'
           },
           beginAtZero: false
         }
@@ -1204,6 +1314,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 .dashboard {
   padding: 20px;
 }
@@ -1238,12 +1351,16 @@ onMounted(() => {
   font-size: 28px;
   font-weight: bold;
   margin: 0 0 5px;
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
 }
 
 .stat-info p {
   font-size: 14px;
-  color: #909399;
+  /* 原始：#909399 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -1251,18 +1368,28 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
-/* IEEE PHM 2012 實驗摘要樣式 */
+/* ===== IEEE PHM 2012 實驗摘要樣式 - 深色主題 ===== */
 .summary-card {
   height: 100%;
-  border: 1px solid #f0f0f0;
+  /* 原始：#f0f0f0 */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  /* 原始：繼承白色背景 */
+  /* 修改：深色卡片背景 */
+  background: var(--bg-card);
 }
 
 .summary-card :deep(.el-card__header) {
-  background-color: #fafafa;
-  border-bottom: 1px solid #f0f0f0;
+  /* 原始：#fafafa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
+  /* 原始：#f0f0f0 */
+  /* 修改：深色邊框 */
+  border-bottom: 1px solid var(--border-color);
   padding: 12px 16px;
 }
 
@@ -1271,7 +1398,9 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
 }
 
 .summary-content {
@@ -1282,7 +1411,9 @@ onMounted(() => {
 
 .summary-content p {
   margin-bottom: 8px;
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
 .summary-content ul {
@@ -1292,44 +1423,60 @@ onMounted(() => {
 
 .summary-content li {
   margin-bottom: 4px;
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
 .summary-content strong {
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
 }
 
 .challenge-item {
   text-align: center;
   padding: 12px 8px;
   border-radius: 6px;
-  background-color: #fafafa;
+  /* 原始：#fafafa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
   height: 100%;
 }
 
 .challenge-item p {
   margin-top: 8px;
   font-size: 12px;
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .scoring-info {
-  background-color: #f8f9fa;
+  /* 原始：#f8f9fa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
   padding: 12px;
   border-radius: 6px;
   font-size: 12px;
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
-/* PHM Database Query Styles */
+/* ===== PHM Database Query Styles - 深色主題 ===== */
 .section-title {
-  color: #34495e;
+  /* 原始：#34495e */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
   margin-bottom: 15px;
   font-size: 16px;
   font-weight: 600;
-  border-bottom: 2px solid #409eff;
+  /* 原始：#409eff */
+  /* 修改：使用強調色（保持一致） */
+  border-bottom: 2px solid var(--accent-primary);
   padding-bottom: 8px;
 }
 
@@ -1338,12 +1485,14 @@ onMounted(() => {
 .empty {
   text-align: center;
   padding: 30px;
-  color: #909399;
+  /* 原始：#909399 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .error {
-  color: #f56c6c;
+  color: var(--accent-danger);
 }
 
 .bearings-section {
@@ -1357,27 +1506,42 @@ onMounted(() => {
 }
 
 .bearing-card {
-  border: 2px solid #e4e7ed;
+  /* 原始：#e4e7ed */
+  /* 修改：深色邊框 */
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   padding: 15px;
   cursor: pointer;
   transition: all 0.3s;
-  background: #fff;
+  /* 原始：#fff */
+  /* 修改：深色卡片背景 */
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .bearing-card:hover {
-  border-color: #409eff;
+  /* 原始：#409eff */
+  /* 修改：使用強調色 */
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+  /* 原始：rgba(64, 158, 255, 0.2) */
+  /* 修改：深色發光陰影 */
+  box-shadow: 0 4px 12px var(--shadow-glow);
 }
 
 .bearing-card.active {
-  border-color: #67c23a;
-  background: #f0f9ff;
+  /* 原始：#67c23a */
+  /* 修改：使用成功色 */
+  border-color: var(--accent-success);
+  /* 原始：#f0f9ff */
+  /* 修改：深色次要背景 */
+  background: var(--bg-secondary);
 }
 
 .bearing-card h4 {
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
   margin-bottom: 12px;
   font-size: 15px;
 }
@@ -1395,12 +1559,16 @@ onMounted(() => {
 }
 
 .stat-label {
-  color: #909399;
+  /* 原始：#909399 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
 .stat-value {
   font-weight: 600;
-  color: #409eff;
+  /* 原始：#409eff */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
 }
 
 .info-grid {
@@ -1410,13 +1578,22 @@ onMounted(() => {
 }
 
 .info-card {
-  border: 1px solid #e4e7ed;
+  /* 原始：#e4e7ed */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  /* 原始：繼承白色背景 */
+  /* 修改：深色卡片背景 */
+  background: var(--bg-card);
 }
 
 .info-card :deep(.el-card__header) {
-  background-color: #fafafa;
-  border-bottom: 1px solid #e4e7ed;
+  /* 原始：#fafafa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
+  /* 原始：#e4e7ed */
+  /* 修改：深色邊框 */
+  border-bottom: 1px solid var(--border-color);
   padding: 12px 16px;
 }
 
@@ -1425,7 +1602,9 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #409eff;
+  /* 原始：#409eff */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
 }
 
 .info-content {
@@ -1436,7 +1615,9 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f7fa;
+  /* 原始：#f5f7fa */
+  /* 修改：深色淺邊框 */
+  border-bottom: 1px solid var(--border-color-light);
   font-size: 13px;
 }
 
@@ -1445,12 +1626,16 @@ onMounted(() => {
 }
 
 .info-item .label {
-  color: #909399;
+  /* 原始：#909399 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
 .info-item .value {
   font-weight: 600;
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
 }
 
 .controls {
@@ -1462,17 +1647,19 @@ onMounted(() => {
 }
 
 .page-info {
-  color: #909399;
+  /* 原始：#909399 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   font-size: 13px;
   margin-left: auto;
 }
 
 .anomaly-value {
-  color: #f56c6c;
+  color: var(--accent-danger);
   font-weight: 600;
 }
 
-/* PHM Training Styles */
+/* ===== PHM Training Styles - 深色主題 ===== */
 .loading-container {
   text-align: center;
   padding: 60px;
@@ -1485,7 +1672,9 @@ onMounted(() => {
 
 .info-card-phm h4 {
   margin: 16px 0 8px 0;
-  color: #409EFF;
+  /* 原始：#409EFF */
+  /* 修改：使用強調色 */
+  color: var(--accent-info);
 }
 
 .info-card-phm ul {
@@ -1496,9 +1685,12 @@ onMounted(() => {
 .info-card-phm li {
   margin: 8px 0;
   line-height: 1.6;
+  /* 原始：繼承預設 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
-/* CALCE 方法樣式 */
+/* ===== CALCE 方法樣式 - 深色主題 ===== */
 .method-title {
   display: flex;
   align-items: center;
@@ -1509,13 +1701,17 @@ onMounted(() => {
 
 .method-content {
   padding: 16px 20px;
-  background-color: #fafafa;
+  /* 原始：#fafafa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
   border-radius: 6px;
   margin-top: 8px;
 }
 
 .method-content h4 {
-  color: #409EFF;
+  /* 原始：#409EFF */
+  /* 修改：使用強調色 */
+  color: var(--accent-info);
   font-size: 14px;
   margin: 16px 0 8px 0;
   font-weight: 600;
@@ -1526,7 +1722,9 @@ onMounted(() => {
 }
 
 .method-content p {
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 8px 0;
 }
@@ -1535,7 +1733,9 @@ onMounted(() => {
 .method-content ul {
   margin: 8px 0;
   padding-left: 24px;
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
 }
 
 .method-content li {
@@ -1552,42 +1752,56 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #f0f9ff;
+  /* 原始：#f0f9ff */
+  /* 修改：深色卡片背景 */
+  background-color: var(--bg-card);
   padding: 12px 16px;
   border-radius: 6px;
-  border-left: 4px solid #67c23a;
-  color: #67c23a;
+  border-left: 4px solid var(--accent-success);
+  color: var(--accent-success);
   font-weight: 600;
 }
 
 .feature-summary {
-  background-color: #f8f9fa;
+  /* 原始：#f8f9fa */
+  /* 修改：深色次要背景 */
+  background-color: var(--bg-secondary);
   padding: 16px;
   border-radius: 8px;
 }
 
 .feature-summary h4 {
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
   margin-bottom: 12px;
   font-size: 15px;
   font-weight: 600;
 }
 
 .feature-card {
-  background-color: white;
+  /* 原始：white */
+  /* 修改：深色卡片背景 */
+  background-color: var(--bg-card);
   padding: 12px 16px;
   border-radius: 6px;
-  border: 1px solid #e4e7ed;
+  /* 原始：#e4e7ed */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
   height: 100%;
 }
 
 .feature-card h5 {
-  color: #409EFF;
+  /* 原始：#409EFF */
+  /* 修改：使用強調色 */
+  color: var(--accent-info);
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 10px 0;
   padding-bottom: 8px;
-  border-bottom: 2px solid #409EFF;
+  /* 原始：#409EFF */
+  /* 修改：使用強調色 */
+  border-bottom: 2px solid var(--accent-info);
 }
 
 .feature-card ul {
@@ -1596,14 +1810,18 @@ onMounted(() => {
 }
 
 .feature-card li {
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.8;
   margin: 4px 0;
 }
 
 .contribution-section h4 {
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -1615,8 +1833,526 @@ onMounted(() => {
 }
 
 .contribution-section li {
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   line-height: 1.8;
   margin: 10px 0;
+}
+
+/* ===== 表格樣式修正 ===== */
+/* 針對 el-table 表格組件的深色主題樣式優化 */
+.dashboard :deep(.el-table) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題表格樣式 */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-table__header-wrapper) {
+  /* 表頭背景 */
+  background-color: var(--bg-secondary);
+}
+
+.dashboard :deep(.el-table th) {
+  /* 表頭單元格樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  border-color: var(--border-color) !important;
+}
+
+.dashboard :deep(.el-table td) {
+  /* 表格內容單元格樣式 */
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dashboard :deep(.el-table__row:hover td) {
+  /* 表格行懸停效果 */
+  background-color: var(--bg-secondary) !important;
+}
+
+.dashboard :deep(.el-table__row.current-row td) {
+  /* 當前行樣式 */
+  background-color: var(--bg-tertiary) !important;
+}
+
+.dashboard :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  /* 斑馬紋行樣式 */
+  background-color: var(--bg-secondary) !important;
+}
+
+.dashboard :deep(.el-table--striped .el-table__body tr.el-table__row--striped:hover td) {
+  /* 斑馬紋行懸停效果 */
+  background-color: var(--bg-tertiary) !important;
+}
+
+.dashboard :deep(.el-table--enable-row-hover .el-table__body tr:hover > td) {
+  /* 啟用行懸停效果 */
+  background-color: var(--bg-secondary) !important;
+}
+
+/* ===== el-descriptions 表格樣式 ===== */
+.dashboard :deep(.el-descriptions) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題描述列表樣式 */
+  background-color: transparent;
+}
+
+.dashboard :deep(.el-descriptions__label) {
+  /* 描述列表標籤列樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
+}
+
+.dashboard :deep(.el-descriptions__content) {
+  /* 描述列表內容列樣式 */
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+}
+
+.dashboard :deep(.el-descriptions__cell) {
+  /* 描述列表單元格邊框 */
+  border-color: var(--border-color) !important;
+}
+
+.dashboard :deep(.el-descriptions--bordered .el-descriptions__cell) {
+  /* 邊框描述列表的單元格樣式 */
+  border: 1px solid var(--border-color);
+}
+
+/* 數字值的特殊樣式 */
+.dashboard :deep(.el-descriptions__content strong) {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 600;
+  color: var(--accent-primary) !important;
+}
+
+/* ===== el-alert 樣式 ===== */
+.dashboard :deep(.el-alert) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題提示框樣式 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-alert__content) {
+  /* 提示框內容區域 */
+  background: transparent;
+}
+
+.dashboard :deep(.el-alert__title) {
+  /* 提示框標題 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-alert__description) {
+  /* 提示框描述 */
+  color: var(--text-secondary);
+}
+
+.dashboard :deep(.el-alert--info) {
+  /* Info 類型提示框 */
+  background: var(--bg-secondary);
+  border-color: var(--accent-info);
+}
+
+.dashboard :deep(.el-alert--info .el-alert__title) {
+  color: var(--accent-info);
+}
+
+/* ===== el-tag 樣式 ===== */
+.dashboard :deep(.el-tag) {
+  /* 標籤樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-tag--info) {
+  /* Info 類型標籤 */
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-info);
+  color: var(--accent-info);
+}
+
+.dashboard :deep(.el-tag--success) {
+  /* Success 類型標籤 */
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.dashboard :deep(.el-tag--warning) {
+  /* Warning 類型標籤 */
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.dashboard :deep(.el-tag--danger) {
+  /* Danger 類型標籤 */
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.dashboard :deep(.el-tag--primary) {
+  /* Primary 類型標籤 */
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* ===== el-collapse 摺疊面板樣式 ===== */
+.dashboard :deep(.el-collapse) {
+  /* 摺疊面板整體樣式 */
+  background-color: transparent;
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-collapse-item__header) {
+  /* 摺疊面板標題 */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-collapse-item__wrap) {
+  /* 摺疊面板內容包裝 */
+  background-color: transparent;
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-collapse-item__content) {
+  /* 摺疊面板內容 */
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.dashboard :deep(.el-collapse-item__header:hover) {
+  /* 摺疊面板標題懸停 */
+  background-color: var(--bg-tertiary);
+}
+
+/* ===== el-divider 分隔線樣式 ===== */
+.dashboard :deep(.el-divider) {
+  /* 分隔線整體樣式 */
+  border-top-color: var(--border-color);
+}
+
+.dashboard :deep(.el-divider__text) {
+  /* 分隔線文字樣式 */
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.dashboard :deep(.el-divider--horizontal) {
+  /* 水平分隔線 */
+  display: flex;
+  align-items: center;
+}
+
+/* ===== h3, h4, p, code 等基礎元素樣式 ===== */
+.dashboard h3 {
+  margin-top: 0;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.dashboard h4 {
+  margin-top: 20px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  font-weight: 600;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
+}
+
+.dashboard p {
+  line-height: 1.6;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
+}
+
+.dashboard code {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題代碼背景 */
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  /* 原始：繼承預設 */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* ===== el-card 卡片樣式 ===== */
+.dashboard :deep(.el-card) {
+  /* 卡片整體樣式 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-card__header) {
+  /* 卡片標題區域 */
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-card__body) {
+  /* 卡片內容區域 */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ===== el-pagination 分頁器樣式 ===== */
+.dashboard :deep(.el-pagination) {
+  /* 分頁器整體樣式 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-pagination button) {
+  /* 分頁器按鈕 */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-pagination button:hover) {
+  /* 分頁器按鈕懸停 */
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-pagination .el-pager li) {
+  /* 分頁器頁碼 */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-pagination .el-pager li:hover) {
+  /* 分頁器頁碼懸停 */
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-pagination .el-pager li.active) {
+  /* 當前頁碼 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+/* ===== el-tabs 標籤頁樣式 ===== */
+.dashboard :deep(.el-tabs) {
+  /* 標籤頁整體樣式 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-tabs__nav) {
+  /* 標籤導航條 */
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-tabs__item) {
+  /* 標籤項 */
+  color: var(--text-secondary);
+}
+
+.dashboard :deep(.el-tabs__item:hover) {
+  /* 標籤項懸停 */
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-tabs__item.is-active) {
+  /* 激活的標籤項 */
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-tabs__active-bar) {
+  /* 激活指示條 */
+  background-color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-tabs__content) {
+  /* 標籤內容區域 */
+  color: var(--text-primary);
+}
+
+/* ===== el-select 下拉選擇框樣式 ===== */
+.dashboard :deep(.el-select) {
+  /* 確保下拉框繼承正確的顏色 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-select .el-input__wrapper) {
+  /* 下拉選擇框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.dashboard :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-select .el-input__inner) {
+  /* 下拉選擇框文字 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-select__placeholder) {
+  /* 下拉選擇框佔位符 */
+  color: var(--text-secondary);
+}
+
+.dashboard :deep(.el-select__caret) {
+  /* 下拉選擇框箭頭圖標 */
+  color: var(--text-secondary);
+}
+
+/* ===== 下拉選單選項樣式 ===== */
+.dashboard :deep(.el-select-dropdown) {
+  /* 下拉選單背景 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-select-dropdown__item) {
+  /* 下拉選單選項 */
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.dashboard :deep(.el-select-dropdown__item:hover) {
+  /* 下拉選單選項懸停 */
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-select-dropdown__item.is-selected) {
+  /* 下拉選單選項已選中 */
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/* ===== el-input 輸入框樣式 ===== */
+.dashboard :deep(.el-input__wrapper) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.dashboard :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-input__inner) {
+  /* 輸入框內部樣式 */
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* ===== el-input-number 數字輸入框樣式 ===== */
+.dashboard :deep(.el-input-number) {
+  /* 數字輸入框整體 */
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-input-number .el-input__wrapper) {
+  /* 數字輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.dashboard :deep(.el-input-number .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-input-number .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.dashboard :deep(.el-input-number__decrease),
+.dashboard :deep(.el-input-number__increase) {
+  /* 數字輸入框 +/- 按鈕 */
+  background-color: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-input-number__decrease:hover),
+.dashboard :deep(.el-input-number__increase:hover) {
+  /* 按鈕懸停效果 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.dashboard :deep(.el-input-number__decrease.is-disabled),
+.dashboard :deep(.el-input-number__increase.is-disabled) {
+  /* 禁用狀態按鈕 */
+  color: var(--text-disabled);
+  background-color: var(--bg-secondary);
+}
+
+/* ===== el-button 按鈕樣式 ===== */
+.dashboard :deep(.el-button) {
+  /* 按鈕整體樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dashboard :deep(.el-button--primary) {
+  /* 主要按鈕 */
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.dashboard :deep(.el-button--primary:hover) {
+  /* 主要按鈕懸停 */
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.dashboard :deep(.el-button--default) {
+  /* 預設按鈕 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dashboard :deep(.el-button--default:hover) {
+  /* 預設按鈕懸停 */
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.dashboard :deep(.el-button--small) {
+  /* 小按鈕 */
+  padding: 5px 12px;
+  font-size: 12px;
 }
 </style>

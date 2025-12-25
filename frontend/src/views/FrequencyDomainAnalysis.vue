@@ -577,55 +577,458 @@ const drawTrendChart = (feature, title) => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 .frequency-domain-page {
   padding: 20px;
   min-height: 100%;
 }
 
+/* ===== 表單區域樣式 ===== */
+.frequency-domain-page :deep(.el-form) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題表單樣式 */
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-form-item__label) {
+  /* 表單標籤文字顏色 */
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+
+/* ===== 輸入框樣式 ===== */
+.frequency-domain-page :deep(.el-input__wrapper) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.frequency-domain-page :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-input__inner) {
+  /* 輸入框內部樣式 */
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* ===== 下拉選擇框樣式 ===== */
+.frequency-domain-page :deep(.el-select) {
+  /* 確保下拉框繼承正確的顏色 */
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-select .el-input__wrapper) {
+  /* 下拉選擇框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.frequency-domain-page :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-select .el-input__inner) {
+  /* 下拉選擇框文字 */
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-select__placeholder) {
+  /* 下拉選擇框佔位符 */
+  color: var(--text-secondary);
+}
+
+.frequency-domain-page :deep(.el-select__caret) {
+  /* 下拉選擇框箭頭圖標 */
+  color: var(--text-secondary);
+}
+
+/* ===== 下拉選單選項樣式 ===== */
+.frequency-domain-page :deep(.el-select-dropdown) {
+  /* 下拉選單背景 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-select-dropdown__item) {
+  /* 下拉選單選項 */
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.frequency-domain-page :deep(.el-select-dropdown__item:hover) {
+  /* 下拉選單選項懸停 */
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+}
+
+.frequency-domain-page :deep(.el-select-dropdown__item.is-selected) {
+  /* 下拉選單選項已選中 */
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/* ===== 數字輸入框樣式 ===== */
+.frequency-domain-page :deep(.el-input-number) {
+  /* 數字輸入框整體 */
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-input-number .el-input__wrapper) {
+  /* 數字輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.frequency-domain-page :deep(.el-input-number .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-input-number .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.frequency-domain-page :deep(.el-input-number__decrease),
+.frequency-domain-page :deep(.el-input-number__increase) {
+  /* 數字輸入框 +/- 按鈕 */
+  background-color: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-input-number__decrease:hover),
+.frequency-domain-page :deep(.el-input-number__increase:hover) {
+  /* 按鈕懸停效果 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.frequency-domain-page :deep(.el-input-number__decrease.is-disabled),
+.frequency-domain-page :deep(.el-input-number__increase.is-disabled) {
+  /* 禁用狀態按鈕 */
+  color: var(--text-disabled);
+  background-color: var(--bg-secondary);
+}
+
+/* ===== 按鈕樣式 ===== */
+.frequency-domain-page :deep(.el-button) {
+  /* 按鈕整體樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-button--primary) {
+  /* 主要按鈕 */
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.frequency-domain-page :deep(.el-button--primary:hover) {
+  /* 主要按鈕懸停 */
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.frequency-domain-page :deep(.el-button--default) {
+  /* 預設按鈕 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-button--default:hover) {
+  /* 預設按鈕懸停 */
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.frequency-domain-page :deep(.el-button--success) {
+  /* 成功按鈕 */
+  background-color: var(--accent-success);
+  border-color: var(--accent-success);
+  color: #ffffff;
+}
+
+.frequency-domain-page :deep(.el-button--success:hover) {
+  /* 成功按鈕懸停 */
+  background-color: var(--accent-success-hover);
+  border-color: var(--accent-success-hover);
+}
+
+/* ===== 分隔線樣式 ===== */
+.frequency-domain-page :deep(.el-divider) {
+  /* 分隔線整體樣式 */
+  border-top-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-divider__text) {
+  /* 分隔線文字樣式 */
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0 20px;
+}
+
+.frequency-domain-page :deep(.el-divider--horizontal) {
+  /* 水平分隔線 */
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+/* ===== 表格樣式修正 ===== */
+.frequency-domain-page :deep(.el-table) {
+  /* 表格整體樣式 */
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-table__header-wrapper) {
+  /* 表頭樣式 */
+  background-color: var(--bg-secondary);
+}
+
+.frequency-domain-page :deep(.el-table th) {
+  /* 表頭單元格 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  border-color: var(--border-color) !important;
+}
+
+.frequency-domain-page :deep(.el-table td) {
+  /* 表格單元格 */
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-table__row) {
+  /* 表格行 */
+  background-color: var(--bg-card);
+}
+
+.frequency-domain-page :deep(.el-table__row:hover > td) {
+  /* 表格行懸停 */
+  background-color: var(--bg-secondary) !important;
+}
+
+.frequency-domain-page :deep(.el-table--border) {
+  /* 邊框表格 */
+  border: 1px solid var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-table--border::after) {
+  /* 表格外邊框 */
+  background-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-table--border td, .el-table--border th) {
+  /* 表格單元格邊框 */
+  border-right: 1px solid var(--border-color);
+}
+
+/* ===== 卡片樣式 ===== */
+.frequency-domain-page :deep(.el-card) {
+  /* 卡片整體 */
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-card__header) {
+  /* 卡片標題 */
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-card__body) {
+  /* 卡片內容 */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ===== 描述列表樣式 ===== */
+.frequency-domain-page :deep(.el-descriptions) {
+  /* 確保表格在深色背景下可讀 */
+  background-color: transparent;
+}
+
+.frequency-domain-page :deep(.el-descriptions__label) {
+  /* 表格標籤列樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
+}
+
+.frequency-domain-page :deep(.el-descriptions__content) {
+  /* 表格內容列樣式 */
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+}
+
+.frequency-domain-page :deep(.el-descriptions__cell) {
+  /* 表格單元格邊框 */
+  border-color: var(--border-color) !important;
+}
+
+.frequency-domain-page :deep(.el-descriptions--bordered .el-descriptions__cell) {
+  /* 邊框表格的單元格樣式 */
+  border: 1px solid var(--border-color);
+}
+
+/* 數字值的特殊樣式 */
+.frequency-domain-page :deep(.el-descriptions__content) {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 600;
+  color: var(--accent-primary) !important;
+}
+
+/* ===== 標題樣式 ===== */
+h3 {
+  margin-top: 0;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+h4 {
+  margin-top: 20px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  font-weight: 600;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
+}
+
+p {
+  line-height: 1.6;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
+}
+
+/* ===== code 樣式 ===== */
+code {
+  /* 原始：繼承預設 */
+  /* 修改：深色主題代碼背景 */
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  /* 原始：rgba(102, 126, 234, 0.2) */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
+  display: block;
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+/* ===== 組件特定樣式 ===== */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .card-header h2 {
   margin: 0;
-  font-size: 20px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  /* 深色主題漸層文字效果 */
+  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
 }
 
-h3 {
-  margin: 0 0 15px;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
+/* ===== 單選框組樣式 ===== */
+.frequency-domain-page :deep(.el-radio-group) {
+  color: var(--text-primary);
 }
 
-h4 {
-  margin: 15px 0 10px;
-  font-size: 16px;
-  color: #667eea;
-  font-weight: 600;
+.frequency-domain-page :deep(.el-radio) {
+  color: var(--text-primary);
+  margin-right: 20px;
 }
 
-p {
-  color: #606266;
-  line-height: 1.6;
-  margin-bottom: 15px;
+.frequency-domain-page :deep(.el-radio__label) {
+  color: var(--text-primary);
 }
 
-code {
-  display: block;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  padding: 8px 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  font-family: 'Courier New', monospace;
-  color: #667eea;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+.frequency-domain-page :deep(.el-radio__input.is-checked .el-radio__inner) {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.frequency-domain-page :deep(.el-radio__input.is-checked + .el-radio__label) {
+  color: var(--accent-primary);
+}
+
+/* ===== Alert 樣式 ===== */
+.frequency-domain-page :deep(.el-alert) {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-info);
+}
+
+.frequency-domain-page :deep(.el-alert__content) {
+  color: var(--text-primary);
+}
+
+.frequency-domain-page :deep(.el-alert__title) {
+  color: var(--text-primary);
+}
+
+/* ===== Tag 樣式 ===== */
+.frequency-domain-page :deep(.el-tag) {
+  border-color: var(--border-color);
+}
+
+.frequency-domain-page :deep(.el-tag--info) {
+  background-color: var(--accent-info-bg);
+  border-color: var(--accent-info);
+  color: var(--accent-info);
+}
+
+.frequency-domain-page :deep(.el-tag--success) {
+  background-color: var(--accent-success-bg);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.frequency-domain-page :deep(.el-tag--warning) {
+  background-color: var(--accent-warning-bg);
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.frequency-domain-page :deep(.el-tag--danger) {
+  background-color: var(--accent-danger-bg);
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
 }
 </style>

@@ -1168,32 +1168,50 @@ const findHarmonics = (peakFreqs, targetFreq, tolerance) => {
 </script>
 
 <style scoped>
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 .algorithms-page {
   padding: 20px;
 }
 
 h3 {
-  color: #303133;
+  /* 原始：#303133 */
+  /* 修改：深色主題主要文字 */
+  color: var(--text-primary);
   margin-top: 15px;
   margin-bottom: 10px;
 }
 
 h4 {
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--accent-primary);
   margin-top: 15px;
   margin-bottom: 10px;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
 }
 
 code {
-  background-color: #f5f7fa;
+  /* 原始：#f5f7fa */
+  /* 修改：深色主題代碼背景 */
+  background-color: var(--bg-tertiary);
   padding: 2px 8px;
   border-radius: 3px;
   font-family: 'Courier New', monospace;
-  color: #e6a23c;
+  /* 原始：#e6a23c */
+  /* 修改：使用強調色 */
+  color: var(--accent-warning);
 }
 
 p {
-  color: #606266;
+  /* 原始：#606266 */
+  /* 修改：深色主題次要文字 */
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 8px 0;
 }

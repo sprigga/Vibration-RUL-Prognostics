@@ -77,35 +77,35 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
 </script>
 
 <style>
+/* ===== 原始：淺色動畫漸層主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* 背景漸層和動畫由 theme-dark.css 處理 */
 #app {
   font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  height: 100vh;
-  background: radial-gradient(circle at top left, #7f7fd5, #86a8e7, #91eae4);
-  background-size: 200% 200%;
-  animation: bgFlow 10s ease-in-out infinite alternate;
-}
-
-@keyframes bgFlow {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
+  /* 深色漸層背景和動畫由 theme-dark.css 定義 */
 }
 
 .el-container {
   height: 100%;
 }
 
+/* ===== Header 樣式 - 深色漸層 ===== */
 .el-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  /* 原始：linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+  /* 修改：使用深色主題變數的漸層 */
+  background: linear-gradient(135deg, var(--theme-mid), var(--theme-lower-mid));
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 16px var(--shadow-md);
+  border-bottom: 1px solid var(--border-color);
   position: relative;
   z-index: 10;
 }
@@ -114,7 +114,9 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  /* 原始：linear-gradient(135deg, #ffffff, #e0e7ff) */
+  /* 修改：深色主題的漸層文字效果 */
+  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -123,14 +125,21 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
 .header-content p {
   margin: 5px 0 0;
   font-size: 12px;
-  opacity: 0.9;
+  /* 原始：opacity: 0.9 */
+  /* 修改：使用深色主題變數 */
+  color: var(--text-secondary);
 }
 
+/* ===== Sidebar 樣式 - 深色半透明 ===== */
 .el-aside {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  border-right: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  /* 原始：rgba(255, 255, 255, 0.5) */
+  /* 修改：深色半透明背景 */
+  background: var(--bg-secondary);
+  backdrop-filter: blur(12px);
+  /* 原始：rgba(255, 255, 255, 0.4) */
+  /* 修改：深色邊框 */
+  border-right: 1px solid var(--border-color);
+  box-shadow: 2px 0 8px var(--shadow-md);
 }
 
 .sidebar-menu {
@@ -143,37 +152,77 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   transition: all 0.3s ease;
   border-radius: 8px;
   margin: 4px 8px;
+  /* 原始：繼承預設顏色 */
+  /* 修改：使用深色主題文字顏色 */
+  color: var(--text-secondary);
+  background: transparent;
 }
 
 .sidebar-menu .el-menu-item:hover {
-  background: rgba(102, 126, 234, 0.15);
+  /* 原始：rgba(102, 126, 234, 0.15) */
+  /* 修改：使用深色主題卡片背景 */
+  background: var(--bg-card);
+  color: var(--text-primary);
   transform: translateX(4px);
 }
 
 .sidebar-menu .el-menu-item.is-active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-  color: #667eea;
+  /* 原始：linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)) */
+  /* 修改：使用深色主題漸層 */
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-card-hover));
+  color: var(--accent-primary);
   font-weight: 600;
+  border: 1px solid var(--border-color-focus);
 }
 
 .el-main {
   background: transparent;
   padding: 20px;
   overflow-y: auto;
+  color: var(--text-primary);
 }
 
-/* 全局卡片样式 */
+/* ===== 卡片樣式 - 深色玻璃態 ===== */
 .el-main .el-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
+  /* 原始：rgba(255, 255, 255, 0.5) */
+  /* 修改：使用深色主題變數 */
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  /* 原始：rgba(255, 255, 255, 0.4) */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  /* 原始：rgba(0, 0, 0, 0.15) */
+  /* 修改：深色陰影 */
+  box-shadow: 0 10px 40px var(--shadow-md);
   transition: all 0.3s ease;
+  color: var(--text-primary);
 }
 
 .el-main .el-card:hover {
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+  /* 原始：rgba(0, 0, 0, 0.2) */
+  /* 修改：深色陰影 */
+  box-shadow: 0 12px 48px var(--shadow-lg);
   transform: translateY(-2px);
+  border-color: var(--border-color-focus);
+  background: var(--bg-card-hover);
+}
+
+/* ===== Card Header 樣式 ===== */
+.el-card__header {
+  /* 原始：繼承卡片背景 */
+  /* 修改：深色次要背景 */
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+/* ===== Typography 覆蓋 ===== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+p, span, div {
+  color: var(--text-secondary);
 }
 </style>
