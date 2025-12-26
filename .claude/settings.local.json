@@ -1,7 +1,4 @@
 {
-  "env": {
-    "ANTHROPIC_MODEL": "GLM-4.7"
-  },
   "permissions": {
     "allow": [
       "Bash(source .venv/bin/activate)",

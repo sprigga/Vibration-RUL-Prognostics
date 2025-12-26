@@ -23,7 +23,7 @@
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="6">
         <el-card class="stats-card">
-          <el-statistic title="整體完成度" :value="73" suffix="%">
+          <el-statistic title="整體完成度" :value="78" suffix="%">
             <template #prefix>
               <el-icon><TrendCharts /></el-icon>
             </template>
@@ -32,7 +32,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stats-card">
-          <el-statistic title="已實現功能" :value="9" suffix="個視圖">
+          <el-statistic title="已實現功能" :value="10" suffix="個視圖">
             <template #prefix>
               <el-icon style="color: #67c23a;"><CircleCheck /></el-icon>
             </template>
@@ -41,7 +41,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stats-card">
-          <el-statistic title="待補強功能" :value="5" suffix="個模組">
+          <el-statistic title="核心後端模組" :value="18" suffix="個文件">
             <template #prefix>
               <el-icon style="color: #e6a23c;"><Warning /></el-icon>
             </template>
@@ -50,7 +50,7 @@
       </el-col>
       <el-col :span="6">
         <el-card class="stats-card">
-          <el-statistic title="後端 API" :value="8" suffix="個模組">
+          <el-statistic title="API 端點" :value="50" suffix="+ 個">
             <template #prefix>
               <el-icon style="color: #409eff;"><Connection /></el-icon>
             </template>
@@ -85,13 +85,19 @@
                     <h4>✅ 已實現功能</h4>
                     <el-timeline>
                       <el-timeline-item color="#67c23a" timestamp="Dashboard.vue">
-                        光譜峭度（Spectral Kurtosis）計算
+                        光譜峭度（Spectral Kurtosis）5.5-6.0 kHz 範圍計算
                       </el-timeline-item>
-                      <el-timeline-item color="#67c23a" timestamp="Frontend">
-                        移動平均處理實現
+                      <el-timeline-item color="#67c23a" timestamp="timedomain.py">
+                        Kurtosis 特徵提取（時域分析）
                       </el-timeline-item>
                       <el-timeline-item color="#67c23a" timestamp="Dashboard.vue">
-                        故障閾值檢測（峭度閾值參考）
+                        移動平均光譜峭度（MAS Kurtosis）實現
+                      </el-timeline-item>
+                      <el-timeline-item color="#67c23a" timestamp="Dashboard.vue">
+                        故障閾值檢測與視覺化呈現
+                      </el-timeline-item>
+                      <el-timeline-item color="#67c23a" timestamp="PHMDatabase.vue">
+                        完整的 PHM 2012 數據集整合與查詢
                       </el-timeline-item>
                     </el-timeline>
                   </el-col>
@@ -119,7 +125,7 @@
                   show-icon
                   style="margin-top: 15px;"
                 >
-                  <p><strong>部分實現（約 55%）</strong> - 特徵提取完成，但缺少核心預測演算法</p>
+                  <p><strong>部分實現（約 65%）</strong> - 特徵提取完成，統計模型基礎實現，但缺少貝葉斯演算法核心</p>
                 </el-alert>
               </div>
             </el-tab-pane>
@@ -141,10 +147,16 @@
                     <h4>✅ 已實現功能</h4>
                     <el-timeline>
                       <el-timeline-item color="#67c23a" timestamp="timefrequency.py">
-                        小波變換（CWT）部分實現
+                        連續小波變換（CWT）完整實現
+                      </el-timeline-item>
+                      <el-timeline-item color="#67c23a" timestamp="timefrequency.py">
+                        短時傅立葉變換（STFT）實現
                       </el-timeline-item>
                       <el-timeline-item color="#67c23a" timestamp="timedomain.py">
-                        時域特徵（累積信號能量、峰值）
+                        基礎時域特徵（RMS、Peak、Kurtosis、Crest Factor）
+                      </el-timeline-item>
+                      <el-timeline-item color="#67c23a" timestamp="TimeFrequencyAnalysis.vue">
+                        時頻譜圖視覺化與分析介面
                       </el-timeline-item>
                     </el-timeline>
                   </el-col>
@@ -170,12 +182,12 @@
 
                 <el-alert
                   title="實現狀態"
-                  type="error"
+                  type="warning"
                   :closable="false"
                   show-icon
                   style="margin-top: 15px;"
                 >
-                  <p><strong>低度實現（約 20%）</strong> - 僅有基礎特徵，缺少完整的 34 特徵流程與機器學習模組</p>
+                  <p><strong>中度實現（約 35%）</strong> - 基礎特徵提取完成，時頻分析模組完善，但缺少核心機器學習流程</p>
                 </el-alert>
               </div>
             </el-tab-pane>
@@ -234,7 +246,7 @@
                   show-icon
                   style="margin-top: 15px;"
                 >
-                  <p><strong>高度實現（約 85%）</strong> - 核心功能完善，僅需自動化預測流程</p>
+                  <p><strong>高度實現（約 90%）</strong> - 核心功能完善，包含完整的 FFT、包絡分析、故障頻率檢測，僅需自動化 RUL 預測流程</p>
                 </el-alert>
               </div>
             </el-tab-pane>
@@ -414,6 +426,113 @@
       </el-col>
     </el-row>
 
+    <!-- 技術棧分析 -->
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
+            <h2>🛠️ 技術棧分析</h2>
+          </template>
+
+          <el-row :gutter="15">
+            <el-col :span="8">
+              <el-card shadow="hover" class="tech-stack-card">
+                <div class="tech-header">
+                  <el-icon color="#4fc08d" size="24"><DataAnalysis /></el-icon>
+                  <h4>前端技術</h4>
+                </div>
+                <ul class="tech-list">
+                  <li>✅ Vue 3 + Composition API</li>
+                  <li>✅ Element Plus UI 組件庫</li>
+                  <li>✅ ECharts 數據視覺化</li>
+                  <li>✅ Vue Router 4.0</li>
+                  <li>✅ Vite 建置工具</li>
+                  <li>✅ JavaScript ES6+</li>
+                  <li>✅ CSS3 深色主題</li>
+                </ul>
+              </el-card>
+            </el-col>
+            
+            <el-col :span="8">
+              <el-card shadow="hover" class="tech-stack-card">
+                <div class="tech-header">
+                  <el-icon color="#009688" size="24"><Connection /></el-icon>
+                  <h4>後端技術</h4>
+                </div>
+                <ul class="tech-list">
+                  <li>✅ FastAPI + Pydantic</li>
+                  <li>✅ NumPy + Pandas + SciPy</li>
+                  <li>✅ SQLite 資料庫</li>
+                  <li>✅ Python 3.11+</li>
+                  <li>✅ 科學計算生態系</li>
+                  <li>✅ RESTful API 設計</li>
+                  <li>✅ CORS 跨域支援</li>
+                </ul>
+              </el-card>
+            </el-col>
+
+            <el-col :span="8">
+              <el-card shadow="hover" class="tech-stack-card">
+                <div class="tech-header">
+                  <el-icon color="#2496ed" size="24"><TrendCharts /></el-icon>
+                  <h4>部署與工具</h4>
+                </div>
+                <ul class="tech-list">
+                  <li>✅ Docker + Docker Compose</li>
+                  <li>✅ Nginx 反向代理</li>
+                  <li>✅ 多階段建置 (Multi-stage)</li>
+                  <li>✅ 開發/生產環境分離</li>
+                  <li>✅ 自動化啟動腳本</li>
+                  <li>✅ uv 快速 Python 包管理</li>
+                  <li>✅ 為確化相依版本管理</li>
+                </ul>
+              </el-card>
+            </el-col>
+          </el-row>
+
+          <el-divider />
+
+          <el-row :gutter="15">
+            <el-col :span="12">
+              <h4>📊 数据处理能力</h4>
+              <el-descriptions :column="1" border>
+                <el-descriptions-item label="数据集支持">
+                  PHM IEEE 2012 Challenge Dataset (学习集 + 测试集)
+                </el-descriptions-item>
+                <el-descriptions-item label="采样率">
+                  25,600 Hz 高频采样
+                </el-descriptions-item>
+                <el-descriptions-item label="数据量">
+                  超过 50,000+ 测量记录
+                </el-descriptions-item>
+                <el-descriptions-item label="特徵提取">
+                  支持 20+ 種振動特徵提取
+                </el-descriptions-item>
+              </el-descriptions>
+            </el-col>
+            
+            <el-col :span="12">
+              <h4>🌐 系統架構</h4>
+              <el-descriptions :column="1" border>
+                <el-descriptions-item label="架構模式">
+                  微服務分離式架構
+                </el-descriptions-item>
+                <el-descriptions-item label="API 設計">
+                  RESTful API + OpenAPI 文檔
+                </el-descriptions-item>
+                <el-descriptions-item label="資料庫">
+                  SQLite + 時序數據優化
+                </el-descriptions-item>
+                <el-descriptions-item label="部署方式">
+                  Docker 容器化 + 編排部署
+                </el-descriptions-item>
+              </el-descriptions>
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 總結與建議 -->
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="24">
@@ -426,12 +545,14 @@
             <el-col :span="12">
               <h3>🎯 專案優勢</h3>
               <ul class="summary-list">
-                <li>✅ 專案架構清晰，前後端分離良好</li>
-                <li>✅ 時域、頻域、時頻分析功能完整</li>
-                <li>✅ 包絡分析與故障診斷非常專業</li>
-                <li>✅ PHM 資料庫系統完善</li>
-                <li>✅ Dashboard 提供完整的論文方法說明</li>
-                <li>✅ 信號處理和特徵提取實現完善（約 73%）</li>
+                <li>✅ 專案架構清晰，Vue 3 + FastAPI 前後端分離優雅</li>
+                <li>✅ 時域、頻域、時頻分析模組完整且成熟</li>
+                <li>✅ 包絡分析與故障診斷非常專業化</li>
+                <li>✅ PHM 2012 資料庫系統完善，整合 SQLite</li>
+                <li>✅ 高階統計特徵完整實現（NA4, FM4, M6A, M8A）</li>
+                <li>✅ 信號處理和特徵提取模組完傖（約 78%）</li>
+                <li>✅ 具備 18 個後端核心模組和 10 個前端視圖</li>
+                <li>✅ Docker 容器化部署和開發環境完善</li>
               </ul>
             </el-col>
 
@@ -455,9 +576,9 @@
             :closable="false"
             show-icon
           >
-            <p>建議優先完成<strong>方法三的自動化流程</strong>（冠軍方法，已有 85% 基礎），
+            <p>建議優先完成<strong>方法三的自動化流程</strong>（冠軍方法，已有 90% 基礎），
             這將使專案具備完整的 RUL 預測能力。接著可以考慮實現<strong>方法二的機器學習模組</strong>，
-            擴展專案的預測策略多樣性。方法一的貝葉斯方法則可以作為進階功能，提供不確定性量化能力。</p>
+            擴展專案的預測策略多樣性。然後是<strong>方法一的貝葉斯方法</strong>，提供不確定性量化能力。</p>
           </el-alert>
         </el-card>
       </el-col>
@@ -513,6 +634,30 @@ const featureData = ref([
   },
   {
     category: '時域特徵',
+    feature: 'Standard Deviation',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'timedomain.py',
+    notes: '完整實現'
+  },
+  {
+    category: '時域特徵',
+    feature: 'Variance',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'timedomain.py',
+    notes: '完整實現'
+  },
+  {
+    category: '時域特徵',
+    feature: 'Energy Operator (EO)',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'timedomain.py',
+    notes: 'Teager-Kaiser 能量運算元'
+  },
+  {
+    category: '時域特徵',
     feature: '累積信號能量',
     status: '⚠️ 可計算',
     statusType: 'warning',
@@ -552,12 +697,52 @@ const featureData = ref([
     notes: '異常檢測功能'
   },
   {
-    category: '進階方法',
-    feature: '小波變換',
+    category: '時頻分析',
+    feature: '短時傅立葉變換（STFT）',
     status: '✅ 已實現',
     statusType: 'success',
-    location: 'timefrequency.py (CWT)',
-    notes: '需補充能量特徵'
+    location: 'timefrequency.py, TimeFrequencyAnalysis.vue',
+    notes: '完整實現含視覺化'
+  },
+  {
+    category: '時頻分析',
+    feature: '連續小波變換（CWT）',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'timefrequency.py, TimeFrequencyAnalysis.vue',
+    notes: 'Morlet 小波完整實現'
+  },
+  {
+    category: '時頻分析',
+    feature: '時頻譜圖',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'TimeFrequencyAnalysis.vue',
+    notes: 'ECharts 動態視覺化'
+  },
+  {
+    category: '進階方法',
+    feature: '高階統計特徵 (NA4, FM4, M6A, M8A)',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'filterprocess.py, HigherOrderStatistics.vue',
+    notes: '高階統計特徵完整實現'
+  },
+  {
+    category: '進階方法',
+    feature: 'NB4 包絡分析（希爾伯特）',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'hilberttransform.py, EnvelopeAnalysis.vue',
+    notes: '包絡分析完整實現'
+  },
+  {
+    category: '進階方法',
+    feature: '移動平均平滑化',
+    status: '✅ 已實現',
+    statusType: 'success',
+    location: 'Dashboard.vue',
+    notes: 'MAS Kurtosis 實現'
   },
   {
     category: '進階方法',
@@ -576,28 +761,20 @@ const featureData = ref([
     notes: '34 → 3 主成分'
   },
   {
-    category: '進階方法',
-    feature: '移動平均平滑化',
-    status: '✅ 已實現',
-    statusType: 'success',
-    location: 'Dashboard.vue',
-    notes: 'MAS Kurtosis'
+    category: '機器學習',
+    feature: 'LS-SVR 預測模型',
+    status: '❌ 未實現',
+    statusType: 'danger',
+    location: '-',
+    notes: '方法二的核心模型'
   },
   {
-    category: '進階方法',
-    feature: 'NA4, FM4, M6A, M8A',
-    status: '✅ 已實現',
-    statusType: 'success',
-    location: 'filterprocess.py, HigherOrderStatistics.vue',
-    notes: '高階統計特徵完整'
-  },
-  {
-    category: '進階方法',
-    feature: 'NB4（希爾伯特）',
-    status: '✅ 已實現',
-    statusType: 'success',
-    location: 'hilberttransform.py, EnvelopeAnalysis.vue',
-    notes: '包絡分析完整'
+    category: '機器學習',
+    feature: '貝葉斯蒙地卡羅',
+    status: '❌ 未實現',
+    statusType: 'danger',
+    location: '-',
+    notes: '方法一的核心演算法'
   }
 ])
 
@@ -607,18 +784,18 @@ const completedModules = ref([
     name: '時域分析',
     icon: 'TrendCharts',
     color: '#409eff',
-    progress: 90,
+    progress: 95,
     progressStatus: 'success',
-    features: ['Peak', 'RMS', 'Kurtosis', 'Crest Factor'],
-    files: ['timedomain.py', 'TimeDomainAnalysis.vue']
+    features: ['Peak', 'RMS', 'Kurtosis', 'Crest Factor', 'Std Dev', 'Variance', 'EO'],
+    files: ['timedomain.py', 'TimeDomainAnalysis.vue', 'Algorithms.vue']
   },
   {
     name: '頻域分析',
     icon: 'DataAnalysis',
     color: '#67c23a',
-    progress: 85,
+    progress: 90,
     progressStatus: 'success',
-    features: ['FFT', 'FM0', 'TSA', '軸承故障頻率'],
+    features: ['FFT', 'PSD', '軸承故障頻率', '頻譜分析', '功率譜密度'],
     files: ['frequencydomain.py', 'FrequencyDomainAnalysis.vue']
   },
   {
@@ -649,13 +826,22 @@ const completedModules = ref([
     files: ['filterprocess.py', 'HigherOrderStatistics.vue']
   },
   {
+    name: '數位濾波處理',
+    icon: 'Connection',
+    color: '#f56c6c',
+    progress: 85,
+    progressStatus: 'success',
+    features: ['帶通濾波器', '高通濾波器', '低通濾波器', '訊號前處理'],
+    files: ['filterprocess.py', '各視圖組件整合']
+  },
+  {
     name: 'PHM 資料庫',
     icon: 'Folder',
     color: '#909399',
-    progress: 95,
+    progress: 98,
     progressStatus: 'success',
-    features: ['查詢系統', '視覺化', '溫度數據', '異常搜尋'],
-    files: ['phm_processor.py', 'phm_query.py', 'PHMDatabase.vue']
+    features: ['查詢系統', '視覺化', '溫度數據', '異常搜尋', '統計分析', 'SQLite 整合'],
+    files: ['phm_processor.py', 'phm_query.py', 'phm_temperature_query.py', 'PHMDatabase.vue', 'PHMTraining.vue']
   }
 ])
 </script>
@@ -1375,6 +1561,58 @@ const completedModules = ref([
   /* 第二次修改: 32px - 進一步增大統計數值 */
   font-size: 32px;
   font-weight: bold;
+  color: var(--text-primary);
+}
+
+/* ===== 技術棧卡片樣式 ===== */
+.tech-stack-card {
+  margin-bottom: 15px;
+  min-height: 280px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tech-stack-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.tech-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tech-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+  background: none;
+  padding: 0;
+  border: none;
+  font-weight: 600;
+}
+
+.tech-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 2;
+}
+
+.tech-list li {
+  margin: 8px 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.tech-list li:hover {
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
 </style>

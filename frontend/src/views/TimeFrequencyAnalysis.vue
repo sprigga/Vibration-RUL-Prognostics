@@ -1043,6 +1043,27 @@ code {
   font-size: 16px;
 }
 
+/* 針對 size="small" 的 descriptions 表格增大文字以提升可讀性 */
+.time-frequency-page :deep(.el-descriptions.el-descriptions--small) {
+  /* 覆蓋 small size 的預設字體大小 */
+}
+.time-frequency-page :deep(.el-descriptions.el-descriptions--small .el-descriptions__label) {
+  /* 原始: 16px */
+  /* 第一次修改: 18px - 增大 small size 表格標籤文字以方便閱讀 */
+  /* 第二次修改: 17.1px (18px * 0.95) - 縮小5%並防止文字換行 */
+  font-size: 17.1px;
+  padding: 14px 18px !important;
+  white-space: nowrap;
+}
+.time-frequency-page :deep(.el-descriptions.el-descriptions--small .el-descriptions__content) {
+  /* 原始: 16px */
+  /* 第一次修改: 18px - 增大 small size 表格內容文字以方便閱讀 */
+  /* 第二次修改: 17.1px (18px * 0.95) - 縮小5%並防止文字換行 */
+  font-size: 17.1px;
+  padding: 14px 18px !important;
+  white-space: nowrap;
+}
+
 .time-frequency-page :deep(.el-descriptions__cell) {
   /* 表格單元格邊框 */
   border-color: var(--border-color) !important;
@@ -1064,7 +1085,7 @@ code {
 }
 
 /* 數字值的特殊樣式 */
-.time-frequency-page :deep(.el-descriptions__content) {
+.time-frequency-page :deep(.el-descriptions__content strong) {
   font-family: 'Consolas', 'Monaco', monospace;
   font-weight: 600;
   color: var(--accent-primary) !important;

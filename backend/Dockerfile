@@ -11,16 +11,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better layer caching
-COPY backend/requirements.txt .
+# 注意：因為 docker-compose.yml 設定 context: ./backend，所以這裡直接 copy . (當前目錄的檔案)
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy legacy_module directory
-# COPY legacy_module/ ./legacy_module/
-
 # Copy backend application code
-COPY backend/ .
+# 因為 build context 是 ./backend，所以這裡 copy . 就是 copy backend 目錄的內容
+COPY . .
 
 # Create directories for data and results
 RUN mkdir -p /app/phm_analysis_results

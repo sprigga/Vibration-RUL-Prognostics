@@ -319,7 +319,7 @@
                     :closable="false"
                     style="margin-top: 16px;"
                   >
-                    <p style="font-size: 12px; margin: 0;">
+                    <p style="font-size: 14px; margin: 0;">
                       Edwin Sutrisno et al., "Estimation of Remaining Useful Life of Ball Bearings using Data Driven Methodologies",
                       IEEE PHM 2012 Data Challenge, CALCE Center, University of Maryland
                     </p>

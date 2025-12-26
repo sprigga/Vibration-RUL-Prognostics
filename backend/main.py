@@ -10,34 +10,95 @@ import pandas as pd
 from datetime import datetime
 import os
 import json
+import sys
+import sqlite3
 
-# 原始導入方式 (無法找到模組)
-# from phm_processor import PHMDataProcessor
-# from phm_query import PHMDatabaseQuery
-# from phm_temperature_query import PHMTemperatureQuery
-# from config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
-# from timefrequency import TimeFrequency
-# from hilberttransform import HilbertTransform
-# from filterprocess import FilterProcess
-# from timedomain import TimeDomain
-# from frequencydomain import FrequencyDomain
+# 動態路徑處理：兼容本地開發和容器環境
+# 獲取當前檔案所在目錄
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+# 如果當前目錄不在 sys.path 中，添加它
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
 
-# 修改為相對導入以解決模組查找問題
-from .phm_processor import PHMDataProcessor
-from .phm_query import PHMDatabaseQuery
-from .phm_temperature_query import PHMTemperatureQuery
-from .config import PHM_DATABASE_PATH, PHM_TEMPERATURE_DATABASE_PATH, CORS_ORIGINS, DEFAULT_SAMPLING_RATE
-from .timefrequency import TimeFrequency
-from .hilberttransform import HilbertTransform
-from .filterprocess import FilterProcess
-from .timedomain import TimeDomain
-from .frequencydomain import FrequencyDomain
+# 使用直接導入（適合兩種環境）
+from phm_processor import PHMDataProcessor
+from phm_query import PHMDatabaseQuery
+from phm_temperature_query import PHMTemperatureQuery
+from config import (
+    PHM_DATABASE_PATH,
+    PHM_TEMPERATURE_DATABASE_PATH,
+    CORS_ORIGINS,
+    DEFAULT_SAMPLING_RATE,
+    ENVELOPE_FILTER_LOWCUT,
+    ENVELOPE_FILTER_HIGHCUT,
+    SIGNAL_DISPLAY_LIMIT,
+    SPECTRUM_DISPLAY_LIMIT,
+    ENVELOPE_SPECTRUM_DISPLAY_LIMIT
+)
+from timefrequency import TimeFrequency
+from hilberttransform import HilbertTransform
+from filterprocess import FilterProcess
+from timedomain import TimeDomain
+from frequencydomain import FrequencyDomain
+
+# ========================================
+# Database Connection Manager
+# ========================================
+
+import contextlib
+import threading
+from typing import Generator
+
+# Thread-local storage for database connections
+_db_local = threading.local()
+
+@contextlib.contextmanager
+def get_db_connection(db_path: str = PHM_DATABASE_PATH) -> Generator[sqlite3.Connection, None, None]:
+    """
+    資料庫連接上下文管理器
+
+    使用線程本地存儲確保每個線程有自己的連接，
+    並在上下文退出時自動關閉連接。
+
+    Args:
+        db_path: 資料庫路徑，預設使用 PHM_DATABASE_PATH
+
+    Yields:
+        sqlite3.Connection: 資料庫連接對象
+    """
+    # 檢查線程本地存儲中是否已有連接
+    conn = getattr(_db_local, 'conn', None)
+
+    if conn is None:
+        # 創建新連接
+        conn = sqlite3.connect(db_path)
+        _db_local.conn = conn
+
+    try:
+        yield conn
+    finally:
+        # 注意：不在此處關閉連接，讓連接在線程結束時關閉
+        # 這樣可以提高性能，避免頻繁創建/關閉連接
+        pass
+
+def close_db_connection():
+    """關閉當前線程的資料庫連接"""
+    conn = getattr(_db_local, 'conn', None)
+    if conn is not None:
+        conn.close()
+        _db_local.conn = None
 
 app = FastAPI(
     title="Linear Guide Vibration Analysis API",
     description="API for CPC Linear Guide health monitoring and fault diagnosis",
     version="1.0.0"
 )
+
+# 在應用關閉時清理連接
+@app.on_event("shutdown")
+def shutdown_event():
+    """應用關閉時清理資料庫連接"""
+    close_db_connection()
 
 # CORS middleware for Vue.js frontend
 app.add_middleware(
@@ -312,22 +373,19 @@ async def search_phm_anomalies(
 async def calculate_time_domain_features(bearing_name: str, file_number: int):
     """計算時域特徵"""
     try:
-        import sqlite3
+        # 使用連接管理器獲取資料庫連接
+        with get_db_connection() as conn:
 
-        # 連接資料庫（使用全域配置）
-        conn = sqlite3.connect(PHM_DATABASE_PATH)
+            # 查詢數據
+            query = """
+            SELECT m.horizontal_acceleration, m.vertical_acceleration
+            FROM measurements m
+            JOIN measurement_files mf ON m.file_id = mf.file_id
+            JOIN bearings b ON mf.bearing_id = b.bearing_id
+            WHERE b.bearing_name = ? AND mf.file_number = ?
+            """
 
-        # 查詢數據
-        query = """
-        SELECT m.horizontal_acceleration, m.vertical_acceleration
-        FROM measurements m
-        JOIN measurement_files mf ON m.file_id = mf.file_id
-        JOIN bearings b ON mf.bearing_id = b.bearing_id
-        WHERE b.bearing_name = ? AND mf.file_number = ?
-        """
-
-        df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
-        conn.close()
+            df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
 
         if df.empty:
             raise HTTPException(status_code=404, detail="No data found")
@@ -363,9 +421,9 @@ async def calculate_time_domain_features(bearing_name: str, file_number: int):
                 "eo": float(td.eo(vert_df, 'vertical_acceleration'))
             },
             "signal_data": {
-                "horizontal": horiz[:1000].tolist(),  # 只返回前1000個點用於繪圖
-                "vertical": vert[:1000].tolist(),
-                "time": list(range(min(1000, len(horiz))))
+                "horizontal": horiz[:SIGNAL_DISPLAY_LIMIT].tolist(),  # 使用配置參數限制顯示點數
+                "vertical": vert[:SIGNAL_DISPLAY_LIMIT].tolist(),
+                "time": list(range(min(SIGNAL_DISPLAY_LIMIT, len(horiz))))
             }
         }
 
@@ -382,84 +440,81 @@ async def calculate_time_domain_features(bearing_name: str, file_number: int):
 async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
     """計算時域特徵趨勢（多個檔案）"""
     try:
-        import sqlite3
+        # 使用連接管理器獲取資料庫連接
+        with get_db_connection() as conn:
 
-        # 連接資料庫（使用全域配置）
-        conn = sqlite3.connect(PHM_DATABASE_PATH)
+            # 獲取檔案列表
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT mf.file_number, mf.file_id
+                FROM measurement_files mf
+                JOIN bearings b ON mf.bearing_id = b.bearing_id
+                WHERE b.bearing_name = ?
+                ORDER BY mf.file_number
+                LIMIT ?
+            """, (bearing_name, max_files))
 
-        # 獲取檔案列表
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT mf.file_number, mf.file_id
-            FROM measurement_files mf
-            JOIN bearings b ON mf.bearing_id = b.bearing_id
-            WHERE b.bearing_name = ?
-            ORDER BY mf.file_number
-            LIMIT ?
-        """, (bearing_name, max_files))
+            files = cursor.fetchall()
 
-        files = cursor.fetchall()
+            if not files:
+                raise HTTPException(status_code=404, detail="No files found")
 
-        if not files:
-            raise HTTPException(status_code=404, detail="No files found")
+            trend_data = {
+                "bearing_name": bearing_name,
+                "file_count": len(files),
+                "horizontal": {
+                    "rms": [],
+                    "peak": [],
+                    "avg": [],
+                    "kurtosis": [],
+                    "crest_factor": [],
+                    "eo": []
+                },
+                "vertical": {
+                    "rms": [],
+                    "peak": [],
+                    "avg": [],
+                    "kurtosis": [],
+                    "crest_factor": [],
+                    "eo": []
+                },
+                "file_numbers": []
+            }
 
-        trend_data = {
-            "bearing_name": bearing_name,
-            "file_count": len(files),
-            "horizontal": {
-                "rms": [],
-                "peak": [],
-                "avg": [],
-                "kurtosis": [],
-                "crest_factor": [],
-                "eo": []
-            },
-            "vertical": {
-                "rms": [],
-                "peak": [],
-                "avg": [],
-                "kurtosis": [],
-                "crest_factor": [],
-                "eo": []
-            },
-            "file_numbers": []
-        }
+            td = TimeDomain()
 
-        td = TimeDomain()
+            for file_num, file_id in files:
+                # 查詢該檔案的數據
+                query = f"""
+                SELECT horizontal_acceleration, vertical_acceleration
+                FROM measurements
+                WHERE file_id = {file_id}
+                """
+                df = pd.read_sql_query(query, conn)
 
-        for file_num, file_id in files:
-            # 查詢該檔案的數據
-            query = f"""
-            SELECT horizontal_acceleration, vertical_acceleration
-            FROM measurements
-            WHERE file_id = {file_id}
-            """
-            df = pd.read_sql_query(query, conn)
+                if not df.empty:
+                    horiz = df['horizontal_acceleration'].values
+                    vert = df['vertical_acceleration'].values
 
-            if not df.empty:
-                horiz = df['horizontal_acceleration'].values
-                vert = df['vertical_acceleration'].values
+                    # 轉換為 DataFrame 以供 EO 方法使用
+                    horiz_df = pd.DataFrame({'horizontal_acceleration': horiz})
+                    vert_df = pd.DataFrame({'vertical_acceleration': vert})
 
-                # 轉換為 DataFrame 以供 EO 方法使用
-                horiz_df = pd.DataFrame({'horizontal_acceleration': horiz})
-                vert_df = pd.DataFrame({'vertical_acceleration': vert})
+                    trend_data["file_numbers"].append(file_num)
+                    trend_data["horizontal"]["rms"].append(float(td.rms(horiz)))
+                    trend_data["horizontal"]["peak"].append(float(td.peak(horiz)))
+                    trend_data["horizontal"]["avg"].append(float(td.avg(horiz)))
+                    trend_data["horizontal"]["kurtosis"].append(float(td.kurt(horiz)))
+                    trend_data["horizontal"]["crest_factor"].append(float(td.cf(horiz)))
+                    trend_data["horizontal"]["eo"].append(float(td.eo(horiz_df, 'horizontal_acceleration')))
 
-                trend_data["file_numbers"].append(file_num)
-                trend_data["horizontal"]["rms"].append(float(td.rms(horiz)))
-                trend_data["horizontal"]["peak"].append(float(td.peak(horiz)))
-                trend_data["horizontal"]["avg"].append(float(td.avg(horiz)))
-                trend_data["horizontal"]["kurtosis"].append(float(td.kurt(horiz)))
-                trend_data["horizontal"]["crest_factor"].append(float(td.cf(horiz)))
-                trend_data["horizontal"]["eo"].append(float(td.eo(horiz_df, 'horizontal_acceleration')))
+                    trend_data["vertical"]["rms"].append(float(td.rms(vert)))
+                    trend_data["vertical"]["peak"].append(float(td.peak(vert)))
+                    trend_data["vertical"]["avg"].append(float(td.avg(vert)))
+                    trend_data["vertical"]["kurtosis"].append(float(td.kurt(vert)))
+                    trend_data["vertical"]["crest_factor"].append(float(td.cf(vert)))
+                    trend_data["vertical"]["eo"].append(float(td.eo(vert_df, 'vertical_acceleration')))
 
-                trend_data["vertical"]["rms"].append(float(td.rms(vert)))
-                trend_data["vertical"]["peak"].append(float(td.peak(vert)))
-                trend_data["vertical"]["avg"].append(float(td.avg(vert)))
-                trend_data["vertical"]["kurtosis"].append(float(td.kurt(vert)))
-                trend_data["vertical"]["crest_factor"].append(float(td.cf(vert)))
-                trend_data["vertical"]["eo"].append(float(td.eo(vert_df, 'vertical_acceleration')))
-
-        conn.close()
         return trend_data
 
     except Exception as e:
@@ -470,23 +525,21 @@ async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
 async def calculate_frequency_domain(bearing_name: str, file_number: int, sampling_rate: int = DEFAULT_SAMPLING_RATE):
     """計算頻域特徵（FFT）"""
     try:
-        import sqlite3
         from scipy import signal as scipy_signal
         from scipy.fft import fft, fftfreq
 
-        # 連接資料庫（使用全域配置）
-        conn = sqlite3.connect(PHM_DATABASE_PATH)
+        # 使用連接管理器獲取資料庫連接
+        with get_db_connection() as conn:
 
-        query = """
-        SELECT m.horizontal_acceleration, m.vertical_acceleration
-        FROM measurements m
-        JOIN measurement_files mf ON m.file_id = mf.file_id
-        JOIN bearings b ON mf.bearing_id = b.bearing_id
-        WHERE b.bearing_name = ? AND mf.file_number = ?
-        """
+            query = """
+            SELECT m.horizontal_acceleration, m.vertical_acceleration
+            FROM measurements m
+            JOIN measurement_files mf ON m.file_id = mf.file_id
+            JOIN bearings b ON mf.bearing_id = b.bearing_id
+            WHERE b.bearing_name = ? AND mf.file_number = ?
+            """
 
-        df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
-        conn.close()
+            df = pd.read_sql_query(query, conn, params=(bearing_name, file_number))
 
         if df.empty:
             raise HTTPException(status_code=404, detail="No data found")
@@ -524,9 +577,9 @@ async def calculate_frequency_domain(bearing_name: str, file_number: int, sampli
                 "total_power": float(np.sum(vert_magnitude**2))
             },
             "spectrum_data": {
-                "frequency": freq[:1000].tolist(),  # 只返回前1000個點
-                "horizontal_magnitude": horiz_magnitude[:1000].tolist(),
-                "vertical_magnitude": vert_magnitude[:1000].tolist()
+                "frequency": freq[:SPECTRUM_DISPLAY_LIMIT].tolist(),  # 使用配置參數限制顯示點數
+                "horizontal_magnitude": horiz_magnitude[:SPECTRUM_DISPLAY_LIMIT].tolist(),
+                "vertical_magnitude": vert_magnitude[:SPECTRUM_DISPLAY_LIMIT].tolist()
             }
         }
 
@@ -581,8 +634,8 @@ async def calculate_envelope_spectrum(
     bearing_name: str,
     file_number: int,
     sampling_rate: int = DEFAULT_SAMPLING_RATE,
-    lowcut: float = 4000,
-    highcut: float = 10000
+    lowcut: float = ENVELOPE_FILTER_LOWCUT,
+    highcut: float = ENVELOPE_FILTER_HIGHCUT
 ):
     """計算包絡頻譜"""
     try:
@@ -653,9 +706,9 @@ async def calculate_envelope_spectrum(
                 "envelope_rms": float(np.sqrt(np.mean(vert_envelope**2)))
             },
             "envelope_spectrum": {
-                "frequency": freq[:500].tolist(),
-                "horizontal_magnitude": horiz_env_magnitude[:500].tolist(),
-                "vertical_magnitude": vert_env_magnitude[:500].tolist()
+                "frequency": freq[:ENVELOPE_SPECTRUM_DISPLAY_LIMIT].tolist(),
+                "horizontal_magnitude": horiz_env_magnitude[:ENVELOPE_SPECTRUM_DISPLAY_LIMIT].tolist(),
+                "vertical_magnitude": vert_env_magnitude[:ENVELOPE_SPECTRUM_DISPLAY_LIMIT].tolist()
             }
         }
 
@@ -1004,9 +1057,9 @@ async def calculate_frequency_fft(bearing_name: str, file_number: int, sampling_
                 "total_fft_bi": float(vert_total_fft_bi)
             },
             "fft_spectrum": {
-                "frequencies": horiz_fftoutput['freqs'].tolist()[:500],  # 只返回前500個頻率點
-                "horizontal_magnitude": horiz_fftoutput['abs_fft_n'].tolist()[:500],
-                "vertical_magnitude": vert_fftoutput['abs_fft_n'].tolist()[:500]
+                "frequencies": horiz_fftoutput['freqs'].tolist()[:SPECTRUM_DISPLAY_LIMIT],  # 使用配置參數限制须譜顯示點數
+                "horizontal_magnitude": horiz_fftoutput['abs_fft_n'].tolist()[:SPECTRUM_DISPLAY_LIMIT],
+                "vertical_magnitude": vert_fftoutput['abs_fft_n'].tolist()[:SPECTRUM_DISPLAY_LIMIT]
             }
         }
 
@@ -1072,9 +1125,9 @@ async def calculate_frequency_tsa(bearing_name: str, file_number: int, sampling_
                 "total_tsa_fft_bi": float(vert_total_tsa_fft_bi)
             },
             "tsa_spectrum": {
-                "frequencies": horiz_tsa_fftoutput['multiply_freqs'].tolist()[:500],  # 只返回前500個頻率點
-                "horizontal_magnitude": horiz_tsa_fftoutput['tsa_abs_fft_n'].tolist()[:500],
-                "vertical_magnitude": vert_tsa_fftoutput['tsa_abs_fft_n'].tolist()[:500]
+                "frequencies": horiz_tsa_fftoutput['multiply_freqs'].tolist()[:SPECTRUM_DISPLAY_LIMIT],  # 使用配置參數限制頻譜顯示點數
+                "horizontal_magnitude": horiz_tsa_fftoutput['tsa_abs_fft_n'].tolist()[:SPECTRUM_DISPLAY_LIMIT],
+                "vertical_magnitude": vert_tsa_fftoutput['tsa_abs_fft_n'].tolist()[:SPECTRUM_DISPLAY_LIMIT]
             }
         }
 
@@ -1147,13 +1200,13 @@ async def calculate_hilbert_transform(
                 "envelope_peak_to_peak": float(vert_result['envelope_stats']['peak_to_peak'])
             },
             "envelope_data": {
-                "horizontal": horiz_result['envelope'][:1000].tolist(),
-                "vertical": vert_result['envelope'][:1000].tolist(),
-                "time": list(range(min(1000, len(horiz_result['envelope']))))
+                "horizontal": horiz_result['envelope'][:SIGNAL_DISPLAY_LIMIT].tolist(),
+                "vertical": vert_result['envelope'][:SIGNAL_DISPLAY_LIMIT].tolist(),
+                "time": list(range(min(SIGNAL_DISPLAY_LIMIT, len(horiz_result['envelope']))))
             },
             "instantaneous_frequency": {
-                "horizontal": horiz_result['instantaneous_frequency'][:1000].tolist(),
-                "vertical": vert_result['instantaneous_frequency'][:1000].tolist()
+                "horizontal": horiz_result['instantaneous_frequency'][:SIGNAL_DISPLAY_LIMIT].tolist(),
+                "vertical": vert_result['instantaneous_frequency'][:SIGNAL_DISPLAY_LIMIT].tolist()
             }
         }
 
@@ -1342,13 +1395,13 @@ async def get_temperature_bearing_info(bearing_name: str):
         bearing_info = temp_query.get_bearing_info(bearing_name)
         if not bearing_info:
             raise HTTPException(status_code=404, detail=f"Bearing {bearing_name} not found")
-        
+
         # 獲取文件列表
         files = temp_query.get_bearing_files(bearing_name)
-        
+
         # 獲取統計資訊
         stats = temp_query.get_temperature_statistics(bearing_name)
-        
+
         return {
             "bearing_info": bearing_info,
             "files": files,
@@ -1361,7 +1414,7 @@ async def get_temperature_bearing_info(bearing_name: str):
 
 @app.get("/api/temperature/data/{bearing_name}")
 async def get_temperature_data(
-    bearing_name: str, 
+    bearing_name: str,
     file_number: Optional[int] = None,
     limit: int = 1000
 ):
@@ -1411,7 +1464,7 @@ async def search_temperature_data(
     """搜尋溫度資料"""
     try:
         file_range = (file_start, file_end) if file_start is not None and file_end is not None else None
-        
+
         results = temp_query.search_temperature_data(
             bearing_name=bearing_name,
             min_temperature=min_temperature,
@@ -1419,7 +1472,7 @@ async def search_temperature_data(
             file_number_range=file_range,
             limit=limit
         )
-        
+
         return {
             "results": results,
             "count": len(results),
