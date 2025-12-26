@@ -403,8 +403,13 @@ const drawEnvelopeChart = () => {
       subtext: bearingInfo ? `轉速: ${bearingInfo.rpm} RPM, 軸頻率: ${bearingInfo.shaft_freq.toFixed(2)} Hz` : '',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 },
-      subtextStyle: { color: '#ffffff', fontSize: 12 }
+      /* 原始: fontSize: 16 */
+      /* 第一次修改: 18 - 增大包絡頻譜圖標題 */
+      /* 第二次修改: 20 - 進一步增大圖表標題 */
+      textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 },
+      /* 第一次修改: 13 - 增大副標題 */
+      /* 第二次修改: 14 - 進一步增大副標題 */
+      subtextStyle: { color: '#ffffff', fontSize: 14 }
     },
     tooltip: {
       trigger: 'axis',
@@ -418,7 +423,10 @@ const drawEnvelopeChart = () => {
       right: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      /* 原始: 12 */
+      /* 第一次修改: 14 - 增大圖例文字 */
+      /* 第二次修改: 15 - 進一步增大圖例文字 */
+      textStyle: { color: '#ffffff', fontSize: 15 }
     },
     grid: {
       left: '60px',
@@ -436,8 +444,11 @@ const drawEnvelopeChart = () => {
       max: Math.max(...frequency),
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -452,8 +463,11 @@ const drawEnvelopeChart = () => {
       max: 0.05,
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -562,8 +576,13 @@ const drawFaultFreqReferenceChart = () => {
       top: '1%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 },
-      subtextStyle: { color: '#ffffff', fontSize: 12 }
+      /* 原始: fontSize: 16 */
+      /* 第一次修改: 18 - 增大故障頻率參考圖標題 */
+      /* 第二次修改: 20 - 進一步增大圖表標題 */
+      textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 },
+      /* 第一次修改: 13 - 增大副標題 */
+      /* 第二次修改: 14 - 進一步增大副標題 */
+      subtextStyle: { color: '#ffffff', fontSize: 14 }
     },
     grid: {
       left: '3%',
@@ -579,8 +598,14 @@ const drawFaultFreqReferenceChart = () => {
       max: maxFreq,
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      /* 原始: 14 */
+      /* 第一次修改: 14 - 增大軸標題 */
+      /* 第二次修改: 15 - 進一步增大軸標題 */
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         show: true,
@@ -629,7 +654,10 @@ const drawHilbertEnvelopeChart = () => {
       text: '包絡線波形',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
+      /* 原始: fontSize: 16 */
+      /* 第一次修改: 18 - 增大包絡線波形圖標題 */
+      /* 第二次修改: 20 - 進一步增大圖表標題 */
+      textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
     },
     tooltip: {
       trigger: 'axis',
@@ -643,7 +671,10 @@ const drawHilbertEnvelopeChart = () => {
       right: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      /* 原始: 12 */
+      /* 第一次修改: 14 - 增大圖例文字 */
+      /* 第二次修改: 15 - 進一步增大圖例文字 */
+      textStyle: { color: '#ffffff', fontSize: 15 }
     },
     grid: {
       left: '3%',
@@ -657,8 +688,14 @@ const drawHilbertEnvelopeChart = () => {
       name: '樣本點',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      /* 原始: 14 */
+      /* 第一次修改: 14 - 增大軸標題 */
+      /* 第二次修改: 15 - 進一步增大軸標題 */
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -669,8 +706,14 @@ const drawHilbertEnvelopeChart = () => {
       name: '包絡振幅',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      /* 原始: 14 */
+      /* 第一次修改: 14 - 增大軸標題 */
+      /* 第二次修改: 15 - 進一步增大軸標題 */
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -710,7 +753,10 @@ const drawHilbertFreqChart = () => {
       text: '瞬時頻率',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
+      /* 原始: fontSize: 16 */
+      /* 第一次修改: 18 - 增大瞬時頻率圖標題 */
+      /* 第二次修改: 20 - 進一步增大圖表標題 */
+      textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
     },
     tooltip: {
       trigger: 'axis',
@@ -724,7 +770,10 @@ const drawHilbertFreqChart = () => {
       right: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      /* 原始: 12 */
+      /* 第一次修改: 14 - 增大圖例文字 */
+      /* 第二次修改: 15 - 進一步增大圖例文字 */
+      textStyle: { color: '#ffffff', fontSize: 15 }
     },
     grid: {
       left: '3%',
@@ -738,8 +787,14 @@ const drawHilbertFreqChart = () => {
       name: '樣本點',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      /* 原始: 14 */
+      /* 第一次修改: 14 - 增大軸標題 */
+      /* 第二次修改: 15 - 進一步增大軸標題 */
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -750,8 +805,14 @@ const drawHilbertFreqChart = () => {
       name: '頻率 (Hz)',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      /* 原始: 14 */
+      /* 第一次修改: 14 - 增大軸標題 */
+      /* 第二次修改: 15 - 進一步增大軸標題 */
+      nameTextStyle: { color: '#ffffff', fontSize: 15 },
+      /* 原始: 12 */
+      /* 第一次修改: 13 - 增大軸刻度文字 */
+      /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+      axisLabel: { color: '#ffffff', fontSize: 14 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -785,6 +846,63 @@ const drawHilbertFreqChart = () => {
 /* ===== 原始：淺色主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
 
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+/* 原始設定: h1=3.2em, h2=1.5em, h3=1.25em, h4=1.1em, h5=1em, p=16px */
+/* 修改: 增大標題與內容文字,提供更舒適的閱讀體驗 */
+.envelope-analysis-page h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.envelope-analysis-page h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 第一次修改: 1.75em (≈28px) - 增大主要區塊標題 */
+  /* 第二次修改: 1.85em (≈29.6px) - 進一步增大標題以提升可讀性 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.envelope-analysis-page h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 第一次修改: 1.4em (≈22.4px) - 增大小區塊標題 */
+  /* 第二次修改: 1.5em (≈24px) - 進一步增大小區塊標題 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.envelope-analysis-page h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 第一次修改: 1.2em (≈19.2px) - 增大小標題 */
+  /* 第二次修改: 1.25em (≈20px) - 進一步增大小標題 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+.envelope-analysis-page h5 {
+  /* 原始: 1em (16px) */
+  /* 修改: 1.1em (≈17.6px) - 增大次級標題 */
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.envelope-analysis-page p {
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大內容文字 */
+  /* 第二次修改: 18px - 進一步增大內容文字以提升閱讀舒適度 */
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.envelope-analysis-page a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
 .envelope-analysis-page {
   padding: 20px;
   min-height: 100%;
@@ -801,6 +919,10 @@ const drawHilbertFreqChart = () => {
   /* 表單標籤文字顏色 */
   color: var(--text-primary) !important;
   font-weight: 500;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表單標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表單標籤文字 */
+  font-size: 16px;
 }
 
 /* ===== 輸入框樣式 ===== */
@@ -823,6 +945,10 @@ const drawHilbertFreqChart = () => {
   /* 輸入框內部樣式 */
   background-color: transparent;
   color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大輸入框文字 */
+  /* 第二次修改: 16px - 進一步增大輸入框文字 */
+  font-size: 16px;
 }
 
 /* ===== 下拉選擇框樣式 ===== */
@@ -933,6 +1059,9 @@ const drawHilbertFreqChart = () => {
   /* 按鈕整體樣式 */
   color: var(--text-primary);
   border-color: var(--border-color);
+  /* 原始: 繼承預設 (≈14px) */
+  /* 修改: 15px - 增大按鈕文字 */
+  font-size: 15px;
 }
 
 .envelope-analysis-page :deep(.el-button--primary) {
@@ -973,7 +1102,10 @@ const drawHilbertFreqChart = () => {
   background-color: var(--bg-card);
   color: var(--accent-primary);
   font-weight: 600;
-  font-size: 16px;
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大分隔線文字 */
+  /* 第二次修改: 18px - 進一步增大分隔線文字 */
+  font-size: 18px;
   padding: 0 20px;
 }
 
@@ -985,20 +1117,14 @@ const drawHilbertFreqChart = () => {
 }
 
 /* ===== 標題樣式 ===== */
+/* [已註解] h3, h4, h5, p 樣式已移至文件開頭的全局字體定義區域,與 FONT.md 規範對齊 */
+/* 以下為補充的特定樣式調整 */
 .envelope-analysis-page h3 {
   margin-top: 0;
-  /* 原始：#303133 */
-  /* 修改：深色主題主要文字 */
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
 .envelope-analysis-page h4 {
   margin-top: 20px;
-  /* 原始：#667eea */
-  /* 修改：使用強調色 */
-  color: var(--accent-primary);
-  font-weight: 600;
   /* 確保標題在深色背景下可讀 */
   background: var(--bg-secondary);
   padding: 10px 15px;
@@ -1007,17 +1133,8 @@ const drawHilbertFreqChart = () => {
 }
 
 .envelope-analysis-page h5 {
-  color: var(--accent-info);
-  font-weight: 600;
+  /* h5 特定樣式 */
   margin-bottom: 12px;
-  font-size: 15px;
-}
-
-.envelope-analysis-page p {
-  line-height: 1.6;
-  /* 原始：#606266 */
-  /* 修改：深色主題次要文字 */
-  color: var(--text-secondary);
 }
 
 .envelope-analysis-page code {
@@ -1033,6 +1150,10 @@ const drawHilbertFreqChart = () => {
   /* 修改：深色邊框 */
   border: 1px solid var(--border-color);
   font-family: 'Consolas', 'Monaco', monospace;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大代碼文字 */
+  /* 第二次修改: 16px - 進一步增大代碼文字 */
+  font-size: 16px;
 }
 
 /* ===== 表格樣式修正 ===== */
@@ -1047,12 +1168,20 @@ const drawHilbertFreqChart = () => {
   color: var(--text-primary) !important;
   font-weight: 500;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表格標籤文字 */
+  font-size: 16px;
 }
 
 .envelope-analysis-page :deep(.el-descriptions__content) {
   /* 表格內容列樣式 */
   color: var(--text-primary) !important;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格內容文字 */
+  /* 第二次修改: 16px - 進一步增大表格內容文字 */
+  font-size: 16px;
 }
 
 .envelope-analysis-page :deep(.el-descriptions__cell) {
@@ -1073,6 +1202,65 @@ const drawHilbertFreqChart = () => {
 
 .envelope-analysis-page :deep(.el-card__body) {
   background-color: var(--bg-primary);
+}
+
+/* ===== 表格樣式 (el-table) ===== */
+.envelope-analysis-page :deep(.el-table) {
+  /* 表格整體樣式 */
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.envelope-analysis-page :deep(.el-table__header-wrapper) {
+  /* 表頭樣式 */
+  background-color: var(--bg-secondary);
+}
+
+.envelope-analysis-page :deep(.el-table th) {
+  /* 表頭單元格 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  border-color: var(--border-color) !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表頭文字 */
+  /* 第二次修改: 16px - 進一步增大表頭文字 */
+  font-size: 16px;
+}
+
+.envelope-analysis-page :deep(.el-table td) {
+  /* 表格單元格 */
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格內容文字 */
+  /* 第二次修改: 16px - 進一步增大表格內容文字 */
+  font-size: 16px;
+}
+
+.envelope-analysis-page :deep(.el-table__row) {
+  /* 表格行 */
+  background-color: var(--bg-card);
+}
+
+.envelope-analysis-page :deep(.el-table__row:hover > td) {
+  /* 表格行懸停 */
+  background-color: var(--bg-secondary) !important;
+}
+
+.envelope-analysis-page :deep(.el-table--border) {
+  /* 邊框表格 */
+  border: 1px solid var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-table--border::after) {
+  /* 表格外邊框 */
+  background-color: var(--border-color);
+}
+
+.envelope-analysis-page :deep(.el-table--border td, .el-table--border th) {
+  /* 表格單元格邊框 */
+  border-right: 1px solid var(--border-color);
 }
 
 /* ===== Steps 步驟條樣式 ===== */

@@ -1,0 +1,87 @@
+/* ===== Element Plus 下拉選單深色主題全局樣式 ===== */
+/* 此文件專門處理 Element Plus 下拉選單的深色主題樣式 */
+/* 由於下拉選單通過 Teleport 渲染到 body,需要在全局 CSS 中定義 */
+
+/* ===== 下拉選單容器 ===== */
+.el-select-dropdown {
+  /* 下拉選單背景 - 使用深色背景 */
+  background-color: #1a1a2e !important;
+  border: 1px solid #4a4a6a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ===== Popper 容器 ===== */
+.el-popper.is-light {
+  /* 覆蓋預設的淺色樣式 */
+  background-color: #1a1a2e !important;
+  border: 1px solid #4a4a6a !important;
+}
+
+/* ===== 下拉選單選項 ===== */
+.el-select-dropdown__item {
+  /* 選項文字顏色 - 白色確保可讀性 */
+  color: #ffffff !important;
+  background-color: transparent !important;
+  font-size: 14px;
+  padding: 0 20px;
+  height: 34px;
+  line-height: 34px;
+}
+
+/* ===== 選項懸停狀態 ===== */
+.el-select-dropdown__item:hover {
+  /* 懸停時的背景色 */
+  background-color: #2a2a4a !important;
+  color: #667eea !important;
+}
+
+/* ===== 選項已選中狀態 ===== */
+.el-select-dropdown__item.is-selected {
+  /* 已選中的背景色 */
+  background-color: #16213e !important;
+  color: #667eea !important;
+  font-weight: 600 !important;
+}
+
+/* ===== 選項禁用狀態 ===== */
+.el-select-dropdown__item.is-disabled {
+  color: #666666 !important;
+  cursor: not-allowed;
+}
+
+/* ===== 下拉選單選中圖標 ===== */
+.el-select-dropdown__item .el-icon {
+  color: #667eea !important;
+}
+
+/* ===== 空狀態文字 ===== */
+.el-select-dropdown__empty {
+  color: #aaaaaa !important;
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* ===== 下拉選單邊框 ===== */
+.el-select-dropdown__list {
+  background-color: transparent !important;
+  padding: 6px 0;
+}
+
+/* ===== 滾動條樣式（Webkit 瀏覽器）===== */
+.el-select-dropdown .el-scrollbar__wrap {
+  background-color: transparent !important;
+}
+
+.el-select-dropdown .el-scrollbar__bar {
+  background-color: #4a4a6a !important;
+}
+
+.el-select-dropdown .el-scrollbar__thumb {
+  background-color: #667eea !important;
+  border-radius: 4px;
+}
+
+/* ===== 確保在深色模式下文字可見 ===== */
+.el-select-dropdown * {
+  box-sizing: border-box;
+}

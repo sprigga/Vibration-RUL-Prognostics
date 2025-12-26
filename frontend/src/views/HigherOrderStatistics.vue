@@ -2,10 +2,7 @@
   <div class="higher-order-stats-page">
     <el-card>
       <template #header>
-        <div class="card-header">
-          <h2>高階統計特徵分析</h2>
-          <el-tag type="primary">NA4, FM4, M6A, M8A, ER</el-tag>
-        </div>
+        <h2>高階統計特徵分析</h2>
       </template>
 
       <h3>原理說明</h3>
@@ -259,7 +256,10 @@ const drawFilterChart = () => {
       top: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      /* 原始: 繼承預設 */
+      /* 第一次修改: 增大至 14 提升圖例可讀性 */
+      /* 第二次修改: 增大至 15 進一步提升圖例可讀性 */
+      textStyle: { color: '#ffffff', fontSize: 15 }
     },
     grid: {
       left: '3%',
@@ -272,14 +272,14 @@ const drawFilterChart = () => {
       data: ['水平', '垂直'],
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      axisLabel: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff', fontSize: 12 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } }
     },
     yAxis: {
       type: 'value',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      axisLabel: { color: '#ffffff' },
+      axisLabel: { color: '#ffffff', fontSize: 12 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -294,7 +294,11 @@ const drawFilterChart = () => {
       ...commonOption,
       title: {
         text: 'NA4（分段正規化四次矩）',
-        left: 'center'
+        left: 'center',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: 增大至 18 提升圖表標題可讀性 */
+        /* 第二次修改: 增大至 20 進一步提升圖表標題 */
+        textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
       },
       series: [{
         name: 'NA4',
@@ -317,7 +321,11 @@ const drawFilterChart = () => {
       ...commonOption,
       title: {
         text: 'FM4（四次矩特徵）',
-        left: 'center'
+        left: 'center',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: 增大至 18 提升圖表標題可讀性 */
+        /* 第二次修改: 增大至 20 進一步提升圖表標題 */
+        textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
       },
       series: [{
         name: 'FM4',
@@ -340,7 +348,11 @@ const drawFilterChart = () => {
       ...commonOption,
       title: {
         text: 'M6A（六次矩特徵）',
-        left: 'center'
+        left: 'center',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: 增大至 18 提升圖表標題可讀性 */
+        /* 第二次修改: 增大至 20 進一步提升圖表標題 */
+        textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
       },
       series: [{
         name: 'M6A',
@@ -363,7 +375,11 @@ const drawFilterChart = () => {
       ...commonOption,
       title: {
         text: 'M8A（八次矩特徵）',
-        left: 'center'
+        left: 'center',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: 增大至 18 提升圖表標題可讀性 */
+        /* 第二次修改: 增大至 20 進一步提升圖表標題 */
+        textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
       },
       series: [{
         name: 'M8A',
@@ -386,7 +402,11 @@ const drawFilterChart = () => {
       ...commonOption,
       title: {
         text: 'ER（能量比）',
-        left: 'center'
+        left: 'center',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: 增大至 18 提升圖表標題可讀性 */
+        /* 第二次修改: 增大至 20 進一步提升圖表標題 */
+        textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
       },
       series: [{
         name: 'ER',
@@ -414,7 +434,10 @@ const drawFilterTrendChart = () => {
       text: '進階濾波特徵趨勢',
       // 原始：繼承預設顏色
       // 修改：深色主題白色標題
-      textStyle: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
+      /* 原始: 16 */
+      /* 第一次修改: 18 - 增大趨勢圖標題 */
+      /* 第二次修改: 20 - 進一步增大趨勢圖標題 */
+      textStyle: { color: '#ffffff', fontSize: 20, fontWeight: 600 }
     },
     tooltip: {
       trigger: 'axis',
@@ -430,7 +453,10 @@ const drawFilterTrendChart = () => {
       right: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      /* 原始: 繼承預設 */
+      /* 第一次修改: 增大至 14 提升圖例可讀性 */
+      /* 第二次修改: 增大至 15 進一步提升圖例可讀性 */
+      textStyle: { color: '#ffffff', fontSize: 15 }
     },
     grid: {
       left: '3%',
@@ -444,8 +470,8 @@ const drawFilterTrendChart = () => {
       name: '檔案編號',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      nameTextStyle: { color: '#ffffff', fontSize: 14 },
+      axisLabel: { color: '#ffffff', fontSize: 12 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -456,8 +482,8 @@ const drawFilterTrendChart = () => {
       name: '特徵值',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      nameTextStyle: { color: '#ffffff' },
-      axisLabel: { color: '#ffffff' },
+      nameTextStyle: { color: '#ffffff', fontSize: 14 },
+      axisLabel: { color: '#ffffff', fontSize: 12 },
       axisLine: { lineStyle: { color: 'var(--border-color)' } },
       splitLine: {
         lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
@@ -499,6 +525,63 @@ const drawFilterTrendChart = () => {
 /* ===== 原始：淺色主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
 
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+/* 原始設定: h1=3.2em, h2=1.5em, h3=1.25em, h4=1.1em, h5=1em, p=16px */
+/* 修改: 增大標題與內容文字,提供更舒適的閱讀體驗 */
+.higher-order-stats-page h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.higher-order-stats-page h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 第一次修改: 1.75em (≈28px) - 增大主要區塊標題 */
+  /* 第二次修改: 1.85em (≈29.6px) - 進一步增大標題以提升可讀性 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.higher-order-stats-page h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 第一次修改: 1.4em (≈22.4px) - 增大小區塊標題 */
+  /* 第二次修改: 1.5em (≈24px) - 進一步增大小區塊標題 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.higher-order-stats-page h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 第一次修改: 1.2em (≈19.2px) - 增大小標題 */
+  /* 第二次修改: 1.25em (≈20px) - 進一步增大小標題 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+.higher-order-stats-page h5 {
+  /* 原始: 1em (16px) */
+  /* 修改: 1.1em (≈17.6px) - 增大次級標題 */
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.higher-order-stats-page p {
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大內容文字 */
+  /* 第二次修改: 18px - 進一步增大內容文字以提升閱讀舒適度 */
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.higher-order-stats-page a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
 .higher-order-stats-page {
   padding: 20px;
   min-height: 100%;
@@ -515,6 +598,10 @@ const drawFilterTrendChart = () => {
   /* 表單標籤文字顏色 */
   color: var(--text-primary) !important;
   font-weight: 500;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表單標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表單標籤文字 */
+  font-size: 16px;
 }
 
 /* ===== 輸入框樣式 ===== */
@@ -537,6 +624,10 @@ const drawFilterTrendChart = () => {
   /* 輸入框內部樣式 */
   background-color: transparent;
   color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大輸入框文字 */
+  /* 第二次修改: 16px - 進一步增大輸入框文字 */
+  font-size: 16px;
 }
 
 /* ===== 下拉選擇框樣式 ===== */
@@ -647,6 +738,9 @@ const drawFilterTrendChart = () => {
   /* 按鈕整體樣式 */
   color: var(--text-primary);
   border-color: var(--border-color);
+  /* 原始: 繼承預設 (≈14px) */
+  /* 修改: 15px - 增大按鈕文字 */
+  font-size: 15px;
 }
 
 .higher-order-stats-page :deep(.el-button--primary) {
@@ -687,7 +781,10 @@ const drawFilterTrendChart = () => {
   background-color: var(--bg-card);
   color: var(--accent-primary);
   font-weight: 600;
-  font-size: 16px;
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大分隔線文字 */
+  /* 第二次修改: 18px - 進一步增大分隔線文字 */
+  font-size: 18px;
   padding: 0 20px;
 }
 
@@ -699,32 +796,19 @@ const drawFilterTrendChart = () => {
 }
 
 /* ===== 標題樣式 ===== */
+/* [已註解] h3, h4, p 樣式已移至文件開頭的全局字體定義區域,與 FONT.md 規範對齊 */
+/* 以下為補充的特定樣式調整 */
 .higher-order-stats-page h3 {
   margin-top: 0;
-  /* 原始：#303133 */
-  /* 修改：深色主題主要文字 */
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
 .higher-order-stats-page h4 {
   margin-top: 20px;
-  /* 原始：#667eea */
-  /* 修改：使用強調色 */
-  color: var(--accent-primary);
-  font-weight: 600;
   /* 確保標題在深色背景下可讀 */
   background: var(--bg-secondary);
   padding: 10px 15px;
   border-radius: 6px;
   border-left: 4px solid var(--accent-primary);
-}
-
-.higher-order-stats-page p {
-  line-height: 1.6;
-  /* 原始：#606266 */
-  /* 修改：深色主題次要文字 */
-  color: var(--text-secondary);
 }
 
 .higher-order-stats-page code {
@@ -740,6 +824,10 @@ const drawFilterTrendChart = () => {
   /* 修改：深色邊框 */
   border: 1px solid var(--border-color);
   font-family: 'Consolas', 'Monaco', monospace;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大代碼文字 */
+  /* 第二次修改: 16px - 進一步增大代碼文字 */
+  font-size: 16px;
 }
 
 /* ===== 表格樣式修正 ===== */
@@ -754,12 +842,20 @@ const drawFilterTrendChart = () => {
   color: var(--text-primary) !important;
   font-weight: 500;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表格標籤文字 */
+  font-size: 16px;
 }
 
 .higher-order-stats-page :deep(.el-descriptions__content) {
   /* 表格內容列樣式 */
   color: var(--text-primary) !important;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格內容文字 */
+  /* 第二次修改: 16px - 進一步增大表格內容文字 */
+  font-size: 16px;
 }
 
 .higher-order-stats-page :deep(.el-descriptions__cell) {
@@ -794,8 +890,7 @@ const drawFilterTrendChart = () => {
   border-color: var(--border-color);
 }
 
-/* 組件特定樣式保留 */
-.card-header {
+/* 原始：組件特定樣式保留 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -803,11 +898,11 @@ const drawFilterTrendChart = () => {
 }
 
 .card-header h2 {
-  /* 深色主題漸層文字效果 */
+  // 深色主題漸層文字效果
   background: linear-gradient(135deg, #ffffff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
-}
+} */
 </style>

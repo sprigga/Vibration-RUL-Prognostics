@@ -5,10 +5,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>📊 專案分析報告</span>
-              <el-tag type="success">基於 EDWIN2012 論文對照</el-tag>
-            </div>
+            <h2>📊 專案分析報告 <el-tag type="success" style="margin-left: 10px;">基於 EDWIN2012 論文對照</el-tag></h2>
           </template>
           <el-alert
             title="分析說明"
@@ -67,9 +64,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>🎯 論文三種方法實現對照</span>
-            </div>
+            <h2>🎯 論文三種方法實現對照</h2>
           </template>
 
           <el-tabs type="border-card">
@@ -253,9 +248,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>🔍 特徵提取方法實現對照</span>
-            </div>
+            <h2>🔍 特徵提取方法實現對照</h2>
           </template>
 
           <el-table :data="featureData" stripe border style="width: 100%">
@@ -283,9 +276,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>✅ 高度完善的功能模組</span>
-            </div>
+            <h2>✅ 高度完善的功能模組</h2>
           </template>
 
           <el-row :gutter="15">
@@ -329,9 +320,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>🚀 優先改進建議</span>
-            </div>
+            <h2>🚀 優先改進建議</h2>
           </template>
 
           <el-collapse accordion>
@@ -430,9 +419,7 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>📝 總結與建議</span>
-            </div>
+            <h2>📝 總結與建議</h2>
           </template>
 
           <el-row :gutter="20">
@@ -674,32 +661,553 @@ const completedModules = ref([
 </script>
 
 <style scoped>
-/* ===== 參照 FONT.md 和 common-styles.css 統一樣式 ===== */
-/* 基礎樣式(h3, h4, p, code)已由 common-styles.css 統一管理 */
+/* ===== 原始：淺色主題 ===== */
+/* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+/* 原始設定: h1=3.2em, h2=1.5em, h3=1.25em, h4=1.1em, h5=1em, p=16px */
+/* 修改: 增大標題與內容文字,提供更舒適的閱讀體驗 */
+.project-analysis h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.project-analysis h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 第一次修改: 1.75em (≈28px) - 增大主要區塊標題 */
+  /* 第二次修改: 1.85em (≈29.6px) - 進一步增大標題以提升可讀性 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin: 0;
+}
+.project-analysis h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 第一次修改: 1.4em (≈22.4px) - 增大小區塊標題 */
+  /* 第二次修改: 1.5em (≈24px) - 進一步增大小區塊標題 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-top: 0;
+}
+.project-analysis h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 第一次修改: 1.2em (≈19.2px) - 增大小標題 */
+  /* 第二次修改: 1.25em (≈20px) - 進一步增大小標題 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+  margin-top: 20px;
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
+}
+.project-analysis h5 {
+  /* 原始: 1em (16px) */
+  /* 修改: 1.1em (≈17.6px) - 增大次級標題 */
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.project-analysis p {
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大內容文字 */
+  /* 第二次修改: 18px - 進一步增大內容文字以提升閱讀舒適度 */
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.project-analysis a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
 
 .project-analysis {
   padding: 20px;
   min-height: 100%;
 }
 
-/* 組件特定樣式保留 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ===== 表單區域樣式 ===== */
+.project-analysis :deep(.el-form) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題表單樣式 */
   color: var(--text-primary);
 }
 
-.card-header span {
-  font-size: 18px;
-  font-weight: bold;
-  /* 深色主題漸層文字效果 */
-  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.project-analysis :deep(.el-form-item__label) {
+  /* 表單標籤文字顏色 */
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表單標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表單標籤文字 */
+  font-size: 16px;
 }
 
+/* ===== 輸入框樣式 ===== */
+.project-analysis :deep(.el-input__wrapper) {
+  /* 原始：繼承預設顏色 */
+  /* 修改：深色主題輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.project-analysis :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-input__inner) {
+  /* 輸入框內部樣式 */
+  background-color: transparent;
+  color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大輸入框文字 */
+  /* 第二次修改: 16px - 進一步增大輸入框文字 */
+  font-size: 16px;
+}
+
+/* ===== 下拉選擇框樣式 ===== */
+.project-analysis :deep(.el-select) {
+  /* 確保下拉框繼承正確的顏色 */
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-select .el-input__wrapper) {
+  /* 下拉選擇框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.project-analysis :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-select .el-input__inner) {
+  /* 下拉選擇框文字 */
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-select__placeholder) {
+  /* 下拉選擇框佔位符 */
+  color: var(--text-secondary);
+}
+
+.project-analysis :deep(.el-select__caret) {
+  /* 下拉選擇框箭頭圖標 */
+  color: var(--text-secondary);
+}
+
+/* ===== 數字輸入框樣式 ===== */
+.project-analysis :deep(.el-input-number) {
+  /* 數字輸入框整體 */
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-input-number .el-input__wrapper) {
+  /* 數字輸入框外層包裝 */
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.project-analysis :deep(.el-input-number .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-input-number .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.project-analysis :deep(.el-input-number__decrease),
+.project-analysis :deep(.el-input-number__increase) {
+  /* 數字輸入框 +/- 按鈕 */
+  background-color: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-input-number__decrease:hover),
+.project-analysis :deep(.el-input-number__increase:hover) {
+  /* 按鈕懸停效果 */
+  color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.project-analysis :deep(.el-input-number__decrease.is-disabled),
+.project-analysis :deep(.el-input-number__increase.is-disabled) {
+  /* 禁用狀態按鈕 */
+  color: var(--text-disabled);
+  background-color: var(--bg-secondary);
+}
+
+/* ===== 按鈕樣式 ===== */
+.project-analysis :deep(.el-button) {
+  /* 按鈕整體樣式 */
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  /* 原始: 繼承預設 (≈14px) */
+  /* 修改: 15px - 增大按鈕文字 */
+  font-size: 15px;
+}
+
+.project-analysis :deep(.el-button--primary) {
+  /* 主要按鈕 */
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.project-analysis :deep(.el-button--primary:hover) {
+  /* 主要按鈕懸停 */
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.project-analysis :deep(.el-button--default) {
+  /* 預設按鈕 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-button--default:hover) {
+  /* 預設按鈕懸停 */
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* ===== 分隔線樣式 ===== */
+.project-analysis :deep(.el-divider) {
+  /* 分隔線整體樣式 */
+  border-top-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-divider__text) {
+  /* 分隔線文字樣式 */
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  font-weight: 600;
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大分隔線文字 */
+  /* 第二次修改: 18px - 進一步增大分隔線文字 */
+  font-size: 18px;
+  padding: 0 20px;
+}
+
+.project-analysis :deep(.el-divider--horizontal) {
+  /* 水平分隔線 */
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+/* ===== 代碼樣式 ===== */
+.project-analysis code {
+  /* 原始：linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) */
+  /* 修改：深色主題代碼背景 */
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  /* 原始：#667eea */
+  /* 修改：使用強調色 */
+  color: var(--accent-primary);
+  /* 原始：rgba(102, 126, 234, 0.2) */
+  /* 修改：深色邊框 */
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大代碼文字 */
+  /* 第二次修改: 16px - 進一步增大代碼文字 */
+  font-size: 16px;
+}
+
+/* ===== 表格樣式修正 ===== */
+/* 針對 el-table 表格組件的樣式優化 */
+.project-analysis :deep(.el-table) {
+  /* 表格整體樣式 */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-table__header-wrapper) {
+  /* 表頭樣式 */
+  background-color: var(--bg-secondary);
+}
+
+.project-analysis :deep(.el-table thead) {
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-table th) {
+  /* 表頭單元格 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  border-color: var(--border-color) !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 14px - 增大表格標題 */
+  /* 第二次修改: 15px - 進一步增大表格標題 */
+  font-size: 15px;
+}
+
+.project-analysis :deep(.el-table td) {
+  /* 表格內容單元格 */
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 14px - 增大表格內容 */
+  /* 第二次修改: 15px - 進一步增大表格內容 */
+  font-size: 15px;
+}
+
+.project-analysis :deep(.el-table__row) {
+  /* 表格行樣式 */
+  background-color: var(--bg-primary);
+}
+
+.project-analysis :deep(.el-table__row:hover td) {
+  /* 表格行懸停 */
+  background-color: var(--bg-secondary) !important;
+}
+
+.project-analysis :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  /* 斑馬紋行 */
+  background-color: var(--bg-secondary);
+}
+
+/* ===== el-descriptions 表格樣式 ===== */
+.project-analysis :deep(.el-descriptions) {
+  /* 確保表格在深色背景下可讀 */
+  background-color: transparent;
+}
+
+.project-analysis :deep(.el-descriptions__label) {
+  /* 表格標籤列樣式 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表格標籤文字 */
+  font-size: 16px;
+}
+
+.project-analysis :deep(.el-descriptions__content) {
+  /* 表格內容列樣式 */
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格內容文字 */
+  /* 第二次修改: 16px - 進一步增大表格內容文字 */
+  font-size: 16px;
+}
+
+.project-analysis :deep(.el-descriptions__cell) {
+  /* 表格單元格邊框 */
+  border-color: var(--border-color) !important;
+}
+
+.project-analysis :deep(.el-descriptions--bordered .el-descriptions__cell) {
+  /* 邊框表格的單元格樣式 */
+  border: 1px solid var(--border-color);
+}
+
+/* ===== 卡片樣式 ===== */
+.project-analysis :deep(.el-card__header) {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-card__body) {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ===== Tabs 標籤頁樣式 ===== */
+.project-analysis :deep(.el-tabs) {
+  /* 標籤頁整體 */
+  background-color: var(--bg-primary);
+}
+
+.project-analysis :deep(.el-tabs__item) {
+  /* 標籤項目 */
+  color: var(--text-secondary);
+}
+
+.project-analysis :deep(.el-tabs__item:hover) {
+  /* 標籤項目懸停 */
+  color: var(--accent-primary);
+}
+
+.project-analysis :deep(.el-tabs__item.is-active) {
+  /* 啟用的標籤項目 */
+  color: var(--accent-primary);
+}
+
+.project-analysis :deep(.el-tabs__active-bar) {
+  /* 啟用標示條 */
+  background-color: var(--accent-primary);
+}
+
+.project-analysis :deep(.el-tabs--border-card) {
+  /* 邊框標籤頁 */
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-tabs--border-card > .el-tabs__header) {
+  background-color: var(--bg-secondary);
+}
+
+.project-analysis :deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item) {
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active) {
+  background-color: var(--bg-primary);
+  color: var(--accent-primary);
+  border-color: var(--border-color);
+}
+
+/* ===== Collapse 折疊面板樣式 ===== */
+.project-analysis :deep(.el-collapse) {
+  background-color: transparent;
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-collapse-item__header) {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-collapse-item__header:hover) {
+  background-color: var(--bg-tertiary);
+}
+
+.project-analysis :deep(.el-collapse-item__wrap) {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-collapse-item__content) {
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+/* ===== Alert 警告框樣式 ===== */
+.project-analysis :deep(.el-alert) {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.project-analysis :deep(.el-alert__title) {
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-alert__description) {
+  color: var(--text-secondary);
+}
+
+.project-analysis :deep(.el-alert--info) {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-info);
+}
+
+.project-analysis :deep(.el-alert--success) {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-success);
+}
+
+.project-analysis :deep(.el-alert--warning) {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-warning);
+}
+
+.project-analysis :deep(.el-alert--error) {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-danger);
+}
+
+.project-analysis :deep(.el-alert__content) {
+  background: transparent;
+}
+
+/* ===== Timeline 時間軸樣式 ===== */
+.project-analysis :deep(.el-timeline) {
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-timeline-item__timestamp) {
+  color: var(--text-secondary);
+}
+
+.project-analysis :deep(.el-timeline-item__wrapper) {
+  color: var(--text-primary);
+}
+
+/* ===== Progress 進度條樣式 ===== */
+.project-analysis :deep(.el-progress__text) {
+  color: var(--text-primary);
+}
+
+/* ===== Tag 標籤樣式 ===== */
+.project-analysis :deep(.el-tag) {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.project-analysis :deep(.el-tag--success) {
+  background-color: rgba(103, 194, 58, 0.2);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.project-analysis :deep(.el-tag--warning) {
+  background-color: rgba(230, 162, 60, 0.2);
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.project-analysis :deep(.el-tag--danger) {
+  background-color: rgba(245, 108, 108, 0.2);
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+.project-analysis :deep(.el-tag--info) {
+  background-color: rgba(64, 158, 255, 0.2);
+  border-color: var(--accent-info);
+  color: var(--accent-info);
+}
+
+.project-analysis :deep(.el-tag--primary) {
+  background-color: rgba(64, 158, 255, 0.2);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* 組件特定樣式保留 */
 .stats-card {
   text-align: center;
 }
@@ -708,8 +1216,10 @@ const completedModules = ref([
   padding: 20px;
 }
 
+/* 覆蓋 h4 樣式以配合深色主題背景 */
 .method-analysis h3 {
   margin-bottom: 15px;
+  margin-top: 0;
   color: var(--text-primary);
 }
 
@@ -717,6 +1227,11 @@ const completedModules = ref([
   margin-top: 15px;
   margin-bottom: 10px;
   color: var(--text-primary);
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
 }
 
 .method-analysis ul,
@@ -747,6 +1262,11 @@ const completedModules = ref([
   margin-top: 15px;
   margin-bottom: 10px;
   color: var(--text-primary);
+  /* 確保標題在深色背景下可讀 */
+  background: var(--bg-secondary);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent-primary);
 }
 
 .priority-content ol {
@@ -775,6 +1295,9 @@ const completedModules = ref([
   margin: 0;
   font-size: 16px;
   color: var(--text-primary);
+  background: none;
+  padding: 0;
+  border: none;
 }
 
 .module-features {
@@ -784,7 +1307,10 @@ const completedModules = ref([
 }
 
 .module-features li {
-  font-size: 14px;
+  /* 原始: 14px */
+  /* 第一次修改: 15px - 增大模組功能列表文字 */
+  /* 第二次修改: 16px - 進一步增大列表文字 */
+  font-size: 16px;
   color: var(--text-secondary);
 }
 
@@ -801,7 +1327,10 @@ const completedModules = ref([
 
 .summary-list li {
   margin: 8px 0;
-  font-size: 15px;
+  /* 原始: 15px */
+  /* 第一次修改: 16px - 增大總結列表文字 */
+  /* 第二次修改: 17px - 進一步增大列表文字 */
+  font-size: 17px;
   color: var(--text-secondary);
 }
 
@@ -813,7 +1342,10 @@ const completedModules = ref([
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 15px;
+  /* 原始: 15px */
+  /* 第一次修改: 16px - 增大方法標題文字 */
+  /* 第二次修改: 17px - 進一步增大標題文字 */
+  font-size: 17px;
   color: var(--text-primary);
 }
 
@@ -823,16 +1355,25 @@ const completedModules = ref([
 }
 
 :deep(.el-table) {
-  font-size: 14px;
+  /* 原始: 14px */
+  /* 第一次修改: 15px - 增大表格整體文字 */
+  /* 第二次修改: 16px - 進一步增大表格文字 */
+  font-size: 16px;
 }
 
 :deep(.el-statistic__head) {
-  font-size: 14px;
+  /* 原始: 14px */
+  /* 第一次修改: 15px - 增大統計標題文字 */
+  /* 第二次修改: 16px - 進一步增大統計標題 */
+  font-size: 16px;
   color: var(--text-secondary);
 }
 
 :deep(.el-statistic__content) {
-  font-size: 28px;
+  /* 原始: 28px */
+  /* 第一次修改: 30px - 增大統計內容數值 */
+  /* 第二次修改: 32px - 進一步增大統計數值 */
+  font-size: 32px;
   font-weight: bold;
   color: var(--text-primary);
 }

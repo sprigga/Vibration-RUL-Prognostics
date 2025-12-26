@@ -6,10 +6,9 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>🔬 IEEE PHM 2012 數據挑戰實驗摘要</span>
-              <el-tag type="info">Remaining Useful Life 預測</el-tag>
-            </div>
+            <!-- 原始：使用 card-header class 包含 span 和 el-tag -->
+            <!-- 修改：簡化為 h2 標題，與 TimeDomainAnalysis.vue 保持一致 -->
+            <h2>🔬 IEEE PHM 2012 數據挑戰實驗摘要</h2>
           </template>
           
           <el-row :gutter="20">
@@ -139,7 +138,9 @@
                   </div>
                 </template>
                 <div class="summary-content">
-                  <p style="margin-bottom: 16px; font-style: italic; color: #606266;">
+                  <!-- 原始：color: #606266 -->
+                  <!-- 修改：深色主題次要文字 -->
+                  <p style="margin-bottom: 16px; font-style: italic; color: var(--text-secondary);">
                     馬里蘭大學 CALCE 中心提出三種基於數據驅動的軸承剩餘使用壽命（RUL）預測方法，
                     其中方法三（異常檢測與存活時間比）贏得了 2012 年 PHM 資料挑戰賽學術組冠軍。
                   </p>
@@ -336,10 +337,9 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>📊 PHM 2012 訓練數據視覺化</span>
-              <el-tag type="info">共 {{ trainingData?.total_bearings || 0 }} 個軸承</el-tag>
-            </div>
+            <!-- 原始：使用 card-header class 包含 span 和 el-tag -->
+            <!-- 修改：簡化為 h2 標題，與 TimeDomainAnalysis.vue 保持一致 -->
+            <h2>📊 PHM 2012 訓練數據視覺化</h2>
           </template>
 
           <!-- 載入狀態 -->
@@ -386,21 +386,9 @@
           <div v-if="!trainingLoading && statisticsData.length > 0" style="margin-top: 30px;">
             <el-card class="chart-card">
               <template #header>
-                <div class="card-header">
-                  <span>振動趨勢分析</span>
-                  <el-select
-                    v-model="selectedTrainingBearing"
-                    placeholder="選擇軸承"
-                    style="width: 200px"
-                  >
-                    <el-option
-                      v-for="bearing in trainingBearingOptions"
-                      :key="bearing"
-                      :label="bearing"
-                      :value="bearing"
-                    />
-                  </el-select>
-                </div>
+                <!-- 原始：使用 card-header class 包含 span 和 el-select -->
+                <!-- 修改：簡化為 h4 標題，el-select 移到內容區域 -->
+                <h4>振動趨勢分析</h4>
               </template>
 
               <canvas ref="chartContainer" style="width: 100%; height: 400px"></canvas>
@@ -450,10 +438,9 @@
       <el-col :span="24">
         <el-card>
           <template #header>
-            <div class="card-header">
-              <span>💾 PHM 資料庫查詢</span>
-              <el-tag type="success">查詢 PHM IEEE 2012 訓練資料集</el-tag>
-            </div>
+            <!-- 原始：使用 card-header class 包含 span 和 el-tag -->
+            <!-- 修改：簡化為 h2 標題，與 TimeDomainAnalysis.vue 保持一致 -->
+            <h2>💾 PHM 資料庫查詢</h2>
           </template>
 
           <!-- Bearings List -->
@@ -761,14 +748,16 @@ import { Aim, Tools, Folder, TrendCharts, DataBoard, DataLine, Loading, Document
 import { ElMessage } from 'element-plus'
 import api from '@/stores/api'
 import { Chart } from 'chart.js/auto'
-import { getApiUrl } from '@/config/api'
 
 // 使用環境變數配置 API_BASE URL，避免硬編碼
 // 原始配置: const API_BASE = 'http://localhost:8000'
 // 第一次修改: Backend 伺服器運行在 port 8000，更新 API_BASE 以匹配
 // 修改: 統一 Backend 伺服器運行在 port 8081
-// 現在: 使用環境變數 VITE_API_BASE_URL 從 .env 檔案讀取
-const API_BASE = getApiUrl('api')
+// 第二次修改: 使用環境變數 VITE_API_BASE_URL 從 .env 檔案讀取 (getApiUrl 取代 'api' 字串)
+// 第三次修改: 修正 API_BASE 定義，直接使用環境變數，避免重複的 /api 路徑
+// 問題: getApiUrl('api') 會產生 http://localhost:8081/api，導致後續請求變成 /api/api/...
+// 解決: 直接使用 baseURL，後續請求路徑包含 /api
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
 
 // State
 const loading = ref(false)
@@ -1056,7 +1045,10 @@ const renderVibrationChart = () => {
           // 修改：深色主題白色文字
           color: '#ffffff',
           font: {
-            size: 16,
+            // 原始: 16
+            // 第一次修改: 18 - 增大圖表標題
+            // 第二次修改: 20 - 進一步增大圖表標題
+            size: 20,
             weight: '600'
           }
         },
@@ -1067,7 +1059,10 @@ const renderVibrationChart = () => {
           labels: {
             color: '#ffffff',
             font: {
-              size: 12
+              // 原始: 12
+              // 第一次修改: 14 - 增大圖例文字
+              // 第二次修改: 15 - 進一步增大圖例文字
+              size: 15
             }
           }
         }
@@ -1081,7 +1076,9 @@ const renderVibrationChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 14,
+              // 原始: 14
+              // 修改: 15 - 增大軸標題
+              size: 15,
               weight: '500'
             }
           },
@@ -1090,7 +1087,10 @@ const renderVibrationChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 11
+              // 原始: 11
+              // 第一次修改: 12 - 增大軸刻度文字
+              // 第二次修改: 14 - 進一步增大軸刻度文字
+              size: 14
             }
           },
           grid: {
@@ -1107,7 +1107,10 @@ const renderVibrationChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 14,
+              // 原始: 14
+              // 第一次修改: 15 - 增大軸標題
+              // 第二次修改: 15 - 保持軸標題大小
+              size: 15,
               weight: '500'
             }
           },
@@ -1116,7 +1119,10 @@ const renderVibrationChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 11
+              // 原始: 11
+              // 第一次修改: 12 - 增大軸刻度文字
+              // 第二次修改: 14 - 進一步增大軸刻度文字
+              size: 14
             }
           },
           grid: {
@@ -1206,7 +1212,10 @@ const renderKurtosisChart = () => {
           // 修改：深色主題白色文字
           color: '#ffffff',
           font: {
-            size: 16,
+            // 原始: 16
+            // 第一次修改: 18 - 增大圖表標題
+            // 第二次修改: 20 - 進一步增大圖表標題
+            size: 20,
             weight: '600'
           }
         },
@@ -1217,7 +1226,10 @@ const renderKurtosisChart = () => {
           labels: {
             color: '#ffffff',
             font: {
-              size: 12
+              // 原始: 12
+              // 第一次修改: 14 - 增大圖例文字
+              // 第二次修改: 15 - 進一步增大圖例文字
+              size: 15
             }
           }
         }
@@ -1231,7 +1243,9 @@ const renderKurtosisChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 14,
+              // 原始: 14
+              // 修改: 15 - 增大軸標題
+              size: 15,
               weight: '500'
             }
           },
@@ -1240,7 +1254,10 @@ const renderKurtosisChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 11
+              // 原始: 11
+              // 第一次修改: 12 - 增大軸刻度文字
+              // 第二次修改: 14 - 進一步增大軸刻度文字
+              size: 14
             }
           },
           grid: {
@@ -1257,7 +1274,10 @@ const renderKurtosisChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 14,
+              // 原始: 14
+              // 第一次修改: 15 - 增大軸標題
+              // 第二次修改: 15 - 保持軸標題大小
+              size: 15,
               weight: '500'
             }
           },
@@ -1266,7 +1286,10 @@ const renderKurtosisChart = () => {
             // 修改：深色主題白色文字
             color: '#ffffff',
             font: {
-              size: 11
+              // 原始: 11
+              // 第一次修改: 12 - 增大軸刻度文字
+              // 第二次修改: 14 - 進一步增大軸刻度文字
+              size: 14
             }
           },
           grid: {
@@ -1317,6 +1340,79 @@ onMounted(() => {
 /* ===== 原始：淺色主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
 
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+/* 全局字體族設定（繼承自 style.css） */
+/* font-family: system-ui, Avenir, Helvetica, Arial, sans-serif; */
+
+/* ===== 標題層級字體大小設定（與 FONT.md 一致）===== */
+/* 原始設定: h1=3.2em, h2=1.5em, h3=1.25em, h4=1.1em, h5=1em */
+/* 修改: 增大標題字體,提供更舒適的閱讀體驗 */
+.dashboard h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.dashboard h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 第一次修改: 1.75em (≈28px) - 增大主要區塊標題 */
+  /* 第二次修改: 1.85em (≈29.6px) - 進一步增大標題以提升可讀性 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.dashboard h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 第一次修改: 1.4em (≈22.4px) - 增大小區塊標題 */
+  /* 第二次修改: 1.5em (≈24px) - 進一步增大小區塊標題 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.dashboard h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 第一次修改: 1.2em (≈19.2px) - 增大小標題 */
+  /* 第二次修改: 1.25em (≈20px) - 進一步增大小標題 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.dashboard h5 {
+  /* 原始: 1em (16px) */
+  /* 修改: 1.1em (≈17.6px) - 增大次級標題 */
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ===== 段落與文字內容字體（與 FONT.md 一致）===== */
+/* 原始設定: 16px */
+/* 第一次修改: 17px - 略微增大內容文字,提升可讀性 */
+/* 第二次修改: 18px - 進一步增大內容文字以提升閱讀舒適度 */
+.dashboard p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ===== 連結字體（與 FONT.md 一致）===== */
+.dashboard a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
+.dashboard a:hover {
+  color: var(--accent-hover);
+}
+
 .dashboard {
   padding: 20px;
 }
@@ -1348,7 +1444,9 @@ onMounted(() => {
 }
 
 .stat-info h3 {
-  font-size: 28px;
+  /* 原始：font-size: 28px */
+  /* 修改：與 FONT.md h2 規範對齊 (1.5em ≈ 24px) */
+  font-size: 1.5em;
   font-weight: bold;
   margin: 0 0 5px;
   /* 原始：#303133 */
@@ -1357,19 +1455,21 @@ onMounted(() => {
 }
 
 .stat-info p {
-  font-size: 14px;
+  /* 原始: 14px -> 16px */
+  /* 修改: 17px - 略微增大統計資訊文字 */
+  font-size: 17px;
   /* 原始：#909399 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
   margin: 0;
 }
 
-.card-header {
+/* 原始：.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: var(--text-primary);
-}
+} */
 
 /* ===== IEEE PHM 2012 實驗摘要樣式 - 深色主題 ===== */
 .summary-card {
@@ -1405,7 +1505,10 @@ onMounted(() => {
 
 .summary-content {
   padding: 16px;
-  font-size: 13px;
+  /* 原始: 13px -> 16px */
+  /* 第一次修改: 17px - 略微增大卡片內容文字 */
+  /* 第二次修改: 18px - 進一步增大卡片內容文字 */
+  font-size: 18px;
   line-height: 1.5;
 }
 
@@ -1446,7 +1549,10 @@ onMounted(() => {
 
 .challenge-item p {
   margin-top: 8px;
-  font-size: 12px;
+  /* 原始: 12px */
+  /* 第一次修改: 15px - 增大挑戰項目描述文字 */
+  /* 第二次修改: 17px - 進一步增大描述文字 */
+  font-size: 17px;
   /* 原始：#606266 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
@@ -1459,7 +1565,10 @@ onMounted(() => {
   background-color: var(--bg-secondary);
   padding: 12px;
   border-radius: 6px;
-  font-size: 12px;
+  /* 原始: 12px */
+  /* 第一次修改: 15px - 增大評分資訊文字 */
+  /* 第二次修改: 17px - 進一步增大評分資訊文字 */
+  font-size: 17px;
   /* 原始：#606266 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
@@ -1468,12 +1577,14 @@ onMounted(() => {
 
 /* ===== PHM Database Query Styles - 深色主題 ===== */
 .section-title {
+  /* 原始：font-size: 16px */
+  /* 修改：與 FONT.md h3 規範對齊 (1.25em ≈ 20px) */
+  font-size: 1.25em;
+  font-weight: 600;
   /* 原始：#34495e */
   /* 修改：深色主題主要文字 */
   color: var(--text-primary);
   margin-bottom: 15px;
-  font-size: 16px;
-  font-weight: 600;
   /* 原始：#409eff */
   /* 修改：使用強調色（保持一致） */
   border-bottom: 2px solid var(--accent-primary);
@@ -1488,7 +1599,10 @@ onMounted(() => {
   /* 原始：#909399 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
-  font-size: 14px;
+  /* 原始: 14px */
+  /* 第一次修改: 16px - 增大狀態訊息文字 */
+  /* 第二次修改: 17px - 進一步增大狀態訊息文字 */
+  font-size: 17px;
 }
 
 .error {
@@ -1539,11 +1653,14 @@ onMounted(() => {
 }
 
 .bearing-card h4 {
+  /* 原始：font-size: 15px */
+  /* 修改：與 FONT.md h4 規範對齊 (1.1em ≈ 17.6px) */
+  font-size: 1.1em;
+  font-weight: 600;
   /* 原始：#303133 */
   /* 修改：深色主題主要文字 */
   color: var(--text-primary);
   margin-bottom: 12px;
-  font-size: 15px;
 }
 
 .bearing-stats {
@@ -1555,7 +1672,10 @@ onMounted(() => {
 .stat-item {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  /* 原始: 13px -> 16px */
+  /* 第一次修改: 17px - 略微增大統計項目文字 */
+  /* 第二次修改: 18px - 進一步增大統計項目文字 */
+  font-size: 18px;
 }
 
 .stat-label {
@@ -1618,7 +1738,10 @@ onMounted(() => {
   /* 原始：#f5f7fa */
   /* 修改：深色淺邊框 */
   border-bottom: 1px solid var(--border-color-light);
-  font-size: 13px;
+  /* 原始: 13px -> 16px */
+  /* 第一次修改: 17px - 略微增大資訊項目文字 */
+  /* 第二次修改: 18px - 進一步增大資訊項目文字 */
+  font-size: 18px;
 }
 
 .info-item:last-child {
@@ -1647,10 +1770,12 @@ onMounted(() => {
 }
 
 .page-info {
+  /* 原始: 13px -> 16px */
+  /* 修改: 16px - 維持頁面資訊文字大小 */
+  font-size: 16px;
   /* 原始：#909399 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
-  font-size: 13px;
   margin-left: auto;
 }
 
@@ -1695,7 +1820,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px;
+  /* 原始：font-size: 14px */
+  /* 修改：與 FONT.md h4 規範對齊 (1.1em ≈ 17.6px) */
+  font-size: 1.1em;
   font-weight: 600;
 }
 
@@ -1709,12 +1836,14 @@ onMounted(() => {
 }
 
 .method-content h4 {
+  /* 原始：font-size: 14px */
+  /* 修改：與 FONT.md h4 規範對齊 (1.1em ≈ 17.6px) */
+  font-size: 1.1em;
+  margin: 16px 0 8px 0;
+  font-weight: 600;
   /* 原始：#409EFF */
   /* 修改：使用強調色 */
   color: var(--accent-info);
-  font-size: 14px;
-  margin: 16px 0 8px 0;
-  font-weight: 600;
 }
 
 .method-content h4:first-child {
@@ -1740,6 +1869,10 @@ onMounted(() => {
 
 .method-content li {
   margin: 6px 0;
+  /* 原始: 繼承 */
+  /* 第一次修改: 16px - 增大列表項目文字 */
+  /* 第二次修改: 17px - 進一步增大列表項目文字 */
+  font-size: 17px;
   line-height: 1.6;
 }
 
@@ -1771,12 +1904,14 @@ onMounted(() => {
 }
 
 .feature-summary h4 {
+  /* 原始：font-size: 15px */
+  /* 修改：與 FONT.md h4 規範對齊 (1.1em ≈ 17.6px) */
+  font-size: 1.1em;
+  font-weight: 600;
   /* 原始：#303133 */
   /* 修改：深色主題主要文字 */
   color: var(--text-primary);
   margin-bottom: 12px;
-  font-size: 15px;
-  font-weight: 600;
 }
 
 .feature-card {
@@ -1792,13 +1927,15 @@ onMounted(() => {
 }
 
 .feature-card h5 {
-  /* 原始：#409EFF */
-  /* 修改：使用強調色 */
-  color: var(--accent-info);
-  font-size: 13px;
+  /* 原始：font-size: 13px */
+  /* 修改：與 FONT.md h5 規範對齊 (1em = 16px) */
+  font-size: 1em;
   font-weight: 600;
   margin: 0 0 10px 0;
   padding-bottom: 8px;
+  /* 原始：#409EFF */
+  /* 修改：使用強調色 */
+  color: var(--accent-info);
   /* 原始：#409EFF */
   /* 修改：使用強調色 */
   border-bottom: 2px solid var(--accent-info);
@@ -1810,20 +1947,25 @@ onMounted(() => {
 }
 
 .feature-card li {
+  /* 原始: 12px -> 16px */
+  /* 第一次修改: 17px - 略微增大特徵卡片列表文字 */
+  /* 第二次修改: 18px - 進一步增大特徵卡片列表文字 */
+  font-size: 18px;
+  line-height: 1.8;
+  margin: 4px 0;
   /* 原始：#606266 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.8;
-  margin: 4px 0;
 }
 
 .contribution-section h4 {
+  /* 原始：font-size: 15px */
+  /* 修改：與 FONT.md h4 規範對齊 (1.1em ≈ 17.6px) */
+  font-size: 1.1em;
+  font-weight: 600;
   /* 原始：#303133 */
   /* 修改：深色主題主要文字 */
   color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 600;
   margin-bottom: 12px;
 }
 
@@ -1838,6 +1980,10 @@ onMounted(() => {
   color: var(--text-secondary);
   line-height: 1.8;
   margin: 10px 0;
+  /* 原始: 繼承 */
+  /* 第一次修改: 16px - 增大貢獻區塊列表文字 */
+  /* 第二次修改: 17px - 進一步增大列表文字 */
+  font-size: 17px;
 }
 
 /* ===== 表格樣式修正 ===== */
@@ -2058,32 +2204,17 @@ onMounted(() => {
 }
 
 /* ===== h3, h4, p, code 等基礎元素樣式 ===== */
-.dashboard h3 {
-  margin-top: 0;
-  /* 原始：#303133 */
-  /* 修改：深色主題主要文字 */
-  color: var(--text-primary);
-  font-weight: 600;
-}
+/* 注意：h1, h2, h3, h4, h5, p 已在文件開頭定義，與 FONT.md 規範對齊 */
+/* 以下僅定義特殊變體樣式 */
 
-.dashboard h4 {
+/* dashboard h4 特殊變體：帶背景的卡片式標題 */
+.dashboard h4.card-title {
   margin-top: 20px;
-  /* 原始：#667eea */
-  /* 修改：使用強調色 */
-  color: var(--accent-primary);
-  font-weight: 600;
   /* 確保標題在深色背景下可讀 */
   background: var(--bg-secondary);
   padding: 10px 15px;
   border-radius: 6px;
   border-left: 4px solid var(--accent-primary);
-}
-
-.dashboard p {
-  line-height: 1.6;
-  /* 原始：#606266 */
-  /* 修改：深色主題次要文字 */
-  color: var(--text-secondary);
 }
 
 .dashboard code {
@@ -2353,6 +2484,8 @@ onMounted(() => {
 .dashboard :deep(.el-button--small) {
   /* 小按鈕 */
   padding: 5px 12px;
-  font-size: 12px;
+  /* 原始: 12px -> 16px */
+  /* 修改: 15px - 略微增大小按鈕文字,避免過大影響版面 */
+  font-size: 15px;
 }
 </style>

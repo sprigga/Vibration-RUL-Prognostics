@@ -9,6 +9,8 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import './styles/theme-dark.css'
 // 修改：導入統一通用樣式（字體、文字、顏色等，參照 FONT.md）
 import './styles/common-styles.css'
+// 修改：導入 Element Plus 下拉選單深色主題全局樣式（解決下拉選單樣式問題）
+import './styles/select-dropdown-dark.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import App from './App.vue'

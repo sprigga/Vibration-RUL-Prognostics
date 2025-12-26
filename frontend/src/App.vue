@@ -79,6 +79,7 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
 <style>
 /* ===== 原始：淺色動畫漸層主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
+/* ===== 修改：字體設定對齊 FONT.md 規範 ===== */
 
 * {
   margin: 0;
@@ -87,8 +88,20 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
 }
 
 /* 背景漸層和動畫由 theme-dark.css 處理 */
+/* 原始字體：font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; */
+/* 修改：對齊 FONT.md 規範的 system-ui 字體堆疊 */
 #app {
-  font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* FONT.md 規範的 font-family */
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* 字體渲染優化 (FONT.md 規範) */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
   /* 深色漸層背景和動畫由 theme-dark.css 定義 */
 }
 
@@ -110,10 +123,13 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   z-index: 10;
 }
 
+/* 原始：font-size: 24px; font-weight: 600; */
+/* 修改：對齊 FONT.md h2 規範 (1.5em) */
 .header-content h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 1.5em;  /* FONT.md: h2 = 1.5em */
+  line-height: 1.3;   /* FONT.md: h2 line-height = 1.3 */
+  font-weight: bold;   /* FONT.md: h2 font-weight = bold */
   /* 原始：linear-gradient(135deg, #ffffff, #e0e7ff) */
   /* 修改：深色主題的漸層文字效果 */
   background: linear-gradient(135deg, #ffffff, var(--text-secondary));
@@ -122,9 +138,12 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   background-clip: text;
 }
 
+/* 原始：font-size: 12px; */
+/* 修改：對齊 FONT.md 段落文字規範 (16px) */
 .header-content p {
   margin: 5px 0 0;
-  font-size: 12px;
+  font-size: 16px;    /* FONT.md: 段落文字 = 16px */
+  line-height: 1.6;   /* FONT.md: 段落 line-height = 1.6 */
   /* 原始：opacity: 0.9 */
   /* 修改：使用深色主題變數 */
   color: var(--text-secondary);
@@ -151,11 +170,17 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
 .sidebar-menu .el-menu-item {
   transition: all 0.3s ease;
   border-radius: 8px;
-  margin: 4px 8px;
+  margin: 6px 10px;
+  padding: 0 18px;
+  height: 50px;
+  line-height: 50px;
   /* 原始：繼承預設顏色 */
   /* 修改：使用深色主題文字顏色 */
   color: var(--text-secondary);
   background: transparent;
+  /* 原始：繼承預設字體大小 */
+  /* 修改：增大字體以提供舒適閱讀體驗 */
+  font-size: 16px;
 }
 
 .sidebar-menu .el-menu-item:hover {
@@ -173,6 +198,8 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   color: var(--accent-primary);
   font-weight: 600;
   border: 1px solid var(--border-color-focus);
+  /* 確保激活狀態也使用相同字體大小 */
+  font-size: 16px;
 }
 
 .el-main {
@@ -217,12 +244,48 @@ import { Odometer, TrendCharts, DataLine, DataAnalysis, Document } from '@elemen
   color: var(--text-primary);
 }
 
-/* ===== Typography 覆蓋 ===== */
-h1, h2, h3, h4, h5, h6 {
+/* ===== Typography 覆蓋 - 對齊 FONT.md 規範 ===== */
+/* FONT.md 標題層級規範 */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
   color: var(--text-primary);
 }
 
-p, span, div {
+h2 {
+  font-size: 1.5em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+h4 {
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+h5, h6 {
+  color: var(--text-primary);
+}
+
+/* FONT.md 段落文字規範 */
+p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+span, div {
   color: var(--text-secondary);
 }
 </style>

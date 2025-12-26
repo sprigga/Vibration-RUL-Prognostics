@@ -2,69 +2,64 @@
   <div class="frequency-domain-page">
     <el-card>
       <template #header>
-        <div class="card-header">
-          <h2>頻域特徵分析</h2>
-          <el-tag type="info">Frequency Domain Analysis</el-tag>
-        </div>
+        <h2>頻域特徵分析</h2>
       </template>
 
-      <!-- 原理說明 -->
-      <el-card shadow="never" style="margin-bottom: 20px;">
-        <template #header>
-          <h3>原理說明</h3>
-        </template>
-        <p>透過快速傅立葉轉換（FFT）將時域信號轉換為頻域，識別故障特徵頻率。</p>
+      <!-- [修改] 移除嵌套 el-card，與 TimeDomainAnalysis.vue 保持一致 -->
+      <!-- [原始] 使用嵌套 el-card shadow="never" 包裝原理說明區域 -->
+      <!-- [修改後] 直接在主卡片內部顯示，結構與 TimeDomainAnalysis.vue 一致 -->
+      <h3>原理說明</h3>
+      <p>透過快速傅立葉轉換（FFT）將時域信號轉換為頻域，識別故障特徵頻率。</p>
 
-        <h4 style="margin-top: 20px;">關鍵概念:</h4>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-card shadow="hover">
-              <h4>FFT（快速傅立葉轉換）</h4>
-              <code>X(f) = ∫ x(t)e^(-j2πft) dt</code>
-              <p>將時域信號轉為頻域</p>
-            </el-card>
-          </el-col>
-          <el-col :span="12">
-            <el-card shadow="hover">
-              <h4>FM0（正規化峰值）</h4>
-              <code>FM0 = Peak / ΣE_harmonics</code>
-              <p>峰值與諧波能量比值</p>
-            </el-card>
-          </el-col>
-        </el-row>
+      <h4 style="margin-top: 20px;">關鍵概念:</h4>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-card shadow="hover">
+            <h4>FFT（快速傅立葉轉換）</h4>
+            <code>X(f) = ∫ x(t)e^(-j2πft) dt</code>
+            <p>將時域信號轉為頻域</p>
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card shadow="hover">
+            <h4>FM0（正規化峰值）</h4>
+            <code>FM0 = Peak / ΣE_harmonics</code>
+            <p>峰值與諧波能量比值</p>
+          </el-card>
+        </el-col>
+      </el-row>
 
-        <h4 style="margin-top: 20px;">故障頻率:</h4>
-        <el-table :data="faultFrequencies" border>
-          <el-table-column prop="type" label="故障類型" />
-          <el-table-column prop="frequency" label="特徵頻率" />
-          <el-table-column prop="description" label="說明" />
-        </el-table>
+      <h4 style="margin-top: 20px;">故障頻率:</h4>
+      <el-table :data="faultFrequencies" border>
+        <el-table-column prop="type" label="故障類型" />
+        <el-table-column prop="frequency" label="特徵頻率" />
+        <el-table-column prop="description" label="說明" />
+      </el-table>
 
-        <h4 style="margin-top: 20px;">應用場景:</h4>
-        <el-tag type="danger" style="margin: 5px;">滾動體缺陷檢測</el-tag>
-        <el-tag type="warning" style="margin: 5px;">軌道損傷檢測</el-tag>
-        <el-tag type="info" style="margin: 5px;">安裝問題診斷</el-tag>
+      <h4 style="margin-top: 20px;">應用場景:</h4>
+      <el-tag type="danger" style="margin: 5px;">滾動體缺陷檢測</el-tag>
+      <el-tag type="warning" style="margin: 5px;">軌道損傷檢測</el-tag>
+      <el-tag type="info" style="margin: 5px;">安裝問題診斷</el-tag>
 
-        <h4 style="margin-top: 20px;">IEEE PHM 2012 軸承故障頻率 (SKF 6205):</h4>
-        <el-table :data="bearingFaultFrequencies" border>
-          <el-table-column prop="bearing" label="軸承名稱" width="120" />
-          <el-table-column prop="rpm" label="轉速(RPM)" width="100" />
-          <el-table-column prop="shaft_freq" label="軸頻率(Hz)" width="100" />
-          <el-table-column prop="bpfo" label="BPFO(Hz)" width="100">
-            <template #default="scope">
-              <el-tag type="danger">{{ scope.row.bpfo }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="bpfi" label="BPFI(Hz)" width="100">
-            <template #default="scope">
-              <el-tag type="warning">{{ scope.row.bpfi }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="bsf" label="BSF(Hz)" width="100" />
-          <el-table-column prop="ftf" label="FTF(Hz)" width="100" />
-          <el-table-column prop="description" label="說明" />
-        </el-table>
-      </el-card>
+      <h4 style="margin-top: 20px;">IEEE PHM 2012 軸承故障頻率 (SKF 6205):</h4>
+      <el-table :data="bearingFaultFrequencies" border>
+        <el-table-column prop="bearing" label="軸承名稱" width="120" />
+        <el-table-column prop="rpm" label="轉速(RPM)" width="100" />
+        <el-table-column prop="shaft_freq" label="軸頻率(Hz)" width="100" />
+        <el-table-column prop="bpfo" label="BPFO(Hz)" width="100">
+          <template #default="scope">
+            <el-tag type="danger">{{ scope.row.bpfo }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="bpfi" label="BPFI(Hz)" width="100">
+          <template #default="scope">
+            <el-tag type="warning">{{ scope.row.bpfi }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="bsf" label="BSF(Hz)" width="100" />
+        <el-table-column prop="ftf" label="FTF(Hz)" width="100" />
+        <el-table-column prop="description" label="說明" />
+      </el-table>
 
       <!-- 頻域計算區域 -->
       <el-divider>即時計算演示</el-divider>
@@ -342,7 +337,17 @@ const drawFrequencyDomainChart = () => {
 
   const option = {
     title: {
-      text: title
+      text: title,
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 18 */
+        /* 第二次修改: fontSize: 20 - 增大圖表標題 */
+        fontSize: 20,
+        fontWeight: 600
+      }
     },
     tooltip: {
       trigger: 'axis',
@@ -356,7 +361,16 @@ const drawFrequencyDomainChart = () => {
     legend: {
       data: ['水平方向', '垂直方向'],
       top: '5%',
-      right: '5%'
+      right: '5%',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      textStyle: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 14 */
+        /* 第二次修改: fontSize: 15 - 增大圖例文字 */
+        fontSize: 15
+      }
     },
     grid: {
       left: '3%',
@@ -368,11 +382,48 @@ const drawFrequencyDomainChart = () => {
       type: 'category',
       name: '頻率 (Hz)',
       boundaryGap: false,
-      data: freqData.map(f => f.toFixed(1))
+      data: freqData.map(f => f.toFixed(1)),
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      axisLabel: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 12 */
+        /* 第二次修改: fontSize: 14 - 增大X軸刻度文字 */
+        fontSize: 14
+      },
+      nameTextStyle: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 14 */
+        /* 第二次修改: fontSize: 15 - 增大X軸名稱文字 */
+        fontSize: 15
+      }
     },
     yAxis: {
       type: 'value',
-      name: '幅值'
+      name: '幅值',
+      // 原始：繼承預設顏色
+      // 修改：深色主題白色文字
+      axisLabel: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 12 */
+        /* 第二次修改: fontSize: 14 - 增大Y軸刻度文字 */
+        fontSize: 14
+      },
+      nameTextStyle: {
+        color: '#ffffff',
+        /* 原始: 繼承預設 */
+        /* 第一次修改: fontSize: 14 */
+        /* 第二次修改: fontSize: 15 - 增大Y軸名稱文字 */
+        fontSize: 15
+      },
+      splitLine: {
+        // 原始：繼承預設顏色
+        // 修改：深色主題淺色網格
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+      }
     },
     dataZoom: [
       {
@@ -462,8 +513,14 @@ const drawTrendChart = (feature, title) => {
       text: title,
       left: 'center',
       textStyle: {
-        fontSize: 14,
-        fontWeight: 'normal'
+        /* 原始: fontSize: 14 */
+        /* 第一次修改: 增大至 16 提升趨勢圖標題可讀性 */
+        /* 第二次修改: 增大至 18 提升趨勢圖標題可讀性 */
+        fontSize: 18,
+        fontWeight: 'normal',
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
       }
     },
     tooltip: {
@@ -482,7 +539,13 @@ const drawTrendChart = (feature, title) => {
       top: '8%',
       right: '5%',
       textStyle: {
-        fontSize: 11
+        /* 原始: fontSize: 11 */
+        /* 第一次修改: 增大至 13 提升趨勢圖圖例可讀性 */
+        /* 第二次修改: 增大至 14 提升趨勢圖圖例可讀性 */
+        fontSize: 14,
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
       }
     },
     grid: {
@@ -496,25 +559,54 @@ const drawTrendChart = (feature, title) => {
       type: 'category',
       name: '檔案編號',
       nameTextStyle: {
-        fontSize: 11
+        /* 原始: fontSize: 11 */
+        /* 第一次修改: 增大至 13 提升X軸名稱可讀性 */
+        /* 第二次修改: 增大至 15 提升X軸名稱可讀性 */
+        fontSize: 15,
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
       },
       data: fileNumbers,
       axisLabel: {
-        fontSize: 10,
-        rotate: fileNumbers.length > 50 ? 45 : 0
+        /* 原始: fontSize: 10 */
+        /* 第一次修改: 增大至 11 提升X軸標籤可讀性 */
+        /* 第二次修改: 增大至 12 提升X軸標籤可讀性 */
+        fontSize: 12,
+        rotate: fileNumbers.length > 50 ? 45 : 0,
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
       }
     },
     yAxis: {
       type: 'value',
       name: '特徵值',
       nameTextStyle: {
-        fontSize: 11
+        /* 原始: fontSize: 11 */
+        /* 第一次修改: 增大至 13 提升Y軸名稱可讀性 */
+        /* 第二次修改: 增大至 15 提升Y軸名稱可讀性 */
+        fontSize: 15,
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
       },
       axisLabel: {
-        fontSize: 10,
+        /* 原始: fontSize: 10 */
+        /* 第一次修改: 增大至 11 提升Y軸標籤可讀性 */
+        /* 第二次修改: 增大至 12 提升Y軸標籤可讀性 */
+        fontSize: 12,
         formatter: function(value) {
           return value.toFixed(2)
-        }
+        },
+        // 原始：繼承預設顏色
+        // 修改：深色主題白色文字
+        color: '#ffffff'
+      },
+      splitLine: {
+        // 原始：繼承預設顏色
+        // 修改：深色主題淺色網格
+        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     },
     dataZoom: [
@@ -580,6 +672,55 @@ const drawTrendChart = (feature, title) => {
 /* ===== 原始：淺色主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
 
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+.frequency-domain-page h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.frequency-domain-page h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 修改: 1.85em (≈29.6px) - 增大主要區塊標題,與 TimeDomainAnalysis 保持一致 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.frequency-domain-page h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 修改: 1.5em (≈24px) - 增大小區塊標題,與 TimeDomainAnalysis 保持一致 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.frequency-domain-page h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 修改: 1.25em (≈20px) - 增大小標題,與 TimeDomainAnalysis 保持一致 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+.frequency-domain-page h5 {
+  font-size: 1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.frequency-domain-page p {
+  /* 原始: 16px */
+  /* 修改: 增大至 18px 提升閱讀舒適度 */
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.frequency-domain-page a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
 .frequency-domain-page {
   padding: 20px;
   min-height: 100%;
@@ -596,6 +737,10 @@ const drawTrendChart = (feature, title) => {
   /* 表單標籤文字顏色 */
   color: var(--text-primary) !important;
   font-weight: 500;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 15px 提升標籤可讀性 */
+  /* 第二次修改: 增大至 16px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 16px;
 }
 
 /* ===== 輸入框樣式 ===== */
@@ -618,6 +763,9 @@ const drawTrendChart = (feature, title) => {
   /* 輸入框內部樣式 */
   background-color: transparent;
   color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 修改: 增大至 15px 提升輸入框文字可讀性 */
+  font-size: 15px;
 }
 
 /* ===== 下拉選擇框樣式 ===== */
@@ -656,30 +804,9 @@ const drawTrendChart = (feature, title) => {
 }
 
 /* ===== 下拉選單選項樣式 ===== */
-.frequency-domain-page :deep(.el-select-dropdown) {
-  /* 下拉選單背景 */
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-}
-
-.frequency-domain-page :deep(.el-select-dropdown__item) {
-  /* 下拉選單選項 */
-  color: var(--text-primary);
-  background-color: transparent;
-}
-
-.frequency-domain-page :deep(.el-select-dropdown__item:hover) {
-  /* 下拉選單選項懸停 */
-  background-color: var(--bg-secondary);
-  color: var(--accent-primary);
-}
-
-.frequency-domain-page :deep(.el-select-dropdown__item.is-selected) {
-  /* 下拉選單選項已選中 */
-  background-color: var(--bg-tertiary);
-  color: var(--accent-primary);
-  font-weight: 500;
-}
+/* 注意:Element Plus 下拉選單通過 Teleport 渲染到 body 層級 */
+/* 下拉選單樣式已移至全局樣式文件: src/styles/select-dropdown-dark.css */
+/* 該文件在 main.js 中導入,確保樣式正確應用 */
 
 /* ===== 數字輸入框樣式 ===== */
 .frequency-domain-page :deep(.el-input-number) {
@@ -728,6 +855,10 @@ const drawTrendChart = (feature, title) => {
   /* 按鈕整體樣式 */
   color: var(--text-primary);
   border-color: var(--border-color);
+  /* 原始: 繼承預設 (≈14px) */
+  /* 第一次修改: 增大至 15px 提升按鈕文字可讀性 */
+  /* 第二次修改: 增大至 16px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 16px;
 }
 
 .frequency-domain-page :deep(.el-button--primary) {
@@ -781,7 +912,10 @@ const drawTrendChart = (feature, title) => {
   background-color: var(--bg-card);
   color: var(--accent-primary);
   font-weight: 600;
-  font-size: 16px;
+  /* 原始: 16px */
+  /* 第一次修改: 增大至 17px 提升分隔線文字可讀性 */
+  /* 第二次修改: 增大至 18px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 18px;
   padding: 0 20px;
 }
 
@@ -810,12 +944,20 @@ const drawTrendChart = (feature, title) => {
   color: var(--text-primary) !important;
   font-weight: 600;
   border-color: var(--border-color) !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 14px 提升表頭可讀性 */
+  /* 第二次修改: 增大至 15px 提升表頭可讀性 */
+  font-size: 15px;
 }
 
 .frequency-domain-page :deep(.el-table td) {
   /* 表格單元格 */
   border-color: var(--border-color) !important;
   color: var(--text-primary);
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 14px 提升表格內容可讀性 */
+  /* 第二次修改: 增大至 15px 提升表格內容可讀性 */
+  font-size: 15px;
 }
 
 .frequency-domain-page :deep(.el-table__row) {
@@ -875,12 +1017,20 @@ const drawTrendChart = (feature, title) => {
   color: var(--text-primary) !important;
   font-weight: 500;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 14px 提升描述列表標籤可讀性 */
+  /* 第二次修改: 增大至 16px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 16px;
 }
 
 .frequency-domain-page :deep(.el-descriptions__content) {
   /* 表格內容列樣式 */
   color: var(--text-primary) !important;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 14px 提升描述列表內容可讀性 */
+  /* 第二次修改: 增大至 16px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 16px;
 }
 
 .frequency-domain-page :deep(.el-descriptions__cell) {
@@ -901,32 +1051,19 @@ const drawTrendChart = (feature, title) => {
 }
 
 /* ===== 標題樣式 ===== */
-h3 {
+/* [已註解] h3, h4, p 樣式已移至文件開頭的全局字體定義區域,與 FONT.md 規範對齊 */
+/* 以下為補充的特定樣式調整 */
+.frequency-domain-page h3 {
   margin-top: 0;
-  /* 原始：#303133 */
-  /* 修改：深色主題主要文字 */
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
-h4 {
+.frequency-domain-page h4 {
   margin-top: 20px;
-  /* 原始：#667eea */
-  /* 修改：使用強調色 */
-  color: var(--accent-primary);
-  font-weight: 600;
   /* 確保標題在深色背景下可讀 */
   background: var(--bg-secondary);
   padding: 10px 15px;
   border-radius: 6px;
   border-left: 4px solid var(--accent-primary);
-}
-
-p {
-  line-height: 1.6;
-  /* 原始：#606266 */
-  /* 修改：深色主題次要文字 */
-  color: var(--text-secondary);
 }
 
 /* ===== code 樣式 ===== */
@@ -946,25 +1083,14 @@ code {
   display: block;
   padding: 8px 12px;
   margin: 8px 0;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 增大至 15px 提升代碼可讀性 */
+  /* 第二次修改: 增大至 16px 與 TimeDomainAnalysis 保持一致 */
+  font-size: 16px;
 }
 
 /* ===== 組件特定樣式 ===== */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--text-primary);
-}
-
-.card-header h2 {
-  margin: 0;
-  /* 深色主題漸層文字效果 */
-  background: linear-gradient(135deg, #ffffff, var(--text-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
+/* [已移除] .card-header 樣式 - 統一使用簡單的 h2 標題，與 TimeDomainAnalysis.vue 保持一致 */
 
 /* ===== 單選框組樣式 ===== */
 .frequency-domain-page :deep(.el-radio-group) {

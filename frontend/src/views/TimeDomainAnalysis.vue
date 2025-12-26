@@ -232,7 +232,13 @@ const drawSignalChart = () => {
       text: '振動加速度信號',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      textStyle: {
+        color: '#ffffff',
+        // 原始: 繼承預設 (≈18px)
+        // 第一次修改: 18px - 確保圖表標題清晰可讀
+        // 第二次修改: 20px - 進一步增大圖表標題
+        fontSize: 20
+      }
     },
     tooltip: {
       trigger: 'axis'
@@ -243,7 +249,13 @@ const drawSignalChart = () => {
       right: '5%',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      textStyle: { color: '#ffffff' }
+      textStyle: {
+        color: '#ffffff',
+        // 原始: 12
+        // 第一次修改: 14 - 增大圖例文字
+        // 第二次修改: 15 - 進一步增大圖例文字
+        fontSize: 15
+      }
     },
     grid: {
       left: '3%',
@@ -257,16 +269,40 @@ const drawSignalChart = () => {
       name: '樣本點',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      axisLabel: { color: '#ffffff' },
-      nameTextStyle: { color: '#ffffff' }
+      axisLabel: {
+        color: '#ffffff',
+        // 原始: 12
+        // 第一次修改: 13 - 增大軸刻度文字
+        // 第二次修改: 14 - 進一步增大軸刻度文字
+        fontSize: 14
+      },
+      nameTextStyle: {
+        color: '#ffffff',
+        // 原始: 繼承預設
+        // 第一次修改: 14 - 增大軸標題文字
+        // 第二次修改: 15 - 進一步增大軸標題文字
+        fontSize: 15
+      }
     },
     yAxis: {
       type: 'value',
       name: '加速度 (g)',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      axisLabel: { color: '#ffffff' },
-      nameTextStyle: { color: '#ffffff' },
+      axisLabel: {
+        color: '#ffffff',
+        // 原始: 12
+        // 第一次修改: 13 - 增大軸刻度文字
+        // 第二次修改: 14 - 進一步增大軸刻度文字
+        fontSize: 14
+      },
+      nameTextStyle: {
+        color: '#ffffff',
+        // 原始: 繼承預設
+        // 第一次修改: 14 - 增大軸標題文字
+        // 第二次修改: 15 - 進一步增大軸標題文字
+        fontSize: 15
+      },
       splitLine: {
         // 原始：繼承預設顏色
         // 修改：深色主題淺色網格
@@ -306,7 +342,10 @@ const drawTrendChart = () => {
       left: 'center',
       top: '1%',
       textStyle: {
-        fontSize: 16,
+        // 原始: 16 */
+        /* 第一次修改: 18 - 增大趨勢圖標題 */
+        /* 第二次修改: 20 - 進一步增大趨勢圖標題 */
+        fontSize: 20,
         // 原始：繼承預設顏色
         // 修改：深色主題白色文字
         color: '#ffffff'
@@ -321,7 +360,10 @@ const drawTrendChart = () => {
       right: '2%',
       type: 'scroll',
       textStyle: {
-        fontSize: 11,
+        // 原始: 11 */
+        /* 第一次修改: 12 - 增大圖例文字,避免過大影響版面 */
+        /* 第二次修改: 13 - 進一步增大圖例文字 */
+        fontSize: 13,
         // 原始：繼承預設顏色
         // 修改：深色主題白色文字
         color: '#ffffff'
@@ -343,8 +385,20 @@ const drawTrendChart = () => {
       name: '檔案編號',
       // 原始：繼承預設顏色
       // 修改：深色主題白色文字
-      axisLabel: { color: '#ffffff' },
-      nameTextStyle: { color: '#ffffff' }
+      axisLabel: {
+        color: '#ffffff',
+        // 原始: 12 */
+        /* 第一次修改: 13 - 增大軸刻度文字 */
+        /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+        fontSize: 14
+      },
+      nameTextStyle: {
+        color: '#ffffff',
+        // 原始: 繼承預設 */
+        /* 第一次修改: 14 - 增大軸標題文字 */
+        /* 第二次修改: 15 - 進一步增大軸標題文字 */
+        fontSize: 15
+      }
     },
     yAxis: [
       {
@@ -353,8 +407,20 @@ const drawTrendChart = () => {
         position: 'left',
         // 原始：繼承預設顏色
         // 修改：深色主題白色文字
-        axisLabel: { color: '#ffffff' },
-        nameTextStyle: { color: '#ffffff' },
+        axisLabel: {
+          color: '#ffffff',
+          // 原始: 12 */
+          /* 第一次修改: 13 - 增大軸刻度文字 */
+          /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+          fontSize: 14
+        },
+        nameTextStyle: {
+          color: '#ffffff',
+          // 原始: 繼承預設 */
+          /* 第一次修改: 14 - 增大軸標題文字 */
+          /* 第二次修改: 15 - 進一步增大軸標題文字 */
+          fontSize: 15
+        },
         splitLine: {
           // 原始：繼承預設顏色
           // 修改：深色主題淺色網格
@@ -367,8 +433,20 @@ const drawTrendChart = () => {
         position: 'right',
         // 原始：繼承預設顏色
         // 修改：深色主題白色文字
-        axisLabel: { color: '#ffffff' },
-        nameTextStyle: { color: '#ffffff' },
+        axisLabel: {
+          color: '#ffffff',
+          // 原始: 12 */
+          /* 第一次修改: 13 - 增大軸刻度文字 */
+          /* 第二次修改: 14 - 進一步增大軸刻度文字 */
+          fontSize: 14
+        },
+        nameTextStyle: {
+          color: '#ffffff',
+          // 原始: 繼承預設 */
+          /* 第一次修改: 14 - 增大軸標題文字 */
+          /* 第二次修改: 15 - 進一步增大軸標題文字 */
+          fontSize: 15
+        },
         splitLine: { show: false }
       }
     ],
@@ -468,6 +546,63 @@ const drawTrendChart = () => {
 /* ===== 原始：淺色主題 ===== */
 /* ===== 修改為：Apple Keynote 深色漸層主題 ===== */
 
+/* ===== 字體設定 - 與 FONT.md 規範對齊 ===== */
+/* 原始設定: h1=3.2em, h2=1.5em, h3=1.25em, h4=1.1em, h5=1em, p=16px */
+/* 修改: 增大標題與內容文字,提供更舒適的閱讀體驗 */
+.time-domain-page h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.time-domain-page h2 {
+  /* 原始: 1.5em (≈24px) */
+  /* 第一次修改: 1.75em (≈28px) - 增大主要區塊標題 */
+  /* 第二次修改: 1.85em (≈29.6px) - 進一步增大標題以提升可讀性 */
+  font-size: 1.85em;
+  line-height: 1.3;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.time-domain-page h3 {
+  /* 原始: 1.25em (≈20px) */
+  /* 第一次修改: 1.4em (≈22.4px) - 增大小區塊標題 */
+  /* 第二次修改: 1.5em (≈24px) - 進一步增大小區塊標題 */
+  font-size: 1.5em;
+  line-height: 1.4;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+.time-domain-page h4 {
+  /* 原始: 1.1em (≈17.6px) */
+  /* 第一次修改: 1.2em (≈19.2px) - 增大小標題 */
+  /* 第二次修改: 1.25em (≈20px) - 進一步增大小標題 */
+  font-size: 1.25em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+.time-domain-page h5 {
+  /* 原始: 1em (16px) */
+  /* 修改: 1.1em (≈17.6px) - 增大次級標題 */
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.time-domain-page p {
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大內容文字 */
+  /* 第二次修改: 18px - 進一步增大內容文字以提升閱讀舒適度 */
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.time-domain-page a {
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
 .time-domain-page {
   padding: 20px;
   min-height: 100%;
@@ -484,6 +619,10 @@ const drawTrendChart = () => {
   /* 表單標籤文字顏色 */
   color: var(--text-primary) !important;
   font-weight: 500;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表單標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表單標籤文字 */
+  font-size: 16px;
 }
 
 /* ===== 輸入框樣式 ===== */
@@ -544,30 +683,9 @@ const drawTrendChart = () => {
 }
 
 /* ===== 下拉選單選項樣式 ===== */
-.time-domain-page :deep(.el-select-dropdown) {
-  /* 下拉選單背景 */
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-}
-
-.time-domain-page :deep(.el-select-dropdown__item) {
-  /* 下拉選單選項 */
-  color: var(--text-primary);
-  background-color: transparent;
-}
-
-.time-domain-page :deep(.el-select-dropdown__item:hover) {
-  /* 下拉選單選項懸停 */
-  background-color: var(--bg-secondary);
-  color: var(--accent-primary);
-}
-
-.time-domain-page :deep(.el-select-dropdown__item.is-selected) {
-  /* 下拉選單選項已選中 */
-  background-color: var(--bg-tertiary);
-  color: var(--accent-primary);
-  font-weight: 500;
-}
+/* 注意:Element Plus 下拉選單通過 Teleport 渲染到 body 層級 */
+/* 下拉選單樣式已移至全局樣式文件: src/styles/select-dropdown-dark.css */
+/* 該文件在 main.js 中導入,確保樣式正確應用 */
 
 /* ===== 數字輸入框樣式 ===== */
 .time-domain-page :deep(.el-input-number) {
@@ -616,6 +734,9 @@ const drawTrendChart = () => {
   /* 按鈕整體樣式 */
   color: var(--text-primary);
   border-color: var(--border-color);
+  /* 原始: 繼承預設 (≈14px) */
+  /* 修改: 15px - 增大按鈕文字 */
+  font-size: 15px;
 }
 
 .time-domain-page :deep(.el-button--primary) {
@@ -656,7 +777,10 @@ const drawTrendChart = () => {
   background-color: var(--bg-card);
   color: var(--accent-primary);
   font-weight: 600;
-  font-size: 16px;
+  /* 原始: 16px */
+  /* 第一次修改: 17px - 略微增大分隔線文字 */
+  /* 第二次修改: 18px - 進一步增大分隔線文字 */
+  font-size: 18px;
   padding: 0 20px;
 }
 
@@ -667,32 +791,20 @@ const drawTrendChart = () => {
   margin: 24px 0;
 }
 
-h3 {
+/* ===== 標題樣式 ===== */
+/* [已註解] h3, h4, p 樣式已移至文件開頭的全局字體定義區域,與 FONT.md 規範對齊 */
+/* 以下為補充的特定樣式調整 */
+.time-domain-page h3 {
   margin-top: 0;
-  /* 原始：#303133 */
-  /* 修改：深色主題主要文字 */
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
-h4 {
+.time-domain-page h4 {
   margin-top: 20px;
-  /* 原始：#667eea */
-  /* 修改：使用強調色 */
-  color: var(--accent-primary);
-  font-weight: 600;
   /* 確保標題在深色背景下可讀 */
   background: var(--bg-secondary);
   padding: 10px 15px;
   border-radius: 6px;
   border-left: 4px solid var(--accent-primary);
-}
-
-p {
-  line-height: 1.6;
-  /* 原始：#606266 */
-  /* 修改：深色主題次要文字 */
-  color: var(--text-secondary);
 }
 
 code {
@@ -708,6 +820,10 @@ code {
   /* 修改：深色邊框 */
   border: 1px solid var(--border-color);
   font-family: 'Consolas', 'Monaco', monospace;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大代碼文字 */
+  /* 第二次修改: 16px - 進一步增大代碼文字 */
+  font-size: 16px;
 }
 
 /* ===== 表格樣式修正 ===== */
@@ -723,12 +839,20 @@ code {
   color: var(--text-primary) !important;
   font-weight: 500;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格標籤文字 */
+  /* 第二次修改: 16px - 進一步增大表格標籤文字 */
+  font-size: 16px;
 }
 
 .time-domain-page :deep(.el-descriptions__content) {
   /* 表格內容列樣式 */
   color: var(--text-primary) !important;
   padding: 12px 16px !important;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 15px - 增大表格內容文字 */
+  /* 第二次修改: 16px - 進一步增大表格內容文字 */
+  font-size: 16px;
 }
 
 .time-domain-page :deep(.el-descriptions__cell) {
@@ -752,7 +876,7 @@ code {
 }
 
 /* 數字值的特殊樣式 */
-.time-domain-page :deep(.el-descriptions__content) {
+.time-domain-page :deep(.el-descriptions__content strong) {
   font-family: 'Consolas', 'Monaco', monospace;
   font-weight: 600;
   color: var(--accent-primary) !important;
@@ -768,15 +892,26 @@ code {
 .time-domain-page .diagnostic-criteria-list li {
   margin: 8px 0;
   line-height: 1.6;
-  /* 原始：繼承預設顏色 */
+  /* 原始：繼承預設顼色 */
   /* 修改：深色主題次要文字 */
   color: var(--text-secondary);
   padding-left: 8px;
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 16px - 增大診斷準則列表文字 */
+  /* 第二次修改: 17px - 進一步增大列表文字 */
+  font-size: 17px;
 }
 
 /* ===== 引用區塊樣式 ===== */
 .time-domain-page :deep(.el-alert__content) {
   background: transparent;
+}
+
+.time-domain-page :deep(.el-alert__title) {
+  /* 原始: 繼承預設 */
+  /* 第一次修改: 16px - 增大 alert 標題文字 */
+  /* 第二次修改: 17px - 進一步增大 alert 標題 */
+  font-size: 17px;
 }
 
 .time-domain-page :deep(.el-alert--info) {
