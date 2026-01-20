@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Vibration analysis system for PHM (Prognostics and Health Management)"
 requires-python = ">=3.10"
 dependencies = [
+    # Existing dependencies
     "fastapi==0.104.1",
     "uvicorn[standard]==0.24.0",
     "sqlalchemy==2.0.23",
@@ -13,4 +14,11 @@ dependencies = [
     "numpy==1.26.2",
     "scipy==1.11.4",
     "PyWavelets==1.5.0",
+    # NEW - Real-time & Async (Phase 1)
+    "asyncpg==0.29.0",              # Async PostgreSQL driver
+    "aioredis==2.0.1",              # Async Redis client
+    "websockets==12.0",             # WebSocket support
+    "aiofiles==23.2.1",             # Async file operations
+    "celery==5.3.4",                # Background task queue
+    "redis==5.0.1",                 # Redis client for Celery
 ]

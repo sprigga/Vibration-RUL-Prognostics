@@ -1,6 +1,15 @@
-# 🔧 振動信號分析系統 - 軸承RUL預測平台
+# 🔧 振動信號分析平台
 
 基於 IEEE PHM 2012 數據挑戰的軸承剩餘使用壽命（Remaining Useful Life, RUL）預測與振動信號分析平台。整合 Vue 3 前端與 FastAPI 後端，提供完整的軸承健康監測與故障診斷解決方案。
+
+## 🎯 平台特色
+
+- **批次分析模式**：基於 IEEE PHM 2012 數據集的歷史數據分析
+- **即時監控模式**：支援即時串流信號處理與特徵提取
+- **多維度分析**：時域、頻域、時頻域、包絡分析、高階統計
+- **雙資料庫架構**：SQLite（批次分析）+ PostgreSQL（即時監控）
+- **Redis 緩存機制**：提升即時數據處理效能
+- **WebSocket 通訊**：低延遲的即時數據推送
 
 ## ✨ 主要功能
 
@@ -67,6 +76,18 @@
 - 溫度統計資訊
 - 區間搜尋功能
 
+### 11. 即時分析（Real-time Analysis）🆕
+- 即時串流信號處理與特徵提取
+- WebSocket 低延遲數據推送
+- 即時特徵計算（時域、頻域、包絡）
+- 多感測器並發監控
+- 智能告警系統（閾值檢測、異常識別）
+- 數據緩衝管理（滑動窗口、緩衝區）
+- 即時圖表視覺化
+- PostgreSQL 高效能資料庫
+- Redis 快取與發布/訂閱
+- 告警確認與歷史記錄
+
 ## 📸 系統截圖
 
 ![image1.png](screenshot/image1.png)
@@ -92,10 +113,16 @@
 ### 後端（Backend）
 - **框架**: FastAPI 0.104+
 - **伺服器**: Uvicorn
-- **資料庫**: SQLite (PHM 振動數據庫 + 溫度數據庫)
+- **資料庫**:
+  - SQLite（批次分析：PHM 振動數據庫 + 溫度數據庫）
+  - PostgreSQL 15（即時監控：異步操作、高效能查詢）
+- **緩存系統**: Redis 7.2（發布/訂閱、數據快取）
+- **即時通訊**: WebSocket（低延遲推送）
+- **異步處理**: asyncio、asyncpg、aiofiles
 - **數據處理**: NumPy, Pandas, SciPy
 - **小波分析**: PyWavelets
 - **CORS 中間件**: 支持跨域請求
+- **任務隊列**: Celery + Redis（背景任務處理）
 
 ### 容器化部署（Docker）
 - **容器編排**: Docker Compose
@@ -115,12 +142,21 @@
 - `phm_temperature_query.py` - 溫度數據查詢模組
 - `phm_processor.py` - PHM 數據處理器
 
+### 即時分析模組（Real-time Stack）🆕
+- `realtime_analyzer.py` - 即時特徵提取引擎
+- `buffer_manager.py` - 數據緩衝管理（滑動窗口、環形緩衝）
+- `websocket_manager.py` - WebSocket 連線管理
+- `redis_client.py` - Redis 客戶端（快取、發布/訂閱）
+- `database_async.py` - 異步資料庫操作（PostgreSQL）
+
 ## 📦 安裝與運行
 
 ### 前置需求
-- Python 3.8+
+- Python 3.10+（推薦使用 uv 套件管理器）
 - Node.js 16+
-- Docker & Docker Compose（可選，用於容器化部署）
+- Docker & Docker Compose（推薦用於容器化部署）
+- PostgreSQL 15+（即時分析功能）
+- Redis 7.2+（即時分析功能）
 - npm 或 yarn
 
 ### 1. 本地開發（推薦使用 uv）
@@ -135,6 +171,10 @@ cd backend
 uv venv
 source .venv/bin/activate  # Linux/Mac
 # 或 .venv\Scripts\activate  # Windows
+
+# 設置環境變數（複製並編輯）
+cp ../.env.example ../.env
+# 編輯 .env 文件，配置 PostgreSQL 和 Redis 連線
 
 # 使用 uv 運行後端
 uv run python main.py
@@ -160,20 +200,30 @@ npm run dev
 ### 2. Docker 容器化部署（推薦）
 
 ```bash
-# 啟動所有服務（前端 + 後端）
+# 設置環境變數（首次運行）
+cp .env.example .env
+# 編輯 .env 文件以自訂配置
+
+# 啟動所有服務（前端 + 後端 + PostgreSQL + Redis）
 docker-compose up -d
 
 # 查看日誌
-docker-compose logs -f
+docker-compose logs -f backend
+docker-compose logs -f frontend
 
 # 停止服務
 docker-compose down
+
+# 停止並清理數據卷（⚠️ 會刪除數據）
+docker-compose down -v
 ```
 
 服務訪問地址：
 - 前端：`http://localhost:5173`
 - 後端 API：`http://localhost:8081`
 - API 文檔：`http://localhost:8081/docs`
+- PostgreSQL：`localhost:5432`
+- Redis：`localhost:6379`
 
 ### 3. 生產環境建構
 
@@ -228,6 +278,41 @@ temperature_measurements (溫度測量表)
 - vertical_temperature: Float
 ```
 
+### PostgreSQL 即時分析資料庫（vibration_analysis）🆕
+```sql
+sensors (感測器表)
+- sensor_id: UUID (主鍵)
+- sensor_name: String
+- sensor_type: String (accelerometer, temperature, etc.)
+- sampling_rate: Float
+- status: String (active, inactive, error)
+- created_at: Timestamp
+
+sensor_data (感測器數據表)
+- data_id: BigSerial (主鍵)
+- sensor_id: UUID (外鍵)
+- timestamp: Timestamp
+- channel_1: Float (水平方向)
+- channel_2: Float (垂直方向)
+- features: JSONB (特徵值)
+
+features (特徵值表)
+- feature_id: BigSerial (主鍵)
+- sensor_id: UUID (外鍵)
+- timestamp: Timestamp
+- feature_name: String
+- feature_value: Float
+
+alerts (告警記錄表)
+- alert_id: UUID (主鍵)
+- sensor_id: UUID (外鍵)
+- alert_type: String
+- severity: String (info, warning, critical)
+- message: Text
+- acknowledged: Boolean
+- created_at: Timestamp
+```
+
 ## 🔌 API 端點
 
 ### PHM 數據管理
@@ -276,6 +361,21 @@ temperature_measurements (溫度測量表)
 - `GET /api/temperature/search` - 搜尋溫度資料
 - `GET /api/temperature/database/info` - 獲取溫度資料庫資訊
 
+### 即時分析與監控（Real-time Analysis）🆕
+- `POST /api/stream/start` - 啟動即時串流
+- `POST /api/stream/stop` - 停止即時串流
+- `GET /api/stream/status` - 獲取串流狀態
+- `GET /api/realtime/features/{sensor_id}` - 獲取即時特徵值
+- `GET /api/alerts/active` - 獲取活躍告警
+- `POST /api/alerts/acknowledge/{alert_id}` - 確認告警
+- `GET /api/sensors` - 列出所有感測器
+- `GET /api/sensors/{sensor_id}/status` - 獲取感測器狀態
+- `GET /api/sensors/{sensor_id}/data` - 獲取感測器數據
+
+### WebSocket 端點🆕
+- `WS /ws/realtime/{sensor_id}` - 即時感測器數據推送
+- `WS /ws/alerts` - 告警通知推送
+
 ## 🎯 使用流程
 
 ### 1. 查看 PHM 數據庫
@@ -295,6 +395,14 @@ temperature_measurements (溫度測量表)
 
 ### 5. 溫度監測
 在溫度數據分析頁面查看軸承溫度變化趨勢。
+
+### 6. 即時監控（🆕 Real-time Monitoring）
+1. 進入「Real-time Analysis」頁面
+2. 選擇要監控的感測器
+3. 啟動即時串流
+4. 查看即時特徵值與圖表
+5. 接收並處理告警通知
+6. 追蹤感測器健康狀態
 
 ## 🔍 診斷準則
 
@@ -334,6 +442,12 @@ temperature_measurements (溫度測量表)
 - 基於閾值的異常振動搜尋
 - 支持自訂檢測閾值
 - 快速定位潛在故障點
+- **即時告警系統**：
+  - 多級告警（Info、Warning、Critical）
+  - 自動異常檢測
+  - 告警確認機制
+  - 告警歷史記錄
+  - 即時推播通知
 
 ## 🛠️ 開發指南
 
@@ -357,29 +471,78 @@ temperature_measurements (溫度測量表)
 
 ```
 Viberation-RUL-Prognostics/
-├── backend/                 # FastAPI 後端
-│   ├── main.py             # API 主入口
-│   ├── config.py           # 配置文件
-│   ├── timedomain.py       # 時域分析
-│   ├── frequencydomain.py  # 頻域分析
-│   ├── filterprocess.py    # 高階統計
-│   ├── timefrequency.py    # 時頻分析
-│   ├── hilberttransform.py # 希爾伯特轉換
-│   ├── phm_query.py        # PHM 數據庫查詢
-│   └── requirements.txt    # Python 依賴
-├── frontend/               # Vue 3 前端
+├── backend/                      # FastAPI 後端
+│   ├── main.py                  # API 主入口
+│   ├── config.py                # 配置文件
+│   ├── models.py                # 數據模型
+│   ├── phm_models.py            # PHM 數據模型
+│   ├── phm_temperature_models.py # 溫度數據模型
+│   ├── timedomain.py            # 時域分析
+│   ├── frequencydomain.py       # 頻域分析
+│   ├── filterprocess.py         # 高階統計
+│   ├── timefrequency.py         # 時頻分析
+│   ├── hilberttransform.py      # 希爾伯特轉換
+│   ├── phm_query.py             # PHM 數據庫查詢
+│   ├── phm_temperature_query.py # 溫度數據查詢
+│   ├── phm_processor.py         # PHM 數據處理器
+│   ├── realtime_analyzer.py     # 🆕 即時分析引擎
+│   ├── buffer_manager.py        # 🆕 緩衝管理
+│   ├── websocket_manager.py     # 🆕 WebSocket 管理
+│   ├── redis_client.py          # 🆕 Redis 客戶端
+│   ├── database_async.py        # 🆕 異步資料庫
+│   ├── harmonic_sildband_table.py # 諧波分析表
+│   ├── initialization.py        # 系統初始化
+│   ├── phm_data.db             # SQLite PHM 數據庫
+│   ├── phm_temperature_data.db  # SQLite 溫度數據庫
+│   └── requirements.txt         # Python 依賴
+├── frontend/                    # Vue 3 前端
 │   ├── src/
-│   │   ├── views/         # 頁面組件
-│   │   ├── router/        # 路由配置
-│   │   ├── stores/        # Pinia 狀態管理
-│   │   └── config/        # API 配置
-│   ├── package.json       # Node 依賴
-│   └── vite.config.js     # Vite 配置
-├── phm_analysis_results/   # 預處理分析結果
+│   │   ├── views/              # 頁面組件
+│   │   │   ├── Dashboard.vue
+│   │   │   ├── Algorithms.vue
+│   │   │   ├── TimeDomainAnalysis.vue
+│   │   │   ├── FrequencyDomainAnalysis.vue
+│   │   │   ├── EnvelopeAnalysis.vue
+│   │   │   ├── TimeFrequencyAnalysis.vue
+│   │   │   ├── HigherOrderStatistics.vue
+│   │   │   ├── PHMTraining.vue
+│   │   │   ├── PHMDatabase.vue
+│   │   │   ├── ProjectAnalysis.vue
+│   │   │   └── RealtimeAnalysis.vue # 🆕 即時分析頁面
+│   │   ├── router/             # 路由配置
+│   │   ├── stores/             # Pinia 狀態管理
+│   │   │   ├── api.js          # API 狀態
+│   │   │   └── realtime.js     # 🆕 即時數據狀態
+│   │   ├── services/           # 服務層
+│   │   │   └── websocket.js    # 🆕 WebSocket 服務
+│   │   ├── config/             # API 配置
+│   │   ├── App.vue             # 主組件
+│   │   └── main.js             # 入口文件
+│   ├── package.json            # Node 依賴
+│   ├── vite.config.js          # Vite 配置
+│   └── Dockerfile.dev          # 開發環境 Dockerfile
+├── docs/                       # 📚 文檔資源
+│   ├── System_Analysis.md              # 系統分析
+│   ├── Software_Engineering_Challenges.md # 工程挑戰
+│   ├── Software_Engineering_Contributions.md # 貢獻文檔
+│   ├── UML.md                           # UML 架構文檔
+│   ├── Realtime_Analysis_Implementation.md # 🆕 即時分析實作
+│   ├── Contribution_Difficulty_Cline.md # 貢獻指南
+│   ├── FrequencyDomain.md               # 頻域分析說明
+│   ├── Initialization.md                # 初始化指南
+│   └── frontend-env-config.md           # 前端環境配置
+├── scripts/                    # 工具腳本
+│   ├── init_postgres.sql              # PostgreSQL 初始化
+│   ├── create_temperature_database.py # 溫度資料庫創建
+│   ├── start_backend.sh               # 後端啟動腳本
+│   └── start_frontend.sh              # 前端啟動腳本
+├── phm_analysis_results/      # 預處理分析結果
 ├── phm-ieee-2012-data-challenge-dataset/ # 原始數據集
-├── docker-compose.yml      # Docker 編排配置
-├── scripts/               # 工具腳本
-└── docs/                  # 文檔資源
+├── .env.example               # 環境變數模板
+├── docker-compose.yml         # Docker 編排配置
+├── pyproject.toml            # Python 專案配置
+├── README.md                 # 專案說明
+└── CLAUDE.md                 # 開發指南
 ```
 
 ## 📚 參考資源
@@ -392,7 +555,26 @@ Viberation-RUL-Prognostics/
 
 ### 相關文檔
 - [CLAUDE.md](CLAUDE.md) - 開發指南
-- [docs/](docs/) - 詳細技術文檔
+- [docs/System_Analysis.md](docs/System_Analysis.md) - 系統架構分析
+- [docs/Realtime_Analysis_Implementation.md](docs/Realtime_Analysis_Implementation.md) - 即時分析實作文檔
+- [docs/UML.md](docs/UML.md) - UML 架構圖
+- [docs/Software_Engineering_Challenges.md](docs/Software_Engineering_Challenges.md) - 工程挑戰與解決方案
+
+### 技術架構演進
+本專案從純批次分析系統演進為混合架構平台：
+
+**Phase 1 - 批次分析系統**：
+- SQLite 資料庫儲存 PHM 數據集
+- 同步 API 處理分析請求
+- Vue 3 前端提供操作介面
+
+**Phase 2 - 即時監控系統**（🆕 目前版本）：
+- 新增 PostgreSQL 支援高並發寫入
+- Redis 提供快取與發布/訂閱機制
+- WebSocket 實現低延遲推送
+- 異步處理提升吞吐量
+- 智能告警系統
+- 支援多感測器並發監控
 
 ## 🤝 貢獻
 

@@ -1,7 +1,9 @@
 """
 FastAPI backend for Linear Guide Vibration Analysis System
+
+Now includes real-time streaming capabilities with PostgreSQL, Redis, and WebSocket support.
 """
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict
@@ -12,6 +14,20 @@ import os
 import json
 import sys
 import sqlite3
+import logging
+
+# NEW - Phase 1: Real-time components
+# Import async database and Redis clients
+try:
+    from database_async import db as async_db
+    from redis_client import redis_client
+    from websocket_manager import manager
+    from buffer_manager import buffer_manager
+    from realtime_analyzer import analyzer
+    REALTIME_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Real-time components not available: {e}")
+    REALTIME_AVAILABLE = False
 
 # 動態路徑處理：兼容本地開發和容器環境
 # 獲取當前檔案所在目錄
@@ -90,15 +106,53 @@ def close_db_connection():
 
 app = FastAPI(
     title="Linear Guide Vibration Analysis API",
-    description="API for CPC Linear Guide health monitoring and fault diagnosis",
-    version="1.0.0"
+    description="API for CPC Linear Guide health monitoring and fault diagnosis with real-time streaming",
+    version="2.0.0"
 )
+
+# NEW - Phase 1: Startup event for async components
+@app.on_event("startup")
+async def startup_event():
+    """Initialize async database and Redis connections"""
+    logger = logging.getLogger(__name__)
+
+    if REALTIME_AVAILABLE:
+        try:
+            # Initialize PostgreSQL connection pool
+            await async_db.init_pool()
+            logger.info("PostgreSQL connection pool initialized")
+
+            # Initialize Redis connection
+            await redis_client.connect()
+            logger.info("Redis connection established")
+
+            logger.info("Real-time components initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize real-time components: {e}")
+            # Continue without real-time features
+    else:
+        logger.info("Real-time components not available, running in legacy mode")
+
 
 # 在應用關閉時清理連接
 @app.on_event("shutdown")
-def shutdown_event():
+async def shutdown_event():
     """應用關閉時清理資料庫連接"""
+    logger = logging.getLogger(__name__)
+
+    # Close legacy SQLite connections
     close_db_connection()
+
+    # NEW - Phase 1: Close async connections
+    if REALTIME_AVAILABLE:
+        try:
+            await async_db.close_pool()
+            logger.info("PostgreSQL connection pool closed")
+
+            await redis_client.close()
+            logger.info("Redis connection closed")
+        except Exception as e:
+            logger.error(f"Error closing async connections: {e}")
 
 # CORS middleware for Vue.js frontend
 app.add_middleware(
@@ -1486,6 +1540,393 @@ async def search_temperature_data(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching temperature data: {str(e)}")
+
+
+# ========================================
+# NEW - Phase 1: Real-time Streaming API
+# ========================================
+
+if REALTIME_AVAILABLE:
+    # Pydantic models for real-time API
+    class StreamStartRequest(BaseModel):
+        sensor_id: int
+        sampling_rate: float = 25600.0
+
+    class SensorDataPoint(BaseModel):
+        """單條感測器數據點"""
+        timestamp: datetime
+        h_acc: float
+        v_acc: float
+
+    class SensorDataBatch(BaseModel):
+        """批量感測器數據"""
+        sensor_id: int
+        data: List[SensorDataPoint]
+
+    # ========================================
+    # Sensor Data Ingestion Endpoints
+    # ========================================
+
+    @app.post("/api/sensor/data")
+    async def ingest_sensor_data(batch: SensorDataBatch):
+        """
+        接收機台推送的感測器數據並添加到 Buffer Manager
+
+        支持批量推送以提高效率。數據會自動存入：
+        1. 記憶體循環緩衝區（用於即時分析）
+        2. Redis Streams（臨時持久化，24h TTL）
+
+        請求格式：
+        {
+            "sensor_id": 1,
+            "data": [
+                {
+                    "timestamp": "2026-01-20T10:30:00.123",
+                    "h_acc": 0.1234,
+                    "v_acc": 0.0987
+                },
+                ...
+            ]
+        }
+
+        回應格式：
+        {
+            "status": "success",
+            "sensor_id": 1,
+            "processed": 100,
+            "message": "Successfully processed 100 data points"
+        }
+        """
+        try:
+            # 轉換為 buffer_manager 需要的格式
+            data_list = [
+                {
+                    'timestamp': point.timestamp,
+                    'h_acc': point.h_acc,
+                    'v_acc': point.v_acc
+                }
+                for point in batch.data
+            ]
+
+            # 添加到 Buffer Manager
+            await buffer_manager.add_data(batch.sensor_id, data_list)
+
+            return {
+                "status": "success",
+                "sensor_id": batch.sensor_id,
+                "processed": len(batch.data),
+                "message": f"Successfully processed {len(batch.data)} data points"
+            }
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error ingesting sensor data: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error processing sensor data: {str(e)}"
+            )
+
+    @app.post("/api/sensor/data/stream")
+    async def ingest_sensor_data_stream(
+        sensor_id: int,
+        h_acc: List[float],
+        v_acc: List[float],
+        timestamp_start: datetime,
+        sampling_rate: float = 25600.0
+    ):
+        """
+        流式接收機台推送的感測器數據（高頻數據推送）
+
+        適用於需要高效傳輸大量數據的場景。
+        接收兩個陣列和起始時間，自動計算每個時間戳。
+
+        請求格式：
+        sensor_id=1
+        h_acc=[0.1234, 0.1256, ...]
+        v_acc=[0.0987, 0.1001, ...]
+        timestamp_start="2026-01-20T10:30:00.123"
+        sampling_rate=25600.0
+
+        回應格式：
+        {
+            "status": "success",
+            "sensor_id": 1,
+            "processed": 25600,
+            "time_range": ["2026-01-20T10:30:00", "2026-01-20T10:31:00"]
+        }
+        """
+        try:
+            if len(h_acc) != len(v_acc):
+                raise HTTPException(
+                    status_code=400,
+                    detail="h_acc and v_acc arrays must have the same length"
+                )
+
+            # 計算每個時間戳
+            from datetime import timedelta
+            sample_interval = timedelta(microseconds=1000000 / sampling_rate)
+
+            data_list = []
+            current_time = timestamp_start
+
+            for i in range(len(h_acc)):
+                data_list.append({
+                    'timestamp': current_time,
+                    'h_acc': h_acc[i],
+                    'v_acc': v_acc[i]
+                })
+                current_time += sample_interval
+
+            # 添加到 Buffer Manager
+            await buffer_manager.add_data(sensor_id, data_list)
+
+            return {
+                "status": "success",
+                "sensor_id": sensor_id,
+                "processed": len(data_list),
+                "time_range": [
+                    data_list[0]['timestamp'].isoformat(),
+                    data_list[-1]['timestamp'].isoformat()
+                ]
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error ingesting sensor data stream: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error processing sensor data stream: {str(e)}"
+            )
+
+    # ========================================
+    # WebSocket Endpoints
+    # ========================================
+
+    @app.websocket("/ws/realtime/{sensor_id}")
+    async def websocket_realtime_sensor(websocket: WebSocket, sensor_id: int):
+        """
+        Real-time sensor data streaming via WebSocket
+
+        Connects to a specific sensor and receives:
+        - Feature updates (RMS, kurtosis, etc.)
+        - Alert notifications
+        - Connection status
+
+        Example: ws://localhost:8081/ws/realtime/1
+        """
+        await manager.connect(websocket, sensor_id)
+
+        try:
+            # Start analysis if not already running
+            await analyzer.start_analysis(sensor_id)
+
+            # Keep connection alive and handle client messages
+            while True:
+                data = await websocket.receive_text()
+
+                # Handle ping/pong for keep-alive
+                if data == "ping":
+                    await websocket.send_json({"type": "pong", "timestamp": datetime.now().isoformat()})
+
+        except WebSocketDisconnect:
+            await manager.disconnect(websocket)
+
+            # Stop analysis if no more connections for this sensor
+            if manager.get_connection_count(sensor_id) == 0:
+                await analyzer.stop_analysis(sensor_id)
+
+        except Exception as e:
+            logging.getLogger(__name__).error(f"WebSocket error for sensor {sensor_id}: {e}")
+            await manager.disconnect(websocket)
+
+    @app.websocket("/ws/alerts")
+    async def websocket_alerts(websocket: WebSocket):
+        """
+        Global alert stream
+
+        Receives all alerts from all sensors.
+        Use sensor_id=0 for global subscription.
+        """
+        await websocket.accept()
+        await manager.connect(websocket, sensor_id=0)  # Use 0 for global
+
+        try:
+            while True:
+                # Keep connection alive
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            await manager.disconnect(websocket)
+        except Exception as e:
+            logging.getLogger(__name__).error(f"Alert WebSocket error: {e}")
+            await manager.disconnect(websocket)
+
+    # ========================================
+    # REST API Endpoints for Real-time Control
+    # ========================================
+
+    @app.post("/api/stream/start")
+    async def start_streaming(request: StreamStartRequest):
+        """
+        Start real-time data streaming for a sensor
+
+        Registers the sensor and begins real-time analysis.
+        """
+        try:
+            # Register sensor in PostgreSQL
+            await async_db.register_sensor(
+                sensor_id=request.sensor_id,
+                sensor_name=f"Sensor_{request.sensor_id}",
+                sensor_type="accelerometer",
+                sampling_rate=request.sampling_rate
+            )
+
+            # Start analysis
+            await analyzer.start_analysis(request.sensor_id)
+
+            return {
+                "status": "started",
+                "sensor_id": request.sensor_id,
+                "message": "Real-time analysis started",
+                "sampling_rate": request.sampling_rate
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error starting stream: {str(e)}"
+            )
+
+    @app.post("/api/stream/stop")
+    async def stop_streaming(sensor_id: int):
+        """Stop real-time data streaming for a sensor"""
+        try:
+            await analyzer.stop_analysis(sensor_id)
+
+            # Deactivate sensor in database
+            # (This would need to be implemented in database_async)
+
+            return {
+                "status": "stopped",
+                "sensor_id": sensor_id,
+                "message": "Real-time analysis stopped"
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error stopping stream: {str(e)}"
+            )
+
+    @app.get("/api/stream/status")
+    async def get_stream_status():
+        """Get status of all active streams"""
+        try:
+            analyzer_status = analyzer.get_status()
+            connection_info = manager.get_connection_info()
+
+            return {
+                "active_streams": analyzer_status['sensor_count'],
+                "active_connections": connection_info['total_connections'],
+                "active_sensors": analyzer_status['active_sensors'],
+                "sensor_connections": connection_info['sensor_connections']
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error getting stream status: {str(e)}"
+            )
+
+    @app.get("/api/realtime/features/{sensor_id}")
+    async def get_realtime_features(sensor_id: int):
+        """
+        Get latest real-time features from cache
+
+        Returns the most recently computed features for a sensor.
+        """
+        try:
+            # Try Redis cache first
+            features = await redis_client.get_cached_features(sensor_id)
+
+            if not features:
+                # Fallback to database
+                features = await async_db.get_latest_features(sensor_id)
+
+            return features or {"message": "No features available"}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error getting features: {str(e)}"
+            )
+
+    @app.get("/api/alerts/active")
+    async def get_active_alerts(limit: int = 100):
+        """Get all active (unacknowledged) alerts"""
+        try:
+            alerts = await async_db.get_active_alerts(limit=limit)
+            return {
+                "alerts": alerts,
+                "count": len(alerts)
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error getting alerts: {str(e)}"
+            )
+
+    @app.post("/api/alerts/acknowledge/{alert_id}")
+    async def acknowledge_alert(alert_id: int, acknowledged_by: str = "system"):
+        """Acknowledge an alert"""
+        try:
+            success = await async_db.acknowledge_alert(alert_id, acknowledged_by)
+
+            if success:
+                return {"status": "acknowledged", "alert_id": alert_id}
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Alert {alert_id} not found"
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error acknowledging alert: {str(e)}"
+            )
+
+    @app.get("/api/sensors")
+    async def get_sensors():
+        """Get all registered sensors"""
+        try:
+            sensors = await async_db.fetch(
+                "SELECT * FROM sensors ORDER BY sensor_id"
+            )
+            return {"sensors": sensors, "count": len(sensors)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error getting sensors: {str(e)}"
+            )
+
+    @app.get("/api/sensors/{sensor_id}/status")
+    async def get_sensor_status(sensor_id: int):
+        """Get detailed status of a sensor"""
+        try:
+            status = await async_db.get_sensor_status(sensor_id)
+
+            if not status:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Sensor {sensor_id} not found"
+                )
+
+            return status
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error getting sensor status: {str(e)}"
+            )
+
 
 if __name__ == "__main__":
     import uvicorn

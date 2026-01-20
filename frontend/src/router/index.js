@@ -9,6 +9,8 @@ import HigherOrderStatistics from '../views/HigherOrderStatistics.vue'
 import PHMTraining from '../views/PHMTraining.vue'
 import PHMDatabase from '../views/PHMDatabase.vue'
 import ProjectAnalysis from '../views/ProjectAnalysis.vue'
+// NEW - Phase 1: Real-time analysis
+import RealtimeAnalysis from '../views/RealtimeAnalysis.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +64,12 @@ const router = createRouter({
       path: '/project-analysis',
       name: 'project-analysis',
       component: ProjectAnalysis
+    },
+    // NEW - Phase 1: Real-time analysis
+    {
+      path: '/realtime-analysis',
+      name: 'realtime-analysis',
+      component: RealtimeAnalysis
     }
   ]
 })

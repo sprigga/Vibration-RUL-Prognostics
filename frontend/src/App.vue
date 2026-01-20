@@ -43,6 +43,10 @@
               <el-icon><Document /></el-icon>
               <span>專案分析</span>
             </el-menu-item>
+            <el-menu-item index="/realtime-analysis">
+              <el-icon><TrendCharts /></el-icon>
+              <span>即時分析</span>
+            </el-menu-item>
             <!-- <el-menu-item index="/algorithms">
               <el-icon><Operation /></el-icon>
               <span>演算法展示</span>
