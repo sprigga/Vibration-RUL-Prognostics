@@ -27,7 +27,15 @@ class RealtimeService {
       this.ws.close()
     }
 
-    const wsUrl = `ws://localhost:8081/ws/realtime/${sensorId}`
+    // 原始配置: const wsUrl = `ws://localhost:8081/ws/realtime/${sensorId}`
+    // 修改: 在 nginx proxy 環境下動態決定 WebSocket URL
+    // 生產環境(nginx): 使用相對協定 (ws:// 或 wss:// 自動適應)
+    // 開發環境: 可以設定 VITE_WS_URL 環境變數
+    const wsBaseUrl = import.meta.env.VITE_WS_URL || ''
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = wsBaseUrl || `${protocol}//${window.location.host}`
+    const wsUrl = `${host}/ws/realtime/${sensorId}`
+
     console.log(`Connecting to WebSocket: ${wsUrl}`)
 
     this.ws = new WebSocket(wsUrl)

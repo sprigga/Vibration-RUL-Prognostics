@@ -3,9 +3,10 @@
  * 從環境變數讀取 API 配置，避免硬編碼
  */
 
-// 從 Vite 環境變數獲取 API Base URL
-// VITE_ 前綴是 Vite 規定的環境變數命名規則
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+// 原始配置: const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+// 修改: 在 nginx proxy 環境下使用相對路徑，由 nginx 轉發到後端
+// 開發環境可以透過 VITE_API_BASE_URL 設定完整的後端 URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 /**
  * API 配置物件
