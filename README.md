@@ -102,13 +102,15 @@
 ## 🏗️ 技術架構
 
 ### 前端（Frontend）
-- **框架**: Vue 3 (Composition API)
-- **UI 組件**: Element Plus
-- **路由**: Vue Router 4
-- **狀態管理**: Pinia
-- **圖表**: Chart.js + vue-chartjs, ECharts
-- **建構工具**: Vite 5
-- **HTTP 客戶端**: Axios
+- **框架**: Vue 3 (Composition API) ^3.3.8
+- **UI 組件**: Element Plus ^2.4.3
+- **路由**: Vue Router 4 ^4.2.5
+- **狀態管理**: Pinia ^2.1.7
+- **圖表**: Chart.js ^4.4.0 + vue-chartjs ^5.3.0, ECharts ^6.0.0
+- **建構工具**: Vite ^5.0.4
+- **HTTP 客戶端**: Axios ^1.6.2
+- **圖標**: @element-plus/icons-vue ^2.3.1
+- **反向代理**: Nginx（生產環境，Port 18880）
 
 ### 後端（Backend）
 - **框架**: FastAPI 0.104.1
@@ -121,16 +123,18 @@
 - **異步處理**: asyncio, asyncpg 0.29.0, aiofiles
 - **數據處理**: NumPy 1.26.2, Pandas 2.1.3, SciPy 1.11.4
 - **小波分析**: PyWavelets 1.5.0
-- **CORS 中間件**: 支持跨域請求
+- **CORS 中間件**: 支持跨域請求（Port 5173, 5174, 3000, 18880）
 - **數據驗證**: Pydantic 2.5.0
 - **ORM**: SQLAlchemy 2.0.23
+- **Python 版本**: Python 3.11+
 
 ### 容器化部署（Docker）
 - **容器編排**: Docker Compose
-- **後端服務**: Python 3.11 基於映像
-- **前端服務**: Node.js 開發環境
+- **後端服務**: Python 3.11 基於映像（Hot reload 支援）
+- **前端服務**: Nginx 生產模式（靜態檔案服務）
 - **健康檢查**: 自動服務監控
 - **持久化存儲**: Volume 掛載數據庫
+- **網路**: 自定義 bridge 網路（vibration-network）
 
 ### 核心演算法模組
 
@@ -364,9 +368,13 @@ npm install
 
 # 啟動開發服務器
 npm run dev
+
+# 或建構生產版本
+npm run build
 ```
 
-前端將運行於 `http://localhost:5173`
+前端開發模式將運行於 `http://localhost:5173`
+前端生產模式（Docker）將運行於 `http://localhost:18880`
 
 ### 2. Docker 容器化部署（推薦）
 
@@ -390,7 +398,7 @@ docker-compose down -v
 ```
 
 服務訪問地址：
-- 前端：`http://localhost:5173`
+- 前端（Nginx 生產模式）：`http://localhost:18880`
 - 後端 API：`http://localhost:8081`
 - API 文檔：`http://localhost:8081/docs`
 - PostgreSQL：`localhost:5432`
@@ -793,45 +801,48 @@ VIBRATION_THRESHOLD = 20.0   # 振動閾值 (g)
 
 ```
 Viberation-RUL-Prognostics/
-├── backend/                            # FastAPI 後端（~6,811 行）
-│   ├── main.py                        # API 主入口（1,940 行）
-│   ├── config.py                      # 全域配置（58 行）
-│   ├── models.py                      # 數據模型
+├── backend/                            # FastAPI 後端
+│   ├── main.py                        # API 主入口（~2,000 行）
+│   │                                   # 70+ API 端點，WebSocket 管理
+│   ├── config.py                      # 全域配置（60 行）
+│   │                                   # API、CORS、採樣率、濾波器配置
+│   ├── models.py                      # SQLAlchemy 數據模型
 │   ├── phm_models.py                  # PHM 數據模型
 │   ├── phm_temperature_models.py      # 溫度數據模型
-│   ├── timedomain.py                  # 時域分析（39 行）
-│   ├── frequencydomain.py             # 頻域分析（367 行）
-│   ├── filterprocess.py                # 高階統計濾波（214 行）
-│   ├── timefrequency.py                # 時頻分析（507 行）
-│   ├── hilberttransform.py             # 希爾伯特轉換（152 行）
-│   ├── phm_query.py                    # PHM 資料庫查詢（370 行）
-│   ├── phm_temperature_query.py        # 溫度數據查詢
-│   ├── phm_processor.py                # PHM 數據處理器（210 行）
-│   ├── realtime_analyzer.py            # 🆕 即時分析引擎（415 行）
-│   ├── buffer_manager.py               # 🆕 緩衝管理（231 行）
-│   ├── websocket_manager.py            # 🆕 WebSocket 管理（251 行）
-│   ├── redis_client.py                 # 🆕 Redis 客戶端（497 行）
-│   ├── database_async.py               # 🆕 異步資料庫（350+ 行）
-│   ├── harmonic_sildband_table.py      # 諧波分析表
-│   ├── initialization.py               # 系統初始化
+│   ├── timedomain.py                  # 時域分析模組（39 行）
+│   ├── frequencydomain.py             # 頻域分析模組（367 行）
+│   ├── filterprocess.py               # 高階統計濾波（214 行）
+│   ├── timefrequency.py               # 時頻分析（507 行）
+│   ├── hilberttransform.py            # 希爾伯特轉換（152 行）
+│   ├── phm_query.py                   # PHM 振動數據庫查詢（370 行）
+│   ├── phm_temperature_query.py       # 溫度數據庫查詢
+│   ├── phm_processor.py               # PHM 數據處理器（210 行）
+│   ├── realtime_analyzer.py           # 🆕 即時分析引擎（415 行）
+│   ├── buffer_manager.py              # 🆕 緩衝管理（231 行）
+│   ├── websocket_manager.py           # 🆕 WebSocket 管理（251 行）
+│   ├── redis_client.py                # 🆕 Redis 客戶端（497 行）
+│   ├── database_async.py              # 🆕 異步資料庫（350+ 行）
+│   ├── harmonic_sildband_table.py     # 諧波分析表
+│   ├── initialization.py              # 系統初始化
 │   ├── phm_data.db                    # SQLite PHM 數據庫（1.4 GB）
-│   ├── phm_temperature_data.db         # SQLite 溫度數據庫（32 KB）
-│   └── requirements.txt                # Python 依賴
-├── frontend/                           # Vue 3 前端（~12,975 行）
+│   ├── phm_temperature_data.db        # SQLite 溫度數據庫（32 KB）
+│   └── requirements.txt               # Python 依賴
+├── frontend/                           # Vue 3 前端
 │   ├── src/
-│   │   ├── views/                      # 頁面組件（11 個組件）
-│   │   │   ├── Dashboard.vue           # 儀表板（2,491 行）
-│   │   │   ├── Algorithms.vue          # 演算法說明（1,218 行）
-│   │   │   ├── TimeDomainAnalysis.vue  # 時域分析（942 行）
-│   │   │   ├── FrequencyDomainAnalysis.vue # 頻域分析（1,181 行）
-│   │   │   ├── EnvelopeAnalysis.vue    # 包絡分析（1,328 行）
-│   │   │   ├── TimeFrequencyAnalysis.vue # 時頻分析（1,142 行）
-│   │   │   ├── HigherOrderStatistics.vue # 高階統計（933 行）
-│   │   │   ├── PHMTraining.vue         # PHM 訓練數據（434 行）
-│   │   │   ├── PHMDatabase.vue         # PHM 資料庫管理（835 行）
-│   │   │   ├── ProjectAnalysis.vue     # 專案分析（1,618 行）
+│   │   ├── views/                      # 頁面組件（11 個）
+│   │   │   ├── Dashboard.vue           # 儀表板
+│   │   │   ├── Algorithms.vue          # 演算法說明
+│   │   │   ├── TimeDomainAnalysis.vue  # 時域分析
+│   │   │   ├── FrequencyDomainAnalysis.vue # 頻域分析
+│   │   │   ├── EnvelopeAnalysis.vue    # 包絡分析
+│   │   │   ├── TimeFrequencyAnalysis.vue # 時頻分析
+│   │   │   ├── HigherOrderStatistics.vue # 高階統計
+│   │   │   ├── PHMTraining.vue         # PHM 訓練數據
+│   │   │   ├── PHMDatabase.vue         # PHM 資料庫管理
+│   │   │   ├── ProjectAnalysis.vue     # 專案分析
 │   │   │   └── RealtimeAnalysis.vue    # 🆕 即時分析（853 行）
-│   │   ├── router/                     # 路由配置
+│   │   ├── router/                     # 路由配置（78 行）
+│   │   │   └── index.js                # 12 個路由映射
 │   │   ├── stores/                     # Pinia 狀態管理
 │   │   │   ├── api.js                  # API 狀態
 │   │   │   └── realtime.js             # 🆕 即時數據狀態（334 行）
@@ -840,7 +851,7 @@ Viberation-RUL-Prognostics/
 │   │   ├── config/                     # API 配置
 │   │   ├── App.vue                     # 主組件
 │   │   └── main.js                     # 入口文件
-│   ├── package.json                    # Node 依賴
+│   ├── package.json                    # Node 依賴（25 行）
 │   ├── vite.config.js                  # Vite 配置
 │   ├── Dockerfile                      # 生產環境 Dockerfile（36 行）
 │   └── Dockerfile.dev                  # 開發環境 Dockerfile
@@ -866,16 +877,16 @@ Viberation-RUL-Prognostics/
 │   ├── analyze_training_data.py        # 分析訓練數據
 │   ├── init_postgres.sql               # PostgreSQL 初始化（264 行）
 │   ├── continuous_machine_simulator.py # 🆕 持續數據推送模擬器
-│   ├── test_sensor_data_push.py         # 🆕 測試感測器數據推送
-│   ├── check_sensor_data.py             # 🆕 檢查感測器數據
+│   ├── test_sensor_data_push.py        # 🆕 測試感測器數據推送
+│   ├── check_sensor_data.py            # 🆕 檢查感測器數據
 │   ├── start_backend.sh                # 後端啟動腳本
 │   └── start_frontend.sh               # 前端啟動腳本
 ├── phm_analysis_results/               # 預處理分析結果
 ├── phm-ieee-2012-data-challenge-dataset/ # 原始數據集
 ├── .env.example                        # 環境變數模板
-├── docker-compose.yml                  # Docker 編排配置（131 行）
+├── docker-compose.yml                  # Docker 編排配置（127 行）
 ├── pyproject.toml                      # Python 專案配置
-├── README.md                           # 專案說明
+├── README.md                           # 專案說明（本文件）
 └── CLAUDE.md                           # 開發指南
 ```
 
@@ -899,6 +910,23 @@ Viberation-RUL-Prognostics/
 - [docs/SensorDataPushGuide.md](docs/SensorDataPushGuide.md) - 感測器數據推送指南
 - [docs/frontend-env-config.md](docs/frontend-env-config.md) - 前端環境配置
 - [docs/Contribution_Difficulty_Cline.md](docs/Contribution_Difficulty_Cline.md) - 貢獻難度指南
+
+### 程式碼分析工具（LSP）
+本專案使用 Language Server Protocol (LSP) 工具進行程式碼分析和文檔整理：
+
+#### 後端分析（main.py - ~2,000 行）
+- **API 端點數量**: 70+ 個路由
+- **核心模組**: 振動分析、PHM 數據查詢、即時串流、溫度監測、告警系統
+- **WebSocket 端點**: 2 個實時數據推送端點
+- **異步支持**: 完整的 async/await 模式
+- **數據驗證**: Pydantic 模型驗證
+
+#### 前端分析（12 個路由，11 個視圖組件）
+- **路由配置**: Vue Router 4 with History Mode
+- **狀態管理**: Pinia stores（API + Realtime）
+- **組件數量**: 11 個主要分析頁面
+- **WebSocket 服務**: 自動重連、事件監聽、錯誤處理
+- **緩衝管理**: 1000 點滾動窗口，自動數據修剪
 
 ### 技術架構演進
 本專案從純批次分析系統演進為混合架構平台：
