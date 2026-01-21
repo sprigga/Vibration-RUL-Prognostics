@@ -15,6 +15,11 @@ import json
 import sys
 import sqlite3
 import logging
+from datetime import timedelta
+
+# Scipy imports (used in frequency domain and envelope analysis)
+from scipy import signal as scipy_signal
+from scipy.fft import fft, fftfreq
 
 # ========================================
 # 先設置路徑，再導入模組
@@ -133,6 +138,11 @@ async def startup_event():
             await redis_client.connect()
             logger.info("Redis connection established")
 
+            # 原程式碼沒有啟動 Pub/Sub 監聽器，新增此功能以支援多實例通訊
+            # 啟動 Redis Pub/Sub 監聽器，讓不同實例可以透過 Redis 通訊
+            await manager.start_pubsub_listener()
+            logger.info("Redis Pub/Sub listener started")
+
             logger.info("Real-time components initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize real-time components: {e}")
@@ -153,6 +163,10 @@ async def shutdown_event():
     # NEW - Phase 1: Close async connections
     if REALTIME_AVAILABLE:
         try:
+            # 原程式碼沒有停止 Pub/Sub 監聽器，新增此功能
+            await manager.stop_pubsub_listener()
+            logger.info("Redis Pub/Sub listener stopped")
+
             await async_db.close_pool()
             logger.info("PostgreSQL connection pool closed")
 
@@ -586,9 +600,8 @@ async def calculate_time_domain_trend(bearing_name: str, max_files: int = 50):
 async def calculate_frequency_domain(bearing_name: str, file_number: int, sampling_rate: int = DEFAULT_SAMPLING_RATE):
     """計算頻域特徵（FFT）"""
     try:
-        from scipy import signal as scipy_signal
-        from scipy.fft import fft, fftfreq
-
+        # 原始：from scipy import signal as scipy_signal; from scipy.fft import fft, fftfreq
+        # 優化：已移至檔案頂部 (第21-22行)
         # 使用連接管理器獲取資料庫連接
         with get_db_connection() as conn:
 
@@ -657,7 +670,8 @@ async def calculate_frequency_domain_trend(
 ):
     """計算頻域特徵趨勢（所有檔案）"""
     try:
-        import sqlite3
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         try:
             from backend.frequencydomain import FrequencyDomain
         except ModuleNotFoundError:
@@ -700,10 +714,10 @@ async def calculate_envelope_spectrum(
 ):
     """計算包絡頻譜"""
     try:
-        import sqlite3
-        from scipy import signal as scipy_signal
-        from scipy.fft import fft, fftfreq
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
+        # 原始：from scipy import signal as scipy_signal; from scipy.fft import fft, fftfreq
+        # 優化：已移至檔案頂部 (第21-22行)
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -793,8 +807,8 @@ async def calculate_stft(
 ):
     """計算短時傅立葉轉換（STFT）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
         query = """
@@ -870,8 +884,8 @@ async def calculate_cwt(
 ):
     """計算連續小波轉換（CWT）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
         query = """
@@ -952,8 +966,8 @@ async def calculate_higher_order_stats(
     為了向後兼容性保留，內部委託給 FilterProcess
     """
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
         query = """
@@ -1005,8 +1019,8 @@ async def calculate_spectrogram(
 ):
     """計算頻譜圖"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
         query = """
@@ -1075,8 +1089,8 @@ async def calculate_spectrogram(
 async def calculate_frequency_fft(bearing_name: str, file_number: int, sampling_rate: int = DEFAULT_SAMPLING_RATE):
     """計算低頻FFT特徵（FM0）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -1137,8 +1151,8 @@ async def calculate_frequency_fft(bearing_name: str, file_number: int, sampling_
 async def calculate_frequency_tsa(bearing_name: str, file_number: int, sampling_rate: int = DEFAULT_SAMPLING_RATE):
     """計算TSA高頻FFT特徵（FM0）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -1209,8 +1223,8 @@ async def calculate_hilbert_transform(
 ):
     """計算希爾伯特轉換特徵（包絡分析與NB4）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         # 連接資料庫（使用全域配置）
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -1294,8 +1308,8 @@ async def calculate_filter_features(
 ):
     """計算進階濾波特徵 (NA4, FM4, M6A, M8A, ER)"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         # 連接資料庫
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -1351,8 +1365,8 @@ async def calculate_filter_trend(
 ):
     """計算進階濾波特徵趨勢（多個檔案）"""
     try:
-        import sqlite3
-
+        # 原始：import sqlite3 在此處重複導入
+        # 優化：已移除，因為檔案頂部 (第16行) 已經導入過
         # 連接資料庫
         conn = sqlite3.connect(PHM_DATABASE_PATH)
 
@@ -1669,7 +1683,8 @@ if REALTIME_AVAILABLE:
                 )
 
             # 計算每個時間戳
-            from datetime import timedelta
+            # 原始：from datetime import timedelta
+            # 優化：已移至檔案頂部 (第18行)
             sample_interval = timedelta(microseconds=1000000 / sampling_rate)
 
             data_list = []
@@ -1933,6 +1948,149 @@ if REALTIME_AVAILABLE:
                 status_code=500,
                 detail=f"Error getting sensor status: {str(e)}"
             )
+
+    # ========================================
+    # Redis Pub/Sub Endpoints
+    # ========================================
+
+    class PublishMessage(BaseModel):
+        """訊息發布請求模型"""
+        channel: str
+        message: Dict
+
+    @app.post("/api/pubsub/publish")
+    async def publish_message(req: PublishMessage):
+        """
+        發布訊息到 Redis 頻道
+
+        此端點允許外部系統透過 REST API 發布訊息到 Redis 頻道，
+        訊息會被所有訂閱該頻道的 WebSocket 客戶端接收。
+
+        請求格式:
+        {
+            "channel": "sensor:1:features" 或 "broadcast:all" 或 "alerts:all"
+            "message": {
+                "type": "feature_update",
+                "data": {...}
+            }
+        }
+
+        常用頻道:
+        - sensor:{sensor_id}:features - 感測器特徵更新
+        - sensor:{sensor_id}:data     - 感測器即時數據
+        - broadcast:all                - 全域廣播
+        - alerts:all                   - 警報通知
+        """
+        try:
+            await manager.publish_to_channel(req.channel, req.message)
+            return {
+                "status": "published",
+                "channel": req.channel,
+                "message": "Message published to Redis channel"
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error publishing message: {str(e)}"
+            )
+
+    @app.post("/api/pubsub/publish/feature/{sensor_id}")
+    async def publish_feature_update(sensor_id: int, features: Dict):
+        """
+        發布感測器特徵更新到 Redis 頻道
+
+        便捷端點，自動構建頻道名稱並發布特徵更新。
+
+        請求格式:
+        POST /api/pubsub/publish/feature/1
+        {
+            "rms": 0.123,
+            "kurtosis": 3.45,
+            ...
+        }
+        """
+        try:
+            channel = f"sensor:{sensor_id}:features"
+            message = {
+                "type": "feature_update",
+                "sensor_id": sensor_id,
+                "data": features
+            }
+            await manager.publish_to_channel(channel, message)
+            return {
+                "status": "published",
+                "channel": channel,
+                "sensor_id": sensor_id
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error publishing feature update: {str(e)}"
+            )
+
+    @app.post("/api/pubsub/publish/alert")
+    async def publish_alert(alert: Dict):
+        """
+        發布警報到 Redis 頻道
+
+        便捷端點，發布警報到 alerts:all 頻道。
+
+        請求格式:
+        POST /api/pubsub/publish/alert
+        {
+            "level": "warning",
+            "message": "Sensor 1 exceeded threshold",
+            "sensor_id": 1
+        }
+        """
+        try:
+            await manager.publish_to_channel(manager.CHANNEL_ALERTS, alert)
+            return {
+                "status": "published",
+                "channel": manager.CHANNEL_ALERTS
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error publishing alert: {str(e)}"
+            )
+
+    @app.get("/api/pubsub/channels")
+    async def get_pubsub_channels():
+        """
+        獲取 Redis Pub/Sub 頻道資訊
+
+        返回可用的頻道列表和說明
+        """
+        return {
+            "channels": {
+                "sensor_features": "sensor:{sensor_id}:features",
+                "sensor_data": "sensor:{sensor_id}:data",
+                "broadcast_all": "broadcast:all",
+                "alerts_all": "alerts:all"
+            },
+            "description": {
+                "sensor_features": "感測器特徵更新頻道",
+                "sensor_data": "感測器即時數據頻道",
+                "broadcast_all": "全域廣播頻道",
+                "alerts_all": "警報通知頻道"
+            },
+            "subscribed_channels": list(manager._subscribed_channels)
+        }
+
+    @app.get("/api/pubsub/status")
+    async def get_pubsub_status():
+        """
+        獲取 Redis Pub/Sub 狀態
+
+        返回 Pub/Sub 監聽器的運行狀態
+        """
+        return {
+            "pubsub_enabled": manager.use_redis_pubsub,
+            "listener_running": manager._running,
+            "subscribed_channels": list(manager._subscribed_channels),
+            "redis_connected": redis_client._is_connected
+        }
 
 
 if __name__ == "__main__":

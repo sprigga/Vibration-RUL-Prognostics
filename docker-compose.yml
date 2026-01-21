@@ -99,10 +99,10 @@ services:
       dockerfile: Dockerfile
     container_name: vibration-frontend
     restart: unless-stopped
+    # 原始配置: "5173:5173" (Vite dev server)
+    # 修改: "80:80" → "18880:80" (使用冷門號碼避免與其他 container 衝突)
     ports:
-      # 原始配置: "5173:5173" (Vite dev server)
-      # 修改: "80:80" (Nginx production server)
-      - "80:80"
+      - "18880:80"
     depends_on:
       backend:
         condition: service_healthy

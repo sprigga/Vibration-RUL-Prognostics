@@ -20,10 +20,12 @@ API_HOST = "0.0.0.0"
 API_PORT = 8081
 
 # CORS 配置
+# 原程式碼只包含 5173, 5174, 3000 port，修改：新增 18880 以支援 nginx proxy
 CORS_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://localhost:18880"  # nginx proxy port
 ]
 
 # 採樣率配置
