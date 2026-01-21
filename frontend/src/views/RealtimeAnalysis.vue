@@ -142,7 +142,8 @@ const {
   connectionStatus,
   featureBuffer,
   hasAlerts,
-  featureCount
+  featureCount,
+  currentWindow
 } = storeToRefs(realtimeStore)
 
 // Refs
@@ -195,6 +196,23 @@ const connectionStatusText = computed(() => {
 async function startStreaming() {
   connecting.value = true
   try {
+    // 清空舊的緩衝區資料
+    realtimeStore.clearBuffers()
+
+    // 重新初始化圖表,清空舊資料
+    if (rmsChart) {
+      rmsChart.setOption({ xAxis: { data: [] }, series: [{ data: [] }, { data: [] }] })
+    }
+    if (kurtosisChart) {
+      kurtosisChart.setOption({ xAxis: { data: [] }, series: [{ data: [] }, { data: [] }] })
+    }
+    if (peakChart) {
+      peakChart.setOption({ xAxis: { data: [] }, series: [{ data: [] }, { data: [] }] })
+    }
+    if (crestChart) {
+      crestChart.setOption({ xAxis: { data: [] }, series: [{ data: [] }, { data: [] }] })
+    }
+
     realtimeStore.connect(sensorId.value)
     ElMessage.success('開始即時監控')
   } catch (error) {
@@ -234,26 +252,38 @@ function initCharts() {
   const commonOption = {
     animation: false,
     backgroundColor: 'transparent',
-    grid: { 
-      top: 30, 
-      right: 20, 
-      bottom: 30, 
+    grid: {
+      top: 30,
+      right: 20,
+      bottom: 50,  // 原始: 30, 修改: 50 - 增加底部空間以容納旋轉的標籤
       left: 60,
       // 原始：繼承預設
       // 修改：深色網格線
       borderColor: 'rgba(255, 255, 255, 0.1)'
     },
-    xAxis: { 
-      type: 'category', 
-      data: [], 
-      axisLabel: { 
-        rotate: 45,
+    xAxis: {
+      type: 'category',
+      data: [],
+      axisLabel: {
+        // 原始：rotate: 45
+        // 修改：不自動旋轉，讓 ECharts 自動間隔顯示
+        rotate: 0,
+        // 原始：未設定
+        // 修改：自動計算間隔，避免標籤重疊 (0 表示不自動)
+        interval: 'auto',
         // 原始：繼承預設顏色
         // 修改：深色主題白色文字
         color: '#ffffff',
         // 原始: 12
-        // 修改: 14 - 增大軸標籤文字
-        fontSize: 14
+        // 修改: 13 - 增大軸標籤文字
+        fontSize: 13,
+        // 原始：未設定
+        // 修改：標籤格式化，只顯示 時:分:秒
+        formatter: function(value) {
+          if (!value) return ''
+          // value 已經是格式化後的時間字串
+          return value
+        }
       },
       // 原始：繼承預設顏色
       // 修改：深色軸線
@@ -422,53 +452,79 @@ function initCharts() {
 }
 
 function updateCharts() {
-  const timestamps = featureBuffer.value.timestamps.map(t =>
-    new Date(t).toLocaleTimeString('zh-TW')
-  )
+  // 原始：手動過濾時間標籤，每 300 點顯示一次
+  // 修改：提供所有時間戳，讓 ECharts 的 interval: 'auto' 自動處理間隔
+  // 優點：ECharts 會根據可用空間自動調整標籤密度，避免擁擠
+
+  const timestamps = currentWindow.value.timestamps.map(t => {
+    const date = new Date(t)
+    // 簡化時間格式，只顯示 時:分:秒
+    return date.toLocaleTimeString('zh-TW', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  })
+
+  // 只有當有資料時才更新圖表
+  if (timestamps.length === 0) {
+    return
+  }
 
   // Update RMS Chart
-  rmsChart.setOption({
-    xAxis: { data: timestamps },
-    series: [
-      { data: featureBuffer.value.rms_h },
-      { data: featureBuffer.value.rms_v }
-    ]
-  })
+  if (currentWindow.value.rms_h.length > 0 && currentWindow.value.rms_v.length > 0) {
+    rmsChart.setOption({
+      xAxis: { data: timestamps },
+      series: [
+        { data: currentWindow.value.rms_h },
+        { data: currentWindow.value.rms_v }
+      ]
+    })
+  }
 
   // Update Kurtosis Chart
-  kurtosisChart.setOption({
-    xAxis: { data: timestamps },
-    series: [
-      { data: featureBuffer.value.kurtosis_h },
-      { data: featureBuffer.value.kurtosis_v }
-    ]
-  })
+  if (currentWindow.value.kurtosis_h.length > 0 && currentWindow.value.kurtosis_v.length > 0) {
+    kurtosisChart.setOption({
+      xAxis: { data: timestamps },
+      series: [
+        { data: currentWindow.value.kurtosis_h },
+        { data: currentWindow.value.kurtosis_v }
+      ]
+    })
+  }
 
   // Update Peak Chart
-  peakChart.setOption({
-    xAxis: { data: timestamps },
-    series: [
-      { data: featureBuffer.value.peak_h },
-      { data: featureBuffer.value.peak_v }
-    ]
-  })
+  if (currentWindow.value.peak_h.length > 0 && currentWindow.value.peak_v.length > 0) {
+    peakChart.setOption({
+      xAxis: { data: timestamps },
+      series: [
+        { data: currentWindow.value.peak_h },
+        { data: currentWindow.value.peak_v }
+      ]
+    })
+  }
 
   // Update Crest Factor Chart
-  crestChart.setOption({
-    xAxis: { data: timestamps },
-    series: [
-      { data: featureBuffer.value.crest_factor_h || [] },
-      { data: featureBuffer.value.crest_factor_v || [] }
-    ]
-  })
+  const crestH = currentWindow.value.crest_factor_h || []
+  const crestV = currentWindow.value.crest_factor_v || []
+  if (crestH.length > 0 && crestV.length > 0) {
+    crestChart.setOption({
+      xAxis: { data: timestamps },
+      series: [
+        { data: crestH },
+        { data: crestV }
+      ]
+    })
+  }
 }
 
-// Watch for feature updates
-watch(() => realtimeStore.latestFeatures, () => {
-  if (featureCount.value > 0) {
+// Watch for feature updates - 監聽 featureCount 變化以確保圖表更新
+watch(featureCount, (newCount) => {
+  if (newCount > 0) {
     updateCharts()
   }
-}, { deep: true })
+})
 
 // Lifecycle
 onMounted(() => {

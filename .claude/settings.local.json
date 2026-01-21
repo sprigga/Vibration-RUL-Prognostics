@@ -19,7 +19,9 @@
       "mcp__filesystem__list_directory",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(uv run python:*)"
     ],
     "deny": [],
     "ask": []

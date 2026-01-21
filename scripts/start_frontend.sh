@@ -15,6 +15,13 @@ echo -e "${GREEN}========================================${NC}"
 # 切換到 frontend 目錄
 cd "$(dirname "$0")/../frontend" || exit 1
 
+# 檢查 npm 是否安裝
+if ! command -v npm &> /dev/null; then
+    echo -e "${RED}✗ 錯誤: npm 未安裝${NC}"
+    echo -e "${YELLOW}請先安裝 Node.js: https://nodejs.org/${NC}"
+    exit 1
+fi
+
 # 檢查 node_modules 是否存在
 if [ ! -d "node_modules" ]; then
     echo -e "${YELLOW}⚠ 未發現 node_modules，正在安裝依賴...${NC}"

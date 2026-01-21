@@ -16,8 +16,21 @@ import sys
 import sqlite3
 import logging
 
-# NEW - Phase 1: Real-time components
-# Import async database and Redis clients
+# ========================================
+# 先設置路徑，再導入模組
+# ========================================
+# 動態路徑處理：兼容本地開發和容器環境
+# 獲取當前檔案所在目錄
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+# 如果當前目錄不在 sys.path 中，添加它
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+
+# ========================================
+# 導入 Real-time 組件
+# ========================================
+# 原始：導入失敗因為 sys.path 設置在導入之後
+# 修改：先設置路徑，再導入
 try:
     from database_async import db as async_db
     from redis_client import redis_client
@@ -25,16 +38,10 @@ try:
     from buffer_manager import buffer_manager
     from realtime_analyzer import analyzer
     REALTIME_AVAILABLE = True
+    logging.info("Real-time components loaded successfully")
 except ImportError as e:
     logging.warning(f"Real-time components not available: {e}")
     REALTIME_AVAILABLE = False
-
-# 動態路徑處理：兼容本地開發和容器環境
-# 獲取當前檔案所在目錄
-_current_dir = os.path.dirname(os.path.abspath(__file__))
-# 如果當前目錄不在 sys.path 中，添加它
-if _current_dir not in sys.path:
-    sys.path.insert(0, _current_dir)
 
 # 使用直接導入（適合兩種環境）
 from phm_processor import PHMDataProcessor

@@ -41,7 +41,7 @@
 - 峰值頻率檢測與功率譜分析
 
 ### 5. 包絡分析（Envelope Analysis）
-- 帶通濾波（4-10kHz 頻段）
+- 帶通濾波（10-500Hz 頻段，涵蓋軸承故障頻率）
 - 希爾伯特轉換提取包絡
 - 包絡頻譜分析
 - 包絡統計（均值、標準差、RMS、峰峰值）
@@ -111,18 +111,19 @@
 - **HTTP 客戶端**: Axios
 
 ### 後端（Backend）
-- **框架**: FastAPI 0.104+
-- **伺服器**: Uvicorn
+- **框架**: FastAPI 0.104.1
+- **伺服器**: Uvicorn 0.24.0
 - **資料庫**:
   - SQLite（批次分析：PHM 振動數據庫 + 溫度數據庫）
   - PostgreSQL 15（即時監控：異步操作、高效能查詢）
 - **緩存系統**: Redis 7.2（發布/訂閱、數據快取）
-- **即時通訊**: WebSocket（低延遲推送）
-- **異步處理**: asyncio、asyncpg、aiofiles
-- **數據處理**: NumPy, Pandas, SciPy
-- **小波分析**: PyWavelets
+- **即時通訊**: WebSocket（FastAPI 內建，低延遲推送）
+- **異步處理**: asyncio, asyncpg 0.29.0, aiofiles
+- **數據處理**: NumPy 1.26.2, Pandas 2.1.3, SciPy 1.11.4
+- **小波分析**: PyWavelets 1.5.0
 - **CORS 中間件**: 支持跨域請求
-- **任務隊列**: Celery + Redis（背景任務處理）
+- **數據驗證**: Pydantic 2.5.0
+- **ORM**: SQLAlchemy 2.0.23
 
 ### 容器化部署（Docker）
 - **容器編排**: Docker Compose
@@ -132,17 +133,187 @@
 - **持久化存儲**: Volume 掛載數據庫
 
 ### 核心演算法模組
-整合完整的振動分析模組：
-- `timedomain.py` - 時域特徵（Peak, RMS, Kurtosis, CF, EO）
-- `frequencydomain.py` - 頻域特徵（FFT, FM0, TSA-FFT）
-- `filterprocess.py` - 濾波與高階統計（NA4, FM4, M6A, M8A, ER）
-- `timefrequency.py` - 時頻分析（STFT, CWT, Spectrogram）
-- `hilberttransform.py` - 希爾伯特轉換（包絡分析, NB4）
-- `phm_query.py` - PHM 數據庫查詢模組
-- `phm_temperature_query.py` - 溫度數據查詢模組
-- `phm_processor.py` - PHM 數據處理器
+
+#### 時域分析（timedomain.py - 39 行）
+| 方法 | 功能 | 說明 |
+|------|------|------|
+| `peak(x)` | 峰值 | max(x) - min(x) |
+| `avg(x)` | 平均值 | mean(x) |
+| `rms(num)` | 均方根值 | √(Σx²/n) |
+| `cf(num)` | 波峰因數 | peak / rms |
+| `kurt(num)` | 峰度 | 四階中心矩標準化 |
+| `eo(num, label)` | EO 特徵 | 能量特徵計算 |
+
+#### 頻域分析（frequencydomain.py - 367 行）
+| 方法 | 功能 | 說明 |
+|------|------|------|
+| `fft_process(amp, fs)` | 基礎 FFT | 快速傅立葉轉換 |
+| `ifft_process(fft_value)` | 逆 FFT | 頻域轉時域 |
+| `fft_fm0_si(amp, fs)` | FM0 特徵 | 低頻能量比（0-10 kHz） |
+| `tsa_fft_fm0_slf(amp, fs, fftoutput)` | TSA-FFT | 時域同步平均後的高頻 FFT |
+
+#### 包絡分析（hilberttransform.py - 152 行）
+| 方法 | 功能 | 說明 |
+|------|------|------|
+| `calculate_nb4(envelope_data, segment_count)` | NB4 特徵 | 包絡四階矩 |
+| `hilbert_transform(signal)` | 希爾伯特轉換 | 提取包絡信號 |
+| `analyze_signal(signal, segment_count)` | 完整分析 | 帶通濾波 + 希爾伯特 + NB4 |
+
+#### 時頻分析（timefrequency.py - 507 行）
+| 方法 | 功能 | 說明 |
+|------|------|------|
+| `stft_analysis(x, fs, window, nperseg)` | STFT | 短時傅立葉轉換 |
+| `cwt_analysis(x, fs, wavelet, scales)` | CWT | 連續小波轉換 |
+| `spectrogram_features(x, fs)` | 頻譜圖 | NP4 特徵計算 |
+| `_calculate_np4(magnitude)` | NP4 | 頻譜圖四階矩 |
+
+#### 高階統計（filterprocess.py - 214 行）
+| 方法 | 功能 | 說明 |
+|------|------|------|
+| `NA4(signal, m)` | 正規化四階矩 | 分段統計，檢測早期故障 |
+| `FM4(signal)` | 四階矩 | 頻域異常檢測 |
+| `M6A(signal)` | 六階矩 | 高階矩特徵 |
+| `M8A(signal)` | 八階矩 | 高階矩特徵 |
+| `ER(signal, fs)` | 能量比 | 頻帶能量比率 |
+| `calculate_all_features(signal, fs, segment_count)` | 綜合分析 | 計算所有進階濾波特徵 |
+
+### PHM 數據查詢模組
+- `phm_query.py` (370 行) - PHM 振動數據庫查詢
+- `phm_temperature_query.py` - PHM 溫度數據庫查詢
+- `phm_processor.py` (210 行) - PHM 數據處理器
 
 ### 即時分析模組（Real-time Stack）🆕
+
+#### WebSocket 連線管理（websocket_manager.py - 251 行）
+```python
+ConnectionManager 類別:
+- active_connections: Dict[int, Set[WebSocket]]  # sensor_id -> connections
+- websocket_sensor_map: Dict[WebSocket, int]
+
+方法:
+- connect(websocket, sensor_id)           # 連接到感測器
+- disconnect(websocket)                  # 斷開連線
+- send_personal_message(message, ws)      # 發送個人訊息
+- broadcast_to_sensor(sensor_id, message) # 廣播給特定感測器
+- broadcast_to_all(message)              # 廣播給所有連線
+```
+
+#### 緩衝管理（buffer_manager.py - 231 行）
+```python
+SensorBuffer 類別:
+- buffer: deque(maxlen=25600)      # 循環緩衝區（約 1 秒數據）
+- timestamps: deque(maxlen=25600)
+- window_start: Optional[datetime]
+- sample_count: int
+
+方法:
+- add_sample(timestamp, h_acc, v_acc)        # 添加單個樣本
+- add_batch(samples)                          # 批量添加
+- get_window(window_seconds)                  # 獲取時間窗口
+- is_ready(min_samples)                       # 檢查緩衝是否就緒
+- clear()                                    # 清空緩衝
+- get_stats()                                # 獲取統計資訊
+```
+
+#### Redis 異步客戶端（redis_client.py - 497 行）
+```python
+RedisClient 類別:
+- redis: aioredis.Redis
+- _is_connected: bool
+
+主要功能:
+- Stream Operations: add_sensor_data, add_sensor_data_batch
+- Feature Caching: cache_features, get_cached_features
+- Pub/Sub: publish, subscribe
+- Connection Tracking: add_active_connection, remove_active_connection
+- Alert Queueing: queue_alert, get_alerts
+- Sensor Status: update_sensor_status, get_sensor_status
+```
+
+#### PostgreSQL 異步資料庫（database_async.py - 350+ 行）
+```python
+AsyncDatabase 類別:
+- pool: asyncpg.Pool
+- _is_connected: bool
+
+連接池配置:
+- min_size: 10
+- max_size: 50
+- max_queries: 50000
+- max_inactive_connection_lifetime: 300s
+- command_timeout: 60s
+
+方法:
+- init_pool()              # 初始化連接池
+- close_pool()             # 關閉連接池
+- execute(query, *args)    # 執行非查詢 SQL
+- fetch(query, *args)      # 獲取多行
+- fetchone(query, *args)   # 獲取單行
+- fetchval(query, *args)   # 獲取單個值
+- insert_sensor_data(...)  # 批量插入感測器數據
+- save_features(...)       # 保存特徵值
+```
+
+#### 即時分析引擎（realtime_analyzer.py - 415 行）
+```python
+RealTimeAnalyzer 類別:
+- buffer_manager: BufferManager
+- running: bool
+- analysis_tasks: Dict[int, asyncio.Task]
+- time_domain: TimeDomain
+- freq_domain: FrequencyDomain
+- filter_process: FilterProcess
+
+方法:
+- start_analysis(sensor_id)          # 啟動即時分析
+- stop_analysis(sensor_id)           # 停止即時分析
+- _analysis_loop(sensor_id)          # 分析循環
+- _extract_features(window_data)     # 提取特徵
+- _save_features(sensor_id, features) # 保存特徵
+- _check_alerts(sensor_id, features) # 檢查告警
+```
+
+#### 前端即時狀態管理（stores/realtime.js - 334 行）
+```javascript
+useRealtimeStore (Pinia Store):
+State:
+- isConnected: boolean
+- currentSensor: number
+- latestFeatures: object
+- alertHistory: array
+- isStreaming: boolean
+- connectionStatus: string
+- signalBuffer: object
+- featureBuffer: object
+
+Actions:
+- connect(sensorId)          # 連接到感測器
+- disconnect()              # 斷開連線
+- updateFeatures(data)       # 更新特徵
+- addAlert(alert)           # 添加告警
+- clearBuffers()            # 清空緩衝區
+- acknowledgeAlert(alertId)  # 確認告警
+- scrollWindow()            # 滾動窗口
+```
+
+#### 前端 WebSocket 服務（services/websocket.js）
+```javascript
+RealtimeService 類別:
+- ws: WebSocket
+- reconnectAttempts: number
+- maxReconnectAttempts: number
+- reconnectDelay: number
+- listeners: Map
+- isConnected: boolean
+- manualClose: boolean
+
+方法:
+- connect(sensorId)        # 連接到 WebSocket
+- disconnect()            # 斷開連線
+- on(event, callback)     # 註冊事件監聽器
+- off(event, callback)    # 移除事件監聽器
+- emit(event, data)       # 觸發事件
+```
 - `realtime_analyzer.py` - 即時特徵提取引擎
 - `buffer_manager.py` - 數據緩衝管理（滑動窗口、環形緩衝）
 - `websocket_manager.py` - WebSocket 連線管理
@@ -240,10 +411,13 @@ uvicorn main:app --host 0.0.0.0 --port 8081
 ## 📊 資料庫結構
 
 ### PHM 振動數據庫（phm_data.db）
+**檔案**: `/backend/phm_data.db` (1.4 GB)
+**資料表**:
 ```sql
 bearings (軸承表)
 - bearing_id: Integer (主鍵)
 - bearing_name: String (如 "Bearing1_1")
+- condition_id: Integer
 - description: String
 
 measurement_files (測量檔案表)
@@ -260,6 +434,8 @@ measurements (測量數據表)
 ```
 
 ### PHM 溫度數據庫（phm_temperature_data.db）
+**檔案**: `/backend/phm_temperature_data.db` (32 KB)
+**資料表**:
 ```sql
 bearings (軸承表)
 - bearing_id: Integer (主鍵)
@@ -279,29 +455,41 @@ temperature_measurements (溫度測量表)
 ```
 
 ### PostgreSQL 即時分析資料庫（vibration_analysis）🆕
+**初始化腳本**: `/scripts/init_postgres.sql`
+**連接池配置**: min_size=10, max_size=50, command_timeout=60s
+
+**資料表**:
 ```sql
-sensors (感測器表)
+sensors (感測器註冊表)
 - sensor_id: UUID (主鍵)
 - sensor_name: String
 - sensor_type: String (accelerometer, temperature, etc.)
 - sampling_rate: Float
-- status: String (active, inactive, error)
-- created_at: Timestamp
+- location: String
+- is_active: Boolean
 
-sensor_data (感測器數據表)
+sensor_data (即時感測器數據表 - 分區表)
 - data_id: BigSerial (主鍵)
 - sensor_id: UUID (外鍵)
 - timestamp: Timestamp
-- channel_1: Float (水平方向)
-- channel_2: Float (垂直方向)
-- features: JSONB (特徵值)
+- horizontal_acceleration: Float
+- vertical_acceleration: Float
+- temperature: Float
 
-features (特徵值表)
+realtime_features (即時特徵值表)
 - feature_id: BigSerial (主鍵)
 - sensor_id: UUID (外鍵)
-- timestamp: Timestamp
-- feature_name: String
-- feature_value: Float
+- window_start: Timestamp
+- window_end: Timestamp
+- rms_h, rms_v: Float (均方根值)
+- peak_h, peak_v: Float (峰值)
+- kurtosis_h, kurtosis_v: Float (峰度)
+- crest_factor_h, crest_factor_v: Float (波峰因數)
+- fm0_h, fm0_v: Float (低頻能量比)
+- dominant_freq_h, dominant_freq_v: Float (主頻)
+- nb4_h, nb4_v: Float (包絡四階矩)
+- na4_h, na4_v: Float (正規化四階矩)
+- fm4_h, fm4_v: Float (四階矩)
 
 alerts (告警記錄表)
 - alert_id: UUID (主鍵)
@@ -309,8 +497,43 @@ alerts (告警記錄表)
 - alert_type: String
 - severity: String (info, warning, critical)
 - message: Text
-- acknowledged: Boolean
-- created_at: Timestamp
+- feature_name: String
+- current_value: Float
+- threshold_value: Float
+- is_acknowledged: Boolean
+- acknowledged_by: String
+- acknowledged_at: Timestamp
+
+stream_sessions (串流會話表)
+- session_id: UUID (主鍵)
+- sensor_id: UUID (外鍵)
+- client_id: String
+- connected_at: Timestamp
+- disconnected_at: Timestamp
+- status: String
+- bytes_received: Integer
+- data_points_received: Integer
+
+alert_configurations (告警配置表)
+- config_id: Integer (主鍵)
+- sensor_id: UUID (外鍵)
+- feature_name: String
+- threshold_min: Float
+- threshold_max: Float
+- severity: String
+- enabled: Boolean
+```
+
+**視圖**:
+```sql
+v_latest_features (最新特徵視圖)
+- 提供每個感測器的最新特徵值
+
+v_active_alerts (活躍告警視圖)
+- 提供所有未確認的告警記錄
+
+v_sensor_status (感測器狀態摘要視圖)
+- 提供感測器的連接狀態與統計資訊
 ```
 
 ## 🔌 API 端點
@@ -348,7 +571,7 @@ alerts (告警記錄表)
 - `GET /api/algorithms/spectrogram/{bearing_name}/{file_number}` - 頻譜圖分析
 
 ### 高階統計分析
-- `GET /api/algorithms/higher-order/{bearing_name}/{file_number}` - 計算高階統計特徵（舊版，已整合至 filter-features）
+- `GET /api/algorithms/higher-order/{bearing_name}/{file_number}` - 計算高階統計特徵（舊版）
 - `GET /api/algorithms/filter-features/{bearing_name}/{file_number}` - 計算進階濾波特徵（NA4, FM4, M6A, M8A, ER）
 - `GET /api/algorithms/filter-trend/{bearing_name}` - 計算進階濾波特徵趨勢
 
@@ -362,8 +585,8 @@ alerts (告警記錄表)
 - `GET /api/temperature/database/info` - 獲取溫度資料庫資訊
 
 ### 即時分析與監控（Real-time Analysis）🆕
-- `POST /api/stream/start` - 啟動即時串流
-- `POST /api/stream/stop` - 停止即時串流
+- `POST /api/sensor/data` - 接收機台推送的感測器數據（批量）
+- `POST /api/sensor/data/stream` - 流式接收機台推送的感測器數據
 - `GET /api/stream/status` - 獲取串流狀態
 - `GET /api/realtime/features/{sensor_id}` - 獲取即時特徵值
 - `GET /api/alerts/active` - 獲取活躍告警
@@ -449,16 +672,114 @@ alerts (告警記錄表)
   - 告警歷史記錄
   - 即時推播通知
 
+## ⚙️ 關鍵配置參數
+
+### 全域配置（backend/config.py）
+```python
+# 資料庫路徑
+PHM_DATABASE_PATH = "./backend/phm_data.db"  # 1.4 GB
+PHM_TEMPERATURE_DATABASE_PATH = "./backend/phm_temperature_data.db"  # 32 KB
+
+# API 配置
+API_HOST = "0.0.0.0"
+API_PORT = 8081
+CORS_ORIGINS = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+
+# 採樣率
+DEFAULT_SAMPLING_RATE = 25600  # Hz (IEEE PHM 2012 標準)
+
+# 包絡分析濾波器配置
+ENVELOPE_FILTER_LOWCUT = 10   # Hz
+ENVELOPE_FILTER_HIGHCUT = 500  # Hz (涵蓋 BPFI 諧波)
+
+# 資料點顯示限制
+SIGNAL_DISPLAY_LIMIT = 1000
+SPECTRUM_DISPLAY_LIMIT = 1000
+ENVELOPE_SPECTRUM_DISPLAY_LIMIT = 500
+
+# PHM 數據目錄
+PHM_DATA_DIR = "./phm-ieee-2012-data-challenge-dataset"
+PHM_RESULTS_DIR = "./phm_analysis_results"
+```
+
+### 即時分析配置（環境變數 .env）
+```bash
+# PostgreSQL
+POSTGRES_USER=vibration
+POSTGRES_PASSWORD=vibration_pass
+POSTGRES_DB=vibration_analysis
+DATABASE_URL_POSTGRESQL=postgresql://vibration:vibration_pass@postgres:5432/vibration_analysis
+
+# Redis
+REDIS_PASSWORD=redis_pass
+REDIS_URL=redis://:redis_pass@redis:6379/0
+
+# Real-time Configuration
+ENABLE_REALTIME=true
+MAX_WEBSOCKET_CONNECTIONS=100
+SENSOR_BUFFER_SIZE=25600
+FEATURE_COMPUTATION_INTERVAL=1.0  # 秒
+
+# PostgreSQL 連接池配置
+POSTGRES_POOL_MIN_SIZE=10
+POSTGRES_POOL_MAX_SIZE=50
+POSTGRES_POOL_MAX_QUERIES=50000
+POSTGRES_POOL_MAX_INACTIVE_LIFETIME=300  # 秒
+POSTGRES_COMMAND_TIMEOUT=60  # 秒
+```
+
+### 告警閾值配置
+```python
+# 告警嚴重級別
+SEVERITY_INFO = "info"       # 情報提示
+SEVERITY_WARNING = "warning" # 警告級別
+SEVERITY_CRITICAL = "critical" # 嚴重級別
+
+# 默認告警閾值
+KURTOSIS_THRESHOLD = 8.0      # 峰度閾值
+NA4_THRESHOLD = 3.0           # NA4 閾值
+NB4_THRESHOLD_FACTOR = 2.0   # NB4 閾值因子
+FM4_THRESHOLD = 1.5           # FM4 閾值
+VIBRATION_THRESHOLD = 20.0   # 振動閾值 (g)
+```
+
 ## 🛠️ 開發指南
 
 ### 新增演算法
 1. 在 `backend/` 下新增或修改演算法模組
+   - 參考 `timedomain.py`, `frequencydomain.py`, `filterprocess.py` 等現有模組
+   - 遵循現有的函數簽名和返回格式
 2. 在 `main.py` 中新增 API 端點
+   - 使用 FastAPI 路由裝飾器
+   - 添加適當的型別提示和驗證
 3. 在前端 `views/` 下新增對應分析頁面
+   - 使用 Vue 3 Composition API
+   - 遵循 Element Plus UI 組件規範
 4. 更新路由配置 `router/index.js`
+   - 添加新的路由映射
+   - 設置適當的 meta 信息
+
+### 擴展即時分析功能
+1. 演算法集成：
+   - 在 `realtime_analyzer.py` 的 `_extract_features` 方法中添加新特徵
+   - 更新 `RealtimeFeatures` 數據模型（`models.py`）
+2. 告警配置：
+   - 在 PostgreSQL 中添加新的告警配置（`alert_configurations` 表）
+   - 更新 `_check_alerts` 方法以支持新的告警規則
+3. WebSocket 事件：
+   - 在 `websocket_manager.py` 中添加新的廣播方法
+   - 在前端 `services/websocket.js` 中添加事件監聽器
+4. 前端狀態管理：
+   - 更新 `stores/realtime.js` 中的狀態和 actions
+   - 在對應的 Vue 組件中使用 Pinia store
 
 ### 數據庫擴展
-- 修改 `phm_query.py` 添加新的查詢方法
+- 批次分析數據庫（SQLite）：
+  - 修改 `phm_query.py` 添加新的查詢方法
+  - 使用 SQLAlchemy ORM 定義新表
+- 即時分析數據庫（PostgreSQL）：
+  - 更新 `scripts/init_postgres.sql` 添加新表或視圖
+  - 在 `database_async.py` 中添加異步查詢方法
 - 更新 API 端點支持新功能
 - 前端添加對應的數據展示組件
 
@@ -466,83 +787,96 @@ alerts (告警記錄表)
 - 修改 `backend/config.py` 調整全域配置
 - 在各演算法模組中調整閾值參數
 - 前端通過 API 參數傳遞自訂配置
+- 使用環境變數 `.env` 配置部署環境
 
 ## 📁 專案結構
 
 ```
 Viberation-RUL-Prognostics/
-├── backend/                      # FastAPI 後端
-│   ├── main.py                  # API 主入口
-│   ├── config.py                # 配置文件
-│   ├── models.py                # 數據模型
-│   ├── phm_models.py            # PHM 數據模型
-│   ├── phm_temperature_models.py # 溫度數據模型
-│   ├── timedomain.py            # 時域分析
-│   ├── frequencydomain.py       # 頻域分析
-│   ├── filterprocess.py         # 高階統計
-│   ├── timefrequency.py         # 時頻分析
-│   ├── hilberttransform.py      # 希爾伯特轉換
-│   ├── phm_query.py             # PHM 數據庫查詢
-│   ├── phm_temperature_query.py # 溫度數據查詢
-│   ├── phm_processor.py         # PHM 數據處理器
-│   ├── realtime_analyzer.py     # 🆕 即時分析引擎
-│   ├── buffer_manager.py        # 🆕 緩衝管理
-│   ├── websocket_manager.py     # 🆕 WebSocket 管理
-│   ├── redis_client.py          # 🆕 Redis 客戶端
-│   ├── database_async.py        # 🆕 異步資料庫
-│   ├── harmonic_sildband_table.py # 諧波分析表
-│   ├── initialization.py        # 系統初始化
-│   ├── phm_data.db             # SQLite PHM 數據庫
-│   ├── phm_temperature_data.db  # SQLite 溫度數據庫
-│   └── requirements.txt         # Python 依賴
-├── frontend/                    # Vue 3 前端
+├── backend/                            # FastAPI 後端（~6,811 行）
+│   ├── main.py                        # API 主入口（1,940 行）
+│   ├── config.py                      # 全域配置（58 行）
+│   ├── models.py                      # 數據模型
+│   ├── phm_models.py                  # PHM 數據模型
+│   ├── phm_temperature_models.py      # 溫度數據模型
+│   ├── timedomain.py                  # 時域分析（39 行）
+│   ├── frequencydomain.py             # 頻域分析（367 行）
+│   ├── filterprocess.py                # 高階統計濾波（214 行）
+│   ├── timefrequency.py                # 時頻分析（507 行）
+│   ├── hilberttransform.py             # 希爾伯特轉換（152 行）
+│   ├── phm_query.py                    # PHM 資料庫查詢（370 行）
+│   ├── phm_temperature_query.py        # 溫度數據查詢
+│   ├── phm_processor.py                # PHM 數據處理器（210 行）
+│   ├── realtime_analyzer.py            # 🆕 即時分析引擎（415 行）
+│   ├── buffer_manager.py               # 🆕 緩衝管理（231 行）
+│   ├── websocket_manager.py            # 🆕 WebSocket 管理（251 行）
+│   ├── redis_client.py                 # 🆕 Redis 客戶端（497 行）
+│   ├── database_async.py               # 🆕 異步資料庫（350+ 行）
+│   ├── harmonic_sildband_table.py      # 諧波分析表
+│   ├── initialization.py               # 系統初始化
+│   ├── phm_data.db                    # SQLite PHM 數據庫（1.4 GB）
+│   ├── phm_temperature_data.db         # SQLite 溫度數據庫（32 KB）
+│   └── requirements.txt                # Python 依賴
+├── frontend/                           # Vue 3 前端（~12,975 行）
 │   ├── src/
-│   │   ├── views/              # 頁面組件
-│   │   │   ├── Dashboard.vue
-│   │   │   ├── Algorithms.vue
-│   │   │   ├── TimeDomainAnalysis.vue
-│   │   │   ├── FrequencyDomainAnalysis.vue
-│   │   │   ├── EnvelopeAnalysis.vue
-│   │   │   ├── TimeFrequencyAnalysis.vue
-│   │   │   ├── HigherOrderStatistics.vue
-│   │   │   ├── PHMTraining.vue
-│   │   │   ├── PHMDatabase.vue
-│   │   │   ├── ProjectAnalysis.vue
-│   │   │   └── RealtimeAnalysis.vue # 🆕 即時分析頁面
-│   │   ├── router/             # 路由配置
-│   │   ├── stores/             # Pinia 狀態管理
-│   │   │   ├── api.js          # API 狀態
-│   │   │   └── realtime.js     # 🆕 即時數據狀態
-│   │   ├── services/           # 服務層
-│   │   │   └── websocket.js    # 🆕 WebSocket 服務
-│   │   ├── config/             # API 配置
-│   │   ├── App.vue             # 主組件
-│   │   └── main.js             # 入口文件
-│   ├── package.json            # Node 依賴
-│   ├── vite.config.js          # Vite 配置
-│   └── Dockerfile.dev          # 開發環境 Dockerfile
-├── docs/                       # 📚 文檔資源
-│   ├── System_Analysis.md              # 系統分析
-│   ├── Software_Engineering_Challenges.md # 工程挑戰
+│   │   ├── views/                      # 頁面組件（11 個組件）
+│   │   │   ├── Dashboard.vue           # 儀表板（2,491 行）
+│   │   │   ├── Algorithms.vue          # 演算法說明（1,218 行）
+│   │   │   ├── TimeDomainAnalysis.vue  # 時域分析（942 行）
+│   │   │   ├── FrequencyDomainAnalysis.vue # 頻域分析（1,181 行）
+│   │   │   ├── EnvelopeAnalysis.vue    # 包絡分析（1,328 行）
+│   │   │   ├── TimeFrequencyAnalysis.vue # 時頻分析（1,142 行）
+│   │   │   ├── HigherOrderStatistics.vue # 高階統計（933 行）
+│   │   │   ├── PHMTraining.vue         # PHM 訓練數據（434 行）
+│   │   │   ├── PHMDatabase.vue         # PHM 資料庫管理（835 行）
+│   │   │   ├── ProjectAnalysis.vue     # 專案分析（1,618 行）
+│   │   │   └── RealtimeAnalysis.vue    # 🆕 即時分析（853 行）
+│   │   ├── router/                     # 路由配置
+│   │   ├── stores/                     # Pinia 狀態管理
+│   │   │   ├── api.js                  # API 狀態
+│   │   │   └── realtime.js             # 🆕 即時數據狀態（334 行）
+│   │   ├── services/                   # 服務層
+│   │   │   └── websocket.js            # 🆕 WebSocket 服務
+│   │   ├── config/                     # API 配置
+│   │   ├── App.vue                     # 主組件
+│   │   └── main.js                     # 入口文件
+│   ├── package.json                    # Node 依賴
+│   ├── vite.config.js                  # Vite 配置
+│   ├── Dockerfile                      # 生產環境 Dockerfile（36 行）
+│   └── Dockerfile.dev                  # 開發環境 Dockerfile
+├── docs/                               # 📚 文檔資源
+│   ├── System_Analysis.md              # 系統架構分析
+│   ├── Software_Engineering_Challenges.md # 工程挑戰與解決方案
 │   ├── Software_Engineering_Contributions.md # 貢獻文檔
-│   ├── UML.md                           # UML 架構文檔
+│   ├── UML.md                           # UML 架構圖
 │   ├── Realtime_Analysis_Implementation.md # 🆕 即時分析實作
-│   ├── Contribution_Difficulty_Cline.md # 貢獻指南
+│   ├── RealTimeAnalysis.md             # 即時分析指南
 │   ├── FrequencyDomain.md               # 頻域分析說明
 │   ├── Initialization.md                # 初始化指南
-│   └── frontend-env-config.md           # 前端環境配置
-├── scripts/                    # 工具腳本
-│   ├── init_postgres.sql              # PostgreSQL 初始化
-│   ├── create_temperature_database.py # 溫度資料庫創建
-│   ├── start_backend.sh               # 後端啟動腳本
-│   └── start_frontend.sh              # 前端啟動腳本
-├── phm_analysis_results/      # 預處理分析結果
+│   ├── frontend-env-config.md           # 前端環境配置
+│   ├── Contribution_Difficulty_Cline.md # 貢獻指南
+│   ├── SensorDataPushGuide.md           # 🆕 感測器數據推送指南
+│   ├── FONT.md                          # 字體規範
+│   └── CSS-UNIFICATION.md               # CSS 統一規範
+├── scripts/                            # 工具腳本
+│   ├── create_phm_database.py          # 創建 PHM 資料庫
+│   ├── import_phm_data.py              # 導入 PHM 數據集
+│   ├── query_phm_data.py               # 查詢 PHM 數據
+│   ├── create_temperature_database.py  # 創建溫度資料庫
+│   ├── analyze_training_data.py        # 分析訓練數據
+│   ├── init_postgres.sql               # PostgreSQL 初始化（264 行）
+│   ├── continuous_machine_simulator.py # 🆕 持續數據推送模擬器
+│   ├── test_sensor_data_push.py         # 🆕 測試感測器數據推送
+│   ├── check_sensor_data.py             # 🆕 檢查感測器數據
+│   ├── start_backend.sh                # 後端啟動腳本
+│   └── start_frontend.sh               # 前端啟動腳本
+├── phm_analysis_results/               # 預處理分析結果
 ├── phm-ieee-2012-data-challenge-dataset/ # 原始數據集
-├── .env.example               # 環境變數模板
-├── docker-compose.yml         # Docker 編排配置
-├── pyproject.toml            # Python 專案配置
-├── README.md                 # 專案說明
-└── CLAUDE.md                 # 開發指南
+├── .env.example                        # 環境變數模板
+├── docker-compose.yml                  # Docker 編排配置（131 行）
+├── pyproject.toml                      # Python 專案配置
+├── README.md                           # 專案說明
+└── CLAUDE.md                           # 開發指南
 ```
 
 ## 📚 參考資源
@@ -559,22 +893,30 @@ Viberation-RUL-Prognostics/
 - [docs/Realtime_Analysis_Implementation.md](docs/Realtime_Analysis_Implementation.md) - 即時分析實作文檔
 - [docs/UML.md](docs/UML.md) - UML 架構圖
 - [docs/Software_Engineering_Challenges.md](docs/Software_Engineering_Challenges.md) - 工程挑戰與解決方案
+- [docs/Software_Engineering_Contributions.md](docs/Software_Engineering_Contributions.md) - 貢獻文檔
+- [docs/FrequencyDomain.md](docs/FrequencyDomain.md) - 頻域分析詳細說明
+- [docs/Initialization.md](docs/Initialization.md) - 系統初始化指南
+- [docs/SensorDataPushGuide.md](docs/SensorDataPushGuide.md) - 感測器數據推送指南
+- [docs/frontend-env-config.md](docs/frontend-env-config.md) - 前端環境配置
+- [docs/Contribution_Difficulty_Cline.md](docs/Contribution_Difficulty_Cline.md) - 貢獻難度指南
 
 ### 技術架構演進
 本專案從純批次分析系統演進為混合架構平台：
 
 **Phase 1 - 批次分析系統**：
-- SQLite 資料庫儲存 PHM 數據集
+- SQLite 資料庫儲存 PHM 數據集（phm_data.db: 1.4 GB, phm_temperature_data.db: 32 KB）
 - 同步 API 處理分析請求
 - Vue 3 前端提供操作介面
+- 支援歷史數據的批次分析
 
 **Phase 2 - 即時監控系統**（🆕 目前版本）：
-- 新增 PostgreSQL 支援高並發寫入
-- Redis 提供快取與發布/訂閱機制
-- WebSocket 實現低延遲推送
-- 異步處理提升吞吐量
-- 智能告警系統
-- 支援多感測器並發監控
+- PostgreSQL 15 支援高並發寫入（連接池：min_size=10, max_size=50）
+- Redis 7.2 提供快取與發布/訂閱機制（持久化：AOF）
+- WebSocket 實現低延遲推送（max_connections=100）
+- 異步處理提升吞吐量（asyncpg, asyncio, aiofiles）
+- 智能告警系統（多級告警：info/warning/critical）
+- 支援多感測器並發監控（最大 100 並發連線）
+- 緩衝管理（滑動窗口：25600 樣本，1 秒計算週期）
 
 ## 🤝 貢獻
 

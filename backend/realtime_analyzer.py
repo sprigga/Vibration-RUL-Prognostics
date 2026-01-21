@@ -109,23 +109,48 @@ class RealTimeAnalyzer:
         min_samples = 10000   # Minimum samples for analysis
 
         logger.info(f"Analysis loop started for sensor {sensor_id}")
+        iteration_count = 0
 
         while True:
             try:
+                iteration_count += 1
+
                 # Get latest window data from buffer
                 window_data = await self.buffer_manager.get_window(
                     sensor_id, window_seconds
                 )
 
+                # 調試日誌：每 10 次循環打印一次狀態
+                if iteration_count % 10 == 0:
+                    if window_data:
+                        logger.info(
+                            f"Sensor {sensor_id}: Got window with "
+                            f"{window_data['sample_count']} samples "
+                            f"(need {min_samples})"
+                        )
+                    else:
+                        logger.warning(
+                            f"Sensor {sensor_id}: No data in buffer yet "
+                            f"(iteration {iteration_count})"
+                        )
+
                 if window_data and window_data['sample_count'] >= min_samples:
                     # Extract features
                     features = await self._extract_features(window_data)
+
+                    logger.info(
+                        f"Sensor {sensor_id}: Extracted features - "
+                        f"RMS_H={features.get('rms_h', 'N/A'):.4f}, "
+                        f"RMS_V={features.get('rms_v', 'N/A'):.4f}"
+                    )
 
                     # Save to database
                     await self._save_features(sensor_id, features)
 
                     # Broadcast to WebSocket clients
                     await manager.broadcast_feature_update(sensor_id, features)
+
+                    logger.info(f"Sensor {sensor_id}: Broadcasted features to WebSocket")
 
                     # Cache in Redis
                     await redis_client.cache_features(sensor_id, features)
@@ -165,9 +190,13 @@ class RealTimeAnalyzer:
         sampling_rate = 25600  # Hz
 
         features = {
-            'window_start': window_data['window_start'],
-            'window_end': window_data['window_end'],
-            'sensor_id': window_data['sensor_id']
+            # 原始：直接使用 datetime 對象,導致 WebSocket 序列化失敗
+            # 修改：轉換為 ISO 格式字串
+            'window_start': window_data['window_start'].isoformat() if hasattr(window_data['window_start'], 'isoformat') else window_data['window_start'],
+            'window_end': window_data['window_end'].isoformat() if hasattr(window_data['window_end'], 'isoformat') else window_data['window_end'],
+            'sensor_id': window_data['sensor_id'],
+            # 添加 timestamp 欄位供前端使用 (使用 window_end)
+            'timestamp': window_data['window_end'].isoformat() if hasattr(window_data['window_end'], 'isoformat') else window_data['window_end']
         }
 
         # Time domain features
@@ -274,7 +303,25 @@ class RealTimeAnalyzer:
             features: Feature dictionary
         """
         try:
-            await db.insert_features(sensor_id, features)
+            # 原始：直接使用 features,但 window_start/window_end 已轉為字串
+            # 問題：PostgreSQL 需要 datetime 對象,不能接受 ISO 字串
+            # 修改：在保存前將字串轉回 datetime 對象
+
+            # 創建副本以避免修改原始 features
+            features_for_db = features.copy()
+
+            # 轉換 ISO 字串回 datetime 對象
+            for key in ['window_start', 'window_end']:
+                if isinstance(features_for_db.get(key), str):
+                    try:
+                        features_for_db[key] = datetime.fromisoformat(
+                            features_for_db[key].replace('Z', '+00:00')
+                        )
+                    except (ValueError, AttributeError):
+                        # 如果轉換失敗,保持原值
+                        pass
+
+            await db.insert_features(sensor_id, features_for_db)
             logger.debug(f"Saved features for sensor {sensor_id}")
         except Exception as e:
             logger.error(f"Error saving features: {e}")

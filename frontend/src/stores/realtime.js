@@ -17,7 +17,9 @@ export const useRealtimeStore = defineStore('realtime', () => {
   const connectionStatus = ref('disconnected')  // 'disconnected', 'connecting', 'connected', 'error'
 
   // Chart data buffers (keep last N points for display)
-  const MAX_BUFFER_POINTS = 100
+  // 原始：MAX_BUFFER_POINTS = 100
+  // 修改：改為 1000 點以支持滾動窗口
+  const MAX_BUFFER_POINTS = 1000
 
   const signalBuffer = ref({
     timestamps: [],
@@ -32,8 +34,16 @@ export const useRealtimeStore = defineStore('realtime', () => {
     kurtosis_h: [],
     kurtosis_v: [],
     peak_h: [],
-    peak_v: []
+    peak_v: [],
+    crest_factor_h: [],
+    crest_factor_v: []
   })
+
+  // 視窗顯示範圍 (顯示最新的 N 個點)
+  // 原始：const windowSize = ref(100)
+  // 修改：改為 1000 以顯示完整的緩衝區數據
+  const windowSize = ref(1000)
+  const windowStart = ref(0)
 
   // Computed properties
   const hasAlerts = computed(() => alertHistory.value.length > 0)
@@ -45,6 +55,40 @@ export const useRealtimeStore = defineStore('realtime', () => {
   const featureCount = computed(() => {
     return featureBuffer.value.timestamps.length
   })
+
+  // 獲取當前視窗的數據範圍
+  const windowEnd = computed(() => {
+    return Math.min(windowStart.value + windowSize.value, featureCount.value)
+  })
+
+  const currentWindow = computed(() => {
+    const start = windowStart.value
+    const end = windowEnd.value
+
+    return {
+      timestamps: featureBuffer.value.timestamps.slice(start, end),
+      rms_h: featureBuffer.value.rms_h.slice(start, end),
+      rms_v: featureBuffer.value.rms_v.slice(start, end),
+      kurtosis_h: featureBuffer.value.kurtosis_h.slice(start, end),
+      kurtosis_v: featureBuffer.value.kurtosis_v.slice(start, end),
+      peak_h: featureBuffer.value.peak_h.slice(start, end),
+      peak_v: featureBuffer.value.peak_v.slice(start, end),
+      crest_factor_h: featureBuffer.value.crest_factor_h.slice(start, end),
+      crest_factor_v: featureBuffer.value.crest_factor_v.slice(start, end)
+    }
+  })
+
+  // 滾動窗口方法
+  // 原始：if (featureCount.value >= windowStart.value + windowSize.value)
+  // 問題：這個條件在初始時 windowStart = 0，windowSize = 100
+  // 當 featureCount >= 100 時才開始滾動，但此時只會滾動到 featureCount - 100
+  // 修改：只要緩衝區大小超過窗口大小，就讓窗口顯示最新的數據
+  function scrollWindow() {
+    if (featureCount.value > windowSize.value) {
+      // 窗口始終顯示最新的 windowSize 個數據點
+      windowStart.value = featureCount.value - windowSize.value
+    }
+  }
 
   /**
    * Connect to a sensor's real-time data stream
@@ -126,9 +170,26 @@ export const useRealtimeStore = defineStore('realtime', () => {
     if (data.kurtosis_v !== undefined) featureBuffer.value.kurtosis_v.push(data.kurtosis_v)
     if (data.peak_h !== undefined) featureBuffer.value.peak_h.push(data.peak_h)
     if (data.peak_v !== undefined) featureBuffer.value.peak_v.push(data.peak_v)
+    if (data.crest_factor_h !== undefined) featureBuffer.value.crest_factor_h.push(data.crest_factor_h)
+    if (data.crest_factor_v !== undefined) featureBuffer.value.crest_factor_v.push(data.crest_factor_v)
 
     // Trim buffers to max size
     trimBuffers()
+
+    // 原始：緩衝區達到 100 點就停止增長
+    // 修改：每達到 1000 點後自動滾動窗口
+    // 在 updateFeatures 中自動滾動窗口
+    scrollWindow()
+
+    // 調試日誌
+    console.log('Features updated:', {
+      timestamp,
+      rms_h: data.rms_h,
+      rms_v: data.rms_v,
+      bufferCount: featureBuffer.value.timestamps.length,
+      windowStart: windowStart.value,
+      windowEnd: windowEnd.value
+    })
   }
 
   /**
@@ -161,6 +222,8 @@ export const useRealtimeStore = defineStore('realtime', () => {
       featureBuffer.value.kurtosis_v.shift()
       featureBuffer.value.peak_h.shift()
       featureBuffer.value.peak_v.shift()
+      featureBuffer.value.crest_factor_h.shift()
+      featureBuffer.value.crest_factor_v.shift()
     }
 
     while (signalBuffer.value.timestamps.length > MAX_BUFFER_POINTS) {
@@ -187,7 +250,9 @@ export const useRealtimeStore = defineStore('realtime', () => {
       kurtosis_h: [],
       kurtosis_v: [],
       peak_h: [],
-      peak_v: []
+      peak_v: [],
+      crest_factor_h: [],
+      crest_factor_v: []
     }
 
     alertHistory.value = []
@@ -245,11 +310,15 @@ export const useRealtimeStore = defineStore('realtime', () => {
     connectionStatus,
     signalBuffer,
     featureBuffer,
+    windowSize,
+    windowStart,
 
     // Computed
     hasAlerts,
     latestAlert,
     featureCount,
+    windowEnd,
+    currentWindow,
 
     // Actions
     connect,
@@ -258,6 +327,7 @@ export const useRealtimeStore = defineStore('realtime', () => {
     addAlert,
     clearBuffers,
     acknowledgeAlert,
-    formatFeature
+    formatFeature,
+    scrollWindow
   }
 })

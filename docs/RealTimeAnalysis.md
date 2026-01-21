@@ -40,13 +40,18 @@
 
 ### 1. BufferManager (緩衝區管理器)
 
-**檔案位置**: `backend/buffer_manager.py`
+**檔案位置**: `backend/buffer_manager.py` (第 1-356 行)
+
+**程式碼來源**:
+- `SensorBuffer` 類: 第 20-159 行
+- `BufferManager` 類: 第 161-352 行
+- 批量寫入優化: 第 224-238 行
 
 #### 功能概述
 - 使用循環緩衝區 (Circular Buffer) 管理高頻率感測器數據
 - 預設緩衝區大小：25,600 個樣本點 (1 秒 @ 25.6 kHz)
 - 提供時間窗口數據訪問接口
-- 同步數據到 Redis Streams
+- 同步數據到 Redis Streams (批量寫入優化)
 - 支持多感測器並發緩衝
 
 #### 關鍵類別
@@ -55,8 +60,12 @@
 單一感測器的循環緩衝區實作。
 
 **初始化參數**:
-- `sensor_id`: 感測器 ID
-- `buffer_size`: 緩衝區大小 (預設 25600)
+```python
+buffer = SensorBuffer(
+    sensor_id=1,           # 感測器 ID
+    buffer_size=25600      # 緩衝區大小 (預設 1 秒 @ 25.6 kHz)
+)
+```
 
 **主要方法**:
 ```python
@@ -93,7 +102,7 @@ get_stats() -> Dict
 
 **關鍵功能**:
 - 線程安全的緩衝區訪問 (`asyncio.Lock`)
-- 自動數據持久化到 Redis
+- 自動數據持久化到 Redis (批量寫入優化)
 - 支持清理舊緩衝區 (預設 60 分鐘)
 
 **主要方法**:
@@ -103,6 +112,7 @@ async get_buffer(sensor_id) -> SensorBuffer
 
 # 添加數據到緩衝區
 async add_data(sensor_id, data)
+# 優化：使用批量寫入 Redis (add_sensor_data_batch)
 
 # 獲取窗口數據
 async get_window(sensor_id, window_seconds) -> Dict
@@ -114,9 +124,34 @@ async save_to_database(sensor_id, window_data)
 async cleanup_old_buffers(max_age_minutes=60)
 ```
 
+**性能優化**:
+```python
+# 原程式碼：循環逐個寫入 Redis (性能差)
+# for sample in data:
+#     await redis_client.add_sensor_data(sensor_id, sample)
+
+# 優化後：批量寫入 Redis
+redis_data = [
+    {
+        'timestamp': sample['timestamp'].isoformat(),
+        'h_acc': str(sample['h_acc']),
+        'v_acc': str(sample['v_acc'])
+    }
+    for sample in data
+]
+await redis_client.add_sensor_data_batch(sensor_id, redis_data)
+```
+
 ### 2. RealTimeAnalyzer (即時分析引擎)
 
-**檔案位置**: `backend/realtime_analyzer.py`
+**檔案位置**: `backend/realtime_analyzer.py` (第 1-416 行)
+
+**程式碼來源**:
+- `RealTimeAnalyzer` 類: 第 34-411 行
+- 分析循環 `_analysis_loop`: 第 101-173 行
+- 特徵提取 `_extract_features`: 第 175-250 行
+- 警報檢查 `_check_alerts`: 第 329-363 行
+- 時間戳處理: 第 193-241 行
 
 #### 功能概述
 - 連續的特徵提取循環 (10 Hz 更新頻率)
@@ -134,22 +169,15 @@ async cleanup_old_buffers(max_age_minutes=60)
    ├─ 獲取窗口數據 (1 秒窗口)
    ├─ 檢查樣本數量 (>= 10000)
    ├─ 提取特徵 (_extract_features)
-   ├─ 保存到數據庫
+   │   ├─ 時域特徵 (RMS, Peak, Kurtosis, Crest Factor)
+   │   └─ 頻域特徵 (Dominant Frequency)
+   ├─ 保存到數據庫 (PostgreSQL)
    ├─ 廣播到 WebSocket
    ├─ 快取到 Redis
    ├─ 檢查閾值 (_check_alerts)
    └─ 等待 0.1 秒 (10 Hz)
 
-3. 提取特徵 (_extract_features)
-   ├─ 時域特徵
-   │  ├─ RMS (均方根)
-   │  ├─ Peak (峰值)
-   │  ├─ Kurtosis (峰度)
-   │  └─ Crest Factor (波峰因數)
-   └─ 頻域特徵
-      └─ Dominant Frequency (主頻)
-
-4. 警報檢測 (_check_alerts)
+3. 警報檢測 (_check_alerts)
    └─ 對比數據庫中的閾值配置
       ├─ 超過上限 → 生成警報
       └─ 低於下限 → 生成警報
@@ -180,7 +208,7 @@ get_status() -> Dict
 #### 特徵計算
 
 **時域特徵**:
-- **RMS (Root Mean Square)**:
+- **RMS (Root Mean Square)**: 均方根
   ```python
   rms = sqrt(mean(x^2))
   ```
@@ -205,9 +233,35 @@ get_status() -> Dict
   dominant_freq = freqs[peak_idx]
   ```
 
+**數據格式處理**:
+```python
+# 時間戳處理：轉換為 ISO 字串供 WebSocket 使用
+features = {
+    'window_start': window_data['window_start'].isoformat(),
+    'window_end': window_data['window_end'].isoformat(),
+    'timestamp': window_data['window_end'].isoformat(),  # 前端使用的時間戳
+    # ... 其他特徵
+}
+
+# 保存到數據庫前轉回 datetime 對象
+features_for_db = features.copy()
+for key in ['window_start', 'window_end']:
+    if isinstance(features_for_db.get(key), str):
+        features_for_db[key] = datetime.fromisoformat(
+            features_for_db[key].replace('Z', '+00:00')
+        )
+```
+
 ### 3. WebSocketManager (WebSocket 連線管理)
 
-**檔案位置**: `backend/websocket_manager.py`
+**檔案位置**: `backend/websocket_manager.py` (第 1-252 行)
+
+**程式碼來源**:
+- `ConnectionManager` 類: 第 16-247 行
+- 連接方法 `connect`: 第 30-60 行
+- 斷開方法 `disconnect`: 第 62-101 行
+- 廣播方法 `broadcast_feature_update`: 第 186-207 行
+- 警報廣播 `broadcast_alert`: 第 171-184 行
 
 #### 功能概述
 - 管理多個 WebSocket 連線
@@ -266,10 +320,19 @@ get_connection_info() -> dict
   "type": "feature_update",
   "sensor_id": 1,
   "data": {
+    "timestamp": "2026-01-20T10:30:01.123456",
     "rms_h": 0.1234,
     "rms_v": 0.0987,
     "window_start": "2026-01-20T10:30:00",
-    "window_end": "2026-01-20T10:30:01"
+    "window_end": "2026-01-20T10:30:01",
+    "peak_h": 0.8901,
+    "peak_v": 0.7654,
+    "kurtosis_h": 3.4567,
+    "kurtosis_v": 3.2345,
+    "crest_factor_h": 7.2123,
+    "crest_factor_v": 7.7543,
+    "dominant_freq_h": 123.45,
+    "dominant_freq_v": 123.45
   }
 }
 ```
@@ -292,21 +355,33 @@ get_connection_info() -> dict
 
 ### 4. RedisClient (Redis 客戶端)
 
-**檔案位置**: `backend/redis_client.py`
+**檔案位置**: `backend/redis_client.py` (第 1-498 行)
+
+**程式碼來源**:
+- `RedisClient` 類: 第 28-497 行
+- Streams 操作: 第 65-167 行 (含批量寫入 `add_sensor_data_batch`: 第 94-127 行)
+- 快取操作: 第 168-228 行
+- Pub/Sub 操作: 第 230-269 行
+- 連線管理: 第 271-335 行
+- 感測器狀態: 第 336-380 行
+- 警報隊列: 第 382-431 行
 
 #### 功能概述
-- Streams: 時間序列數據存儲
-- Hash: 特徵快取
-- Pub/Sub: 消息發布訂閱
-- Set: 連線追蹤
-- List: 警報隊列
+- **Streams**: 時間序列數據存儲 (批量寫入優化)
+- **Hash**: 特徵快取
+- **Pub/Sub**: 消息發布訂閱
+- **Set**: 連線追蹤
+- **List**: 警報隊列
 
 #### 關鍵操作
 
 **Streams 操作**:
 ```python
-# 添加數據點
+# 添加單個數據點
 async add_sensor_data(sensor_id, data)
+
+# 批量添加數據點 (性能優化)
+async add_sensor_data_batch(sensor_id, data_list)
 
 # 讀取最近的數據
 async get_sensor_stream(sensor_id, count=100)
@@ -368,7 +443,14 @@ async get_alert_queue_length() -> int
 
 ### 5. AsyncDatabase (PostgreSQL 資料庫)
 
-**檔案位置**: `backend/database_async.py`
+**檔案位置**: `backend/database_async.py` (第 1-200+ 行)
+
+**程式碼來源**:
+- `AsyncDatabase` 類: 第 25-267+ 行
+- 連線池初始化 `init_pool`: 第 37-61 行
+- 批量插入 `insert_sensor_data`: 第 143-166 行
+- 特徵插入 `insert_features`: 第 168-227+ 行
+- 警報操作: 第 400-467+ 行
 
 #### 功能概述
 - 使用 asyncpg 實現非同步 PostgreSQL 訪問
@@ -420,322 +502,231 @@ async register_sensor(sensor_id, sensor_name, sensor_type, sampling_rate)
 async get_sensor_status(sensor_id) -> Dict
 ```
 
-## 資料流程
+## 資料庫 Schema
 
-### 1. 數據採集與緩衝
+**檔案位置**: `scripts/init_postgres.sql` (第 1-264 行)
 
-```
-感測器數據
-    │
-    ▼
-┌──────────────────┐
-│  BufferManager  │
-│  .add_data()    │
-└────────┬─────────┘
-         │
-         ├─► 記憶體循環緩衝區
-         │
-         └─► Redis Streams
-            (臨時持久化, 24h TTL)
-```
+**程式碼來源**:
+- 感測器表 `sensors`: 第 12-21 行
+- 數據分區表 `sensor_data`: 第 27-53 行
+- 即時特徵表 `realtime_features`: 第 58-98 行
+- 警報表 `alerts`: 第 102-125 行
+- 警報配置 `alert_configurations`: 第 149-166 行
+- 流會話 `stream_sessions`: 第 129-144 行
+- 視圖定義: 第 198-240 行
 
-### 2. 即時分析循環
+### 主要資料表
 
-```
-分析任務 (10 Hz)
-    │
-    ▼
-┌─────────────────────┐
-│  獲取窗口數據      │
-│  (1秒, >=10000樣本)│
-└────────┬──────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  特徵提取          │
-│  - 時域特徵        │
-│  - 頻域特徵        │
-└────────┬──────────┘
-         │
-         ├─► PostgreSQL
-         │   (持久化)
-         │
-         ├─► Redis Cache
-         │   (快速查詢)
-         │
-         ├─► WebSocket
-         │   (推送到前端)
-         │
-         └─► 閾值檢查
-             │
-             ▼
-         警報生成
-             │
-             ├─► PostgreSQL
-             │   (警報記錄)
-             │
-             └─► WebSocket
-                 (推送到前端)
+#### 1. sensors (感測器註冊表)
+```sql
+CREATE TABLE sensors (
+    sensor_id SERIAL PRIMARY KEY,
+    sensor_name VARCHAR(100) UNIQUE NOT NULL,
+    sensor_type VARCHAR(50) NOT NULL,  -- 'accelerometer', 'temperature'
+    sampling_rate DECIMAL(10,2) DEFAULT 25600.00,
+    location VARCHAR(100),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
-### 3. WebSocket 通訊
+#### 2. sensor_data (即時感測器數據)
+```sql
+-- 按時間分區 (Partitioned Table)
+CREATE TABLE sensor_data (
+    data_id BIGSERIAL,
+    sensor_id INTEGER REFERENCES sensors(sensor_id),
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    horizontal_acceleration DECIMAL(12,6),
+    vertical_acceleration DECIMAL(12,6),
+    temperature DECIMAL(10,4),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    PRIMARY KEY (data_id, timestamp)
+) PARTITION BY RANGE (timestamp);
 
-```
-前端 ←─→ 後端
-
-連接建立:
-  前端: connect(sensorId)
-    └─► ws://localhost:8081/ws/realtime/{sensorId}
-        └─► manager.connect()
-            └─► analyzer.start_analysis()
-
-數據推送:
-  後端: analyzer._analysis_loop()
-    └─► manager.broadcast_feature_update()
-        └─► 所有訂閱該感測器的客戶端
-
-警報推送:
-  後端: analyzer._create_alert()
-    └─► manager.broadcast_alert()
-        └─► 所有客戶端 (sensor_id=0)
-
-連接斷開:
-  前端: disconnect()
-    └─► manager.disconnect()
-        └─► analyzer.stop_analysis() (如果是最後一個連線)
+-- 按月分區 (例如：2026-01, 2026-02...)
+CREATE TABLE sensor_data_2026_01 PARTITION OF sensor_data
+    FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
 ```
 
-## 前端實作
+**索引**:
+```sql
+CREATE INDEX idx_sensor_data_sensor_ts
+    ON sensor_data(sensor_id, timestamp DESC);
 
-### 1. WebSocket Service
-
-**檔案位置**: `frontend/src/services/websocket.js`
-
-#### 關鍵功能
-- 自動重連機制 (最多 10 次，指數退避)
-- 事件驅動架構
-- Ping/Pong 保活機制
-- 錯誤處理
-
-#### 主要方法
-
-```javascript
-// 連接到感測器
-connect(sensorId)
-
-// 斷開連接
-disconnect()
-
-// 發送消息
-send(message)
-
-// Ping
-ping()
-
-// 事件監聽
-on(event, callback)
-
-// 移除監聽器
-off(event, callback)
-
-// 獲取連線狀態
-getConnectionStatus() -> boolean
+CREATE INDEX idx_sensor_data_timestamp
+    ON sensor_data(timestamp DESC);
 ```
 
-#### 事件類型
+#### 3. realtime_features (即時特徵)
+```sql
+CREATE TABLE realtime_features (
+    feature_id BIGSERIAL PRIMARY KEY,
+    sensor_id INTEGER REFERENCES sensors(sensor_id),
+    window_start TIMESTAMP WITH TIME ZONE NOT NULL,
+    window_end TIMESTAMP WITH TIME ZONE NOT NULL,
 
-```javascript
-// 連接建立
-'connected'
+    -- 時域特徵
+    rms_h DECIMAL(10,6),
+    rms_v DECIMAL(10,6),
+    peak_h DECIMAL(10,6),
+    peak_v DECIMAL(10,6),
+    kurtosis_h DECIMAL(10,6),
+    kurtosis_v DECIMAL(10,6),
+    crest_factor_h DECIMAL(10,6),
+    crest_factor_v DECIMAL(10,6),
 
-// 連接斷開
-'disconnected'
+    -- 頻域特徵
+    fm0_h DECIMAL(10,6),
+    fm0_v DECIMAL(10,6),
+    dominant_freq_h DECIMAL(10,2),
+    dominant_freq_v DECIMAL(10,2),
 
-// 特徵更新
-'feature_update'
+    -- 包絡特徵
+    nb4_h DECIMAL(10,6),
+    nb4_v DECIMAL(10,6),
 
-// 警報
-'alert'
+    -- 高階統計特徵
+    na4_h DECIMAL(10,6),
+    na4_v DECIMAL(10,6),
+    fm4_h DECIMAL(10,6),
+    fm4_v DECIMAL(10,6),
 
-// Pong 響應
-'pong'
-
-// 錯誤
-'error'
-
-// 重連失敗
-'reconnect_failed'
+    computed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
-#### 重連策略
+**索引**:
+```sql
+CREATE INDEX idx_realtime_features_sensor_time
+    ON realtime_features(sensor_id, window_start DESC);
 
-```javascript
-reconnectAttempts < maxReconnectAttempts (10)
-  └─ 指數退避: min(1000 * 2^(n-1), 30000ms)
-      └─ 1s → 2s → 4s → 8s → ... → 30s
+CREATE INDEX idx_realtime_features_computed_at
+    ON realtime_features(computed_at DESC);
 ```
 
-### 2. Pinia Store (狀態管理)
-
-**檔案位置**: `frontend/src/stores/realtime.js`
-
-#### 狀態
-
-```javascript
-{
-  isConnected: boolean,        // 連線狀態
-  currentSensor: number,       // 當前感測器 ID
-  latestFeatures: {},          // 最新特徵
-  alertHistory: [],           // 警報歷史
-  isStreaming: boolean,       // 是否在流傳輸
-  connectionStatus: string,   // 連線狀態字串
-  signalBuffer: {},           // 信號緩衝區
-  featureBuffer: {},          // 特徵緩衝區
-  MAX_BUFFER_POINTS: 100      // 緩衝區最大點數
-}
+#### 4. alerts (警報表)
+```sql
+CREATE TABLE alerts (
+    alert_id BIGSERIAL PRIMARY KEY,
+    sensor_id INTEGER REFERENCES sensors(sensor_id),
+    alert_type VARCHAR(50) NOT NULL,  -- 'threshold', 'trend', 'anomaly'
+    severity VARCHAR(20) NOT NULL,     -- 'info', 'warning', 'critical'
+    message TEXT NOT NULL,
+    feature_name VARCHAR(100),
+    current_value DECIMAL(12,6),
+    threshold_value DECIMAL(12,6),
+    is_acknowledged BOOLEAN DEFAULT false,
+    acknowledged_by VARCHAR(100),
+    acknowledged_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
-#### 計算屬性
+**索引**:
+```sql
+CREATE INDEX idx_alerts_sensor_created
+    ON alerts(sensor_id, created_at DESC);
 
-```javascript
-// 是否有警報
-hasAlerts
+CREATE INDEX idx_alerts_acknowledged
+    ON alerts(is_acknowledged, created_at DESC);
 
-// 最新警報
-latestAlert
-
-// 特徵數量
-featureCount
+CREATE INDEX idx_alerts_severity
+    ON alerts(severity, created_at DESC);
 ```
 
-#### 關鍵操作
-
-```javascript
-// 連接到感測器
-connect(sensorId)
-
-// 斷開連接
-disconnect()
-
-// 更新特徵
-updateFeatures(data)
-
-// 添加警報
-addAlert(alert)
-
-// 清空緩衝區
-clearBuffers()
-
-// 確認警報
-acknowledgeAlert(alertId)
-
-// 格式化特徵值
-formatFeature(key) -> string
+#### 5. alert_configurations (警報配置)
+```sql
+CREATE TABLE alert_configurations (
+    config_id SERIAL PRIMARY KEY,
+    sensor_id INTEGER REFERENCES sensors(sensor_id),
+    feature_name VARCHAR(100) NOT NULL,
+    threshold_min DECIMAL(12,6),
+    threshold_max DECIMAL(12,6),
+    severity VARCHAR(20) DEFAULT 'warning',
+    enabled BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(sensor_id, feature_name)
+);
 ```
 
-#### 緩衝區結構
-
-**signalBuffer**:
-```javascript
-{
-  timestamps: [],
-  horizontal: [],
-  vertical: []
-}
+#### 6. stream_sessions (流會話)
+```sql
+CREATE TABLE stream_sessions (
+    session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    sensor_id INTEGER REFERENCES sensors(sensor_id),
+    client_id VARCHAR(255),
+    connected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    disconnected_at TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(20) DEFAULT 'active',  -- 'active', 'closed', 'error'
+    bytes_received BIGINT DEFAULT 0,
+    data_points_received BIGINT DEFAULT 0
+);
 ```
 
-**featureBuffer**:
-```javascript
-{
-  timestamps: [],
-  rms_h: [],
-  rms_v: [],
-  kurtosis_h: [],
-  kurtosis_v: [],
-  peak_h: [],
-  peak_v: []
-}
+### 資料庫視圖 (Views)
+
+#### v_latest_features (最新特徵)
+```sql
+CREATE VIEW v_latest_features AS
+SELECT DISTINCT ON (sensor_id)
+    sensor_id,
+    window_start,
+    window_end,
+    rms_h, rms_v,
+    peak_h, peak_v,
+    kurtosis_h, kurtosis_v,
+    crest_factor_h, crest_factor_v,
+    fm0_h, fm0_v,
+    dominant_freq_h, dominant_freq_v,
+    computed_at
+FROM realtime_features
+ORDER BY sensor_id, computed_at DESC;
 ```
 
-### 3. Vue Component (即時分析介面)
-
-**檔案位置**: `frontend/src/views/RealtimeAnalysis.vue`
-
-#### 介面組件
-
-1. **控制面板**
-   - 感測器 ID 輸入
-   - 開始/停止監控按鈕
-   - 連線狀態標籤
-
-2. **警報面板**
-   - 顯示最近 5 條警報
-   - 嚴重程度標籤
-   - 時間戳顯示
-
-3. **特徵卡片** (8 個)
-   - RMS (水平/垂直)
-   - Kurtosis (水平/垂直)
-   - Peak (水平/垂直)
-   - Crest Factor (水平/垂直)
-
-4. **即時圖表** (4 個)
-   - RMS 趨勢
-   - Kurtosis 趨勢
-   - Peak 趨勢
-   - Crest Factor 趨勢
-
-#### 關鍵方法
-
-```javascript
-// 開始流傳輸
-async startStreaming()
-
-// 停止流傳輸
-stopStreaming()
-
-// 格式化特徵值
-formatFeatureValue(key) -> string
-
-// 格式化時間
-formatTime(timestamp) -> string
-
-// 獲取警報類型
-getAlertType(severity) -> string
-
-// 初始化圖表
-initCharts()
-
-// 更新圖表
-updateCharts()
+#### v_active_alerts (活躍警報)
+```sql
+CREATE VIEW v_active_alerts AS
+SELECT
+    a.*,
+    s.sensor_name
+FROM alerts a
+JOIN sensors s ON a.sensor_id = s.sensor_id
+WHERE a.is_acknowledged = false
+ORDER BY a.created_at DESC;
 ```
 
-#### 圖表配置
-
-使用 ECharts 實現，包含以下配置：
-- 深色主題背景
-- 白色文字與軸線
-- 平滑曲線
-- 響應式調整
-- Tooltip 顯示
-
-#### 生命週期
-
-```javascript
-onMounted()
-  ├─ initCharts()
-  └─ window resize 監聽
-
-onUnmounted()
-  ├─ dispose charts
-  └─ disconnect WebSocket
+#### v_sensor_status (感測器狀態)
+```sql
+CREATE VIEW v_sensor_status AS
+SELECT
+    s.sensor_id,
+    s.sensor_name,
+    s.sensor_type,
+    s.sampling_rate,
+    s.is_active,
+    s.location,
+    COUNT(DISTINCT sess.session_id) FILTER (WHERE sess.status = 'active') as active_connections,
+    MAX(sess.connected_at) as last_connection,
+    COUNT(a.alert_id) FILTER (WHERE a.is_acknowledged = false) as active_alerts
+FROM sensors s
+LEFT JOIN stream_sessions sess ON s.sensor_id = sess.sensor_id
+LEFT JOIN alerts a ON s.sensor_id = a.sensor_id
+GROUP BY s.sensor_id, s.sensor_name, s.sensor_type, s.sampling_rate, s.is_active, s.location
+ORDER BY s.sensor_id;
 ```
 
 ## API 端點
 
-### Sensor Data 推送端點 (機台數據注入)
+**後端檔案**: `backend/main.py`
 
-這是專案中**新增的端點**，用於將機台的 sensor data 推送到 Buffer Manager。
+### 感測器數據推送端點 (機台數據注入)
+
+**程式碼來源**:
+- POST `/api/sensor/data`: 第 1577-1634 行
+- POST `/api/sensor/data/stream`: 第 1635-1707 行
 
 #### POST `/api/sensor/data`
 **用途**: 接收批量感測器數據並添加到 Buffer Manager
@@ -785,7 +776,7 @@ POST /api/sensor/data
     │
     ├─► BufferManager.add_data()
     │   ├─► 記憶體循環緩衝區
-    │   └─► Redis Streams (臨時持久化)
+    │   └─► Redis Streams (批量寫入)
     │
     └─► RealTimeAnalyzer._analysis_loop()
         └─► 特徵提取與分析
@@ -829,224 +820,11 @@ sampling_rate=25600.0
 - 根據起始時間和採樣率自動計算每個樣本的時間戳
 - 確保 h_acc 和 v_acc 陣列長度一致
 
----
-
-## 機台數據推送實作範例
-
-### Python 範例 (使用 requests)
-
-```python
-import requests
-from datetime import datetime
-import random
-
-# API 端點
-API_URL = "http://localhost:8081/api/sensor/data"
-
-# 準備數據 (模擬機台數據)
-sensor_id = 1
-data_points = []
-
-# 生成 1 秒的數據 (25600 Hz 採樣率)
-sampling_rate = 25600
-start_time = datetime.now()
-
-for i in range(sampling_rate):
-    timestamp = start_time + timedelta(microseconds=i * (1000000 / sampling_rate))
-    data_points.append({
-        "timestamp": timestamp.isoformat(),
-        "h_acc": random.gauss(0, 0.1),  # 模擬振動數據
-        "v_acc": random.gauss(0, 0.1)
-    })
-
-# 批量推送到後端
-payload = {
-    "sensor_id": sensor_id,
-    "data": data_points
-}
-
-response = requests.post(API_URL, json=payload)
-print(response.json())
-```
-
-### Python 範例 (流式推送 - 高頻數據)
-
-```python
-import requests
-from datetime import datetime
-import numpy as np
-
-# API 端點
-API_URL = "http://localhost:8081/api/sensor/data/stream"
-
-# 準備 1 秒的高頻數據
-sampling_rate = 25600
-h_acc = np.random.normal(0, 0.1, sampling_rate).tolist()
-v_acc = np.random.normal(0, 0.1, sampling_rate).tolist()
-timestamp_start = datetime.now()
-
-# 推送數據
-params = {
-    "sensor_id": 1,
-    "h_acc": h_acc,
-    "v_acc": v_acc,
-    "timestamp_start": timestamp_start.isoformat(),
-    "sampling_rate": sampling_rate
-}
-
-response = requests.post(API_URL, params=params)
-print(response.json())
-```
-
-### JavaScript / Node.js 範例
-
-```javascript
-const axios = require('axios');
-
-// API 端點
-const API_URL = 'http://localhost:8081/api/sensor/data';
-
-// 準備數據
-const sensorId = 1;
-const dataPoints = [];
-const samplingRate = 25600;
-const startTime = new Date();
-
-for (let i = 0; i < samplingRate; i++) {
-  const timestamp = new Date(startTime.getTime() + i * (1000000 / samplingRate) / 1000);
-  dataPoints.push({
-    timestamp: timestamp.toISOString(),
-    h_acc: parseFloat((Math.random() * 0.2 - 0.1).toFixed(6)),
-    v_acc: parseFloat((Math.random() * 0.2 - 0.1).toFixed(6))
-  });
-}
-
-// 推送數據
-const payload = {
-  sensor_id: sensorId,
-  data: dataPoints
-};
-
-axios.post(API_URL, payload)
-  .then(response => console.log(response.data))
-  .catch(error => console.error(error));
-```
-
-### cURL 範例
-
-```bash
-# 推送單條數據
-curl -X POST http://localhost:8081/api/sensor/data \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sensor_id": 1,
-    "data": [
-      {
-        "timestamp": "2026-01-20T10:30:00.123",
-        "h_acc": 0.1234,
-        "v_acc": 0.0987
-      }
-    ]
-  }'
-
-# 推送陣列數據 (流式)
-curl -X POST "http://localhost:8081/api/sensor/data/stream?sensor_id=1&h_acc=0.1234,0.1256&v_acc=0.0987,0.1001&timestamp_start=2026-01-20T10:30:00.123&sampling_rate=25600"
-```
-
-### 持續數據推送 (模擬機台)
-
-```python
-import requests
-import time
-import numpy as np
-from datetime import datetime, timedelta
-import threading
-
-API_URL = "http://localhost:8081/api/sensor/data"
-SENSOR_ID = 1
-SAMPLING_RATE = 25600  # 25.6 kHz
-BATCH_SIZE = 25600      # 每次推送 1 秒數據
-
-class ContinuousDataStreamer:
-    def __init__(self):
-        self.running = False
-        self.thread = None
-
-    def start(self):
-        """啟動持續數據推送"""
-        self.running = True
-        self.thread = threading.Thread(target=self._stream_loop)
-        self.thread.daemon = True
-        self.thread.start()
-        print("Data streamer started")
-
-    def stop(self):
-        """停止數據推送"""
-        self.running = False
-        if self.thread:
-            self.thread.join()
-        print("Data streamer stopped")
-
-    def _stream_loop(self):
-        """持續推送數據的循環"""
-        counter = 0
-        while self.running:
-            try:
-                # 生成 1 秒的模擬數據
-                start_time = datetime.now()
-                h_acc = np.random.normal(0, 0.1, BATCH_SIZE).tolist()
-                v_acc = np.random.normal(0, 0.1, BATCH_SIZE).tolist()
-
-                # 準備數據點
-                data_points = []
-                for i in range(BATCH_SIZE):
-                    timestamp = start_time + timedelta(microseconds=i * (1000000 / SAMPLING_RATE))
-                    data_points.append({
-                        "timestamp": timestamp.isoformat(),
-                        "h_acc": round(h_acc[i], 6),
-                        "v_acc": round(v_acc[i], 6)
-                    })
-
-                # 推送到後端
-                payload = {
-                    "sensor_id": SENSOR_ID,
-                    "data": data_points
-                }
-
-                response = requests.post(API_URL, json=payload, timeout=5)
-                if response.status_code == 200:
-                    counter += 1
-                    if counter % 10 == 0:  # 每 10 秒打印一次
-                        print(f"Sent {counter} batches ({counter} seconds of data)")
-                else:
-                    print(f"Error: {response.status_code} - {response.text}")
-
-                # 控制推送頻率 (大約實時)
-                elapsed = (datetime.now() - start_time).total_seconds()
-                if elapsed < 1.0:
-                    time.sleep(1.0 - elapsed)
-
-            except Exception as e:
-                print(f"Error in stream loop: {e}")
-                time.sleep(1)
-
-# 使用範例
-if __name__ == "__main__":
-    streamer = ContinuousDataStreamer()
-
-    try:
-        streamer.start()
-
-        # 保持運行 (按 Ctrl+C 停止)
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        streamer.stop()
-```
-
----
-
 ### WebSocket 端點
+
+**程式碼來源**:
+- `/ws/realtime/{sensor_id}`: 第 1712-1748 行
+- `/ws/alerts`: 第 1749-1768 行
 
 #### `/ws/realtime/{sensor_id}`
 **用途**: 特定感測器的即時數據流
@@ -1061,6 +839,30 @@ if __name__ == "__main__":
 ws://localhost:8081/ws/realtime/1
 ```
 
+**實作**:
+```python
+@app.websocket("/ws/realtime/{sensor_id}")
+async def websocket_realtime_sensor(websocket: WebSocket, sensor_id: int):
+    await manager.connect(websocket, sensor_id)
+
+    try:
+        # Start analysis if not already running
+        await analyzer.start_analysis(sensor_id)
+
+        # Keep connection alive
+        while True:
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_json({
+                    "type": "pong",
+                    "timestamp": datetime.now().isoformat()
+                })
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+        if manager.get_connection_count(sensor_id) == 0:
+            await analyzer.stop_analysis(sensor_id)
+```
+
 #### `/ws/alerts`
 **用途**: 全局警報流
 
@@ -1072,7 +874,29 @@ ws://localhost:8081/ws/realtime/1
 ws://localhost:8081/ws/alerts
 ```
 
+**實作**:
+```python
+@app.websocket("/ws/alerts")
+async def websocket_alerts(websocket: WebSocket):
+    await websocket.accept()
+    await manager.connect(websocket, sensor_id=0)  # 0 = global
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+```
+
 ### REST API 端點
+
+**程式碼來源**:
+- POST `/api/stream/start`: 第 1774-1799 行
+- POST `/api/stream/stop`: 第 1801-1820+ 行
+- GET `/api/stream/status`: 第 1822+ 行
+- GET `/api/realtime/features/{sensor_id}`: 第 1890+ 行
+- GET `/api/alerts/active`: 第 1915+ 行
+- POST `/api/alerts/acknowledge/{alert_id}`: 第 1938+ 行
 
 #### POST `/api/stream/start`
 **用途**: 開始即時流傳輸
@@ -1191,6 +1015,641 @@ ws://localhost:8081/ws/alerts
 }
 ```
 
+## 模擬器推送機制
+
+### 持續數據推送模擬器
+
+**檔案位置**: `scripts/continuous_machine_simulator.py` (第 1-354 行)
+
+**程式碼來源**:
+- `ContinuousDataStreamer` 類: 第 32-241 行
+- 信號生成 `_generate_vibration_signal`: 第 65-94 行
+- 推送循環 `_stream_loop`: 第 96-171 行
+- 啟動/停止方法: 第 172-227 行
+- 主程序入口 `main`: 第 269-350 行
+
+#### 功能特點
+- 持續推送模擬振動數據 (25.6 kHz 採樣率)
+- 支持多線程異步運行
+- 自動生成正弦波 + 噪音的模擬信號
+- 統計推送速率和數據量
+- 優雅的中斷處理
+
+#### 類別結構
+
+```python
+class ContinuousDataStreamer:
+    def __init__(self, sensor_id: int = 1, api_url: str = "http://localhost:8081"):
+        self.sensor_id = sensor_id
+        self.api_url = api_url
+        self.sampling_rate = 25600  # 25.6 kHz
+        self.batch_size = 25600     # 每次推送 1 秒數據
+```
+
+#### 信號生成
+
+```python
+def _generate_vibration_signal(self, num_samples: int) -> tuple:
+    """
+    生成模擬振動信號 (正弦波 + 高斯噪音)
+
+    Returns:
+        (h_acc, v_acc) 水平和垂直加速度陣列
+    """
+    t = np.linspace(0, num_samples / self.sampling_rate, num_samples)
+
+    # 模擬振動訊號: 多個頻率的正弦波疊加 + 噪音
+    h_acc = (
+        0.05 * np.sin(2 * np.pi * 10 * t) +      # 基頻 10 Hz
+        0.02 * np.sin(2 * np.pi * 50 * t) +      # 諧波 1 (50 Hz)
+        0.01 * np.sin(2 * np.pi * 100 * t) +     # 諧波 2 (100 Hz)
+        np.random.normal(0, 0.1, num_samples)     # 高斯噪音
+    )
+
+    v_acc = (
+        0.04 * np.cos(2 * np.pi * 10 * t) +      # 基頻 (相位差)
+        0.015 * np.cos(2 * np.pi * 50 * t) +     # 諧波 1
+        0.008 * np.cos(2 * np.pi * 100 * t) +    # 諧波 2
+        np.random.normal(0, 0.08, num_samples)    # 高斯噪音
+    )
+
+    return h_acc.tolist(), v_acc.tolist()
+```
+
+#### 推送循環
+
+```python
+def _stream_loop(self):
+    """持續推送數據的循環 (在獨立線程中運行)"""
+    while self.running:
+        # 生成 1 秒的模擬數據
+        start_time = datetime.now()
+        h_acc, v_acc = self._generate_vibration_signal(self.batch_size)
+
+        # 準備數據點
+        data_points = []
+        for i in range(self.batch_size):
+            timestamp = start_time + timedelta(
+                microseconds=i * (1000000 / self.sampling_rate)
+            )
+            data_points.append({
+                "timestamp": timestamp.isoformat(),
+                "h_acc": round(float(h_acc[i]), 6),
+                "v_acc": round(float(v_acc[i]), 6)
+            })
+
+        # 推送到後端
+        payload = {
+            "sensor_id": self.sensor_id,
+            "data": data_points
+        }
+
+        response = requests.post(
+            f"{self.api_url}/api/sensor/data",
+            json=payload,
+            timeout=60  # 大批次數據的超時時間
+        )
+
+        # 控制推送頻率 (大約實時)
+        time.sleep(1.0 - elapsed)
+```
+
+#### 使用方式
+
+```bash
+# 使用預設配置啟動 (sensor_id=1)
+python scripts/continuous_machine_simulator.py
+
+# 指定感測器 ID
+python scripts/continuous_machine_simulator.py --sensor-id 2
+
+# 指定後端 URL
+python scripts/continuous_machine_simulator.py --url http://192.168.1.100:8081
+
+# 指定運行時長 (秒)
+python scripts/continuous_machine_simulator.py --duration 60
+```
+
+#### 輸出示例
+
+```
+==================================================
+持續數據推送已啟動
+  感測器 ID: 1
+  採樣率: 25600 Hz
+  批次大小: 25600 樣本 (1 秒)
+  API 端點: http://localhost:8081/api/sensor/data
+  按 Ctrl+C 停止
+==================================================
+已推送 10 批次 (256000 點) - 平均速率: 1.00 批次/秒
+已推送 20 批次 (512000 點) - 平均速率: 1.00 批次/秒
+...
+```
+
+#### 統計資訊
+
+```python
+{
+    'total_batches': 120,      # 總推送批次
+    'total_points': 3072000,   # 總數據點數
+    'start_time': ...,         # 開始時間
+    'elapsed_seconds': 120.0,  # 運行時間
+    'average_rate': 1.0,       # 平均速率 (批次/秒)
+    'success_count': 120,      # 成功次數
+    'error_count': 0,          # 錯誤次數
+    'success_rate': 100.0      # 成功率 (%)
+}
+```
+
+## 前端實作
+
+### 1. WebSocket Service
+
+**檔案位置**: `frontend/src/services/websocket.js` (第 1-192 行)
+
+**程式碼來源**:
+- `RealtimeService` 類: 第 8-186 行
+- 連接方法 `connect`: 第 23-90 行
+- 斷開方法 `disconnect`: 第 95-106 行
+- 事件監聽 `on`/`off`: 第 133-153 行
+- 重連邏輯: 第 72-89 行
+
+#### 關鍵功能
+- 自動重連機制 (最多 10 次，指數退避)
+- 事件驅動架構
+- Ping/Pong 保活機制
+- 錯誤處理
+
+#### 主要方法
+
+```javascript
+// 連接到感測器
+connect(sensorId)
+
+// 斷開連接
+disconnect()
+
+// 發送消息
+send(message)
+
+// Ping
+ping()
+
+// 事件監聽
+on(event, callback)
+
+// 移除監聽器
+off(event, callback)
+
+// 獲取連線狀態
+getConnectionStatus() -> boolean
+```
+
+#### 事件類型
+
+```javascript
+// 連接建立
+'connected'
+
+// 連接斷開
+'disconnected'
+
+// 特徵更新
+'feature_update'
+
+// 警報
+'alert'
+
+// Pong 響應
+'pong'
+
+// 錯誤
+'error'
+
+// 重連失敗
+'reconnect_failed'
+```
+
+#### 重連策略
+
+```javascript
+reconnectAttempts < maxReconnectAttempts (10)
+  └─ 指數退避: min(1000 * 2^(n-1), 30000ms)
+      └─ 1s → 2s → 4s → 8s → ... → 30s
+```
+
+### 2. Pinia Store (狀態管理)
+
+**檔案位置**: `frontend/src/stores/realtime.js` (第 1-334 行)
+
+**程式碼來源**:
+- Store 定義: 第 10-333 行
+- 狀態定義: 第 12-46 行 (含 `MAX_BUFFER_POINTS`: 第 22 行, `windowSize`: 第 45 行)
+- 連接方法 `connect`: 第 97-139 行
+- 更新特徵 `updateFeatures`: 第 156-193 行
+- 滾動窗口 `scrollWindow`: 第 86-91 行
+- 清空緩衝區 `clearBuffers`: 第 239-264 行
+
+#### 狀態
+
+```javascript
+{
+  isConnected: boolean,        // 連線狀態
+  currentSensor: number,       // 當前感測器 ID
+  latestFeatures: {},          // 最新特徵
+  alertHistory: [],           // 警報歷史
+  isStreaming: boolean,       // 是否在流傳輸
+  connectionStatus: string,   // 連線狀態字串
+  signalBuffer: {},           // 信號緩衝區
+  featureBuffer: {},          // 特徵緩衝區
+  MAX_BUFFER_POINTS: 1000,    // 緩衝區最大點數 (已優化)
+  windowSize: 1000            // 視窗顯示範圍 (已優化)
+}
+```
+
+#### 計算屬性
+
+```javascript
+// 是否有警報
+hasAlerts
+
+// 最新警報
+latestAlert
+
+// 特徵數量
+featureCount
+
+// 視窗結束位置
+windowEnd
+
+// 當前視窗數據
+currentWindow
+```
+
+#### 關鍵操作
+
+```javascript
+// 連接到感測器
+connect(sensorId)
+
+// 斷開連接
+disconnect()
+
+// 更新特徵
+updateFeatures(data)
+
+// 添加警報
+addAlert(alert)
+
+// 清空緩衝區
+clearBuffers()
+
+// 確認警報
+acknowledgeAlert(alertId)
+
+// 格式化特徵值
+formatFeature(key) -> string
+
+// 滾動窗口 (新增)
+scrollWindow()
+```
+
+#### 緩衝區結構
+
+**signalBuffer**:
+```javascript
+{
+  timestamps: [],
+  horizontal: [],
+  vertical: []
+}
+```
+
+**featureBuffer**:
+```javascript
+{
+  timestamps: [],
+  rms_h: [],
+  rms_v: [],
+  kurtosis_h: [],
+  kurtosis_v: [],
+  peak_h: [],
+  peak_v: [],
+  crest_factor_h: [],
+  crest_factor_v: []
+}
+```
+
+#### 滾動窗口機制
+
+```javascript
+// 視窗配置
+const MAX_BUFFER_POINTS = 1000   // 緩衝區大小
+const windowSize = ref(1000)     // 視窗大小
+
+// 滾動窗口方法
+function scrollWindow() {
+  if (featureCount.value > windowSize.value) {
+    // 窗口始終顯示最新的 windowSize 個數據點
+    windowStart.value = featureCount.value - windowSize.value
+  }
+}
+
+// 在 updateFeatures 中自動調用
+function updateFeatures(data) {
+  // ... 更新特徵
+  trimBuffers()
+  scrollWindow()  // 自動滾動
+}
+```
+
+### 3. Vue Component (即時分析介面)
+
+**檔案位置**: `frontend/src/views/RealtimeAnalysis.vue` (第 1-854 行)
+
+**程式碼來源**:
+- Template 結構: 第 1-126 行 (控制面板、警報面板、特徵卡片、圖表)
+- Script Setup: 第 128-552 行
+- 開始/停止監控: 第 196-229 行
+- 圖表初始化 `initCharts`: 第 250-452 行
+- 圖表更新 `updateCharts`: 第 454-520 行
+- 深色主題樣式: 第 554-853 行
+- 圖表配置優化: 第 250-452 行 (網格線、軸標籤、自動間隔)
+
+#### 介面組件
+
+1. **控制面板**
+   - 感測器 ID 輸入 (`el-input-number`)
+   - 開始/停止監控按鈕
+   - 連線狀態標籤
+
+2. **警報面板**
+   - 顯示最近 5 條警報
+   - 嚴重程度標籤
+   - 時間戳顯示
+
+3. **特徵卡片** (8 個)
+   - RMS (水平/垂直)
+   - Kurtosis (水平/垂直)
+   - Peak (水平/垂直)
+   - Crest Factor (水平/垂直)
+
+4. **即時圖表** (4 個 ECharts)
+   - RMS 趨勢
+   - Kurtosis 趨勢
+   - Peak 趨勢
+   - Crest Factor 趨勢
+
+#### 關鍵方法
+
+```javascript
+// 開始流傳輸
+async startStreaming()
+
+// 停止流傳輸
+stopStreaming()
+
+// 格式化特徵值
+formatFeatureValue(key) -> string
+
+// 格式化時間
+formatTime(timestamp) -> string
+
+// 獲取警報類型
+getAlertType(severity) -> string
+
+// 初始化圖表
+initCharts()
+
+// 更新圖表
+updateCharts()
+```
+
+#### 圖表配置
+
+使用 ECharts 實現，包含以下配置：
+- 深色主題背景
+- 白色文字與軸線
+- 平滑曲線 (`smooth: true`)
+- 響應式調整
+- Tooltip 顯示
+
+**圖表初始化**:
+```javascript
+function initCharts() {
+  // Common chart options
+  const commonOption = {
+    animation: false,
+    backgroundColor: 'transparent',
+    grid: {
+      top: 30,
+      right: 20,
+      bottom: 50,
+      left: 60,
+      borderColor: 'rgba(255, 255, 255, 0.1)'
+    },
+    xAxis: {
+      type: 'category',
+      data: [],
+      axisLabel: {
+        rotate: 0,
+        interval: 'auto',  // 自動計算間隔
+        color: '#ffffff',
+        fontSize: 13
+      },
+      axisLine: { lineStyle: { color: '#ffffff' } },
+      splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } }
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#ffffff',
+        fontSize: 14
+      },
+      axisLine: { lineStyle: { color: '#ffffff' } },
+      splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } }
+    },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(30, 30, 30, 0.9)',
+      borderColor: 'var(--accent-primary)',
+      textStyle: { color: '#ffffff' }
+    },
+    legend: {
+      textStyle: {
+        color: '#ffffff',
+        fontSize: 15
+      }
+    }
+  }
+
+  // Initialize charts
+  rmsChart = echarts.init(rmsChartRef.value)
+  rmsChart.setOption({
+    ...commonOption,
+    legend: { data: ['水平', '垂直'] },
+    series: [
+      { name: '水平', type: 'line', data: [], smooth: true, ... },
+      { name: '垂直', type: 'line', data: [], smooth: true, ... }
+    ]
+  })
+
+  // ... 其他圖表
+}
+```
+
+**圖表更新**:
+```javascript
+function updateCharts() {
+  const timestamps = currentWindow.value.timestamps.map(t => {
+    const date = new Date(t)
+    return date.toLocaleTimeString('zh-TW', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  })
+
+  // Update RMS Chart
+  if (currentWindow.value.rms_h.length > 0) {
+    rmsChart.setOption({
+      xAxis: { data: timestamps },
+      series: [
+        { data: currentWindow.value.rms_h },
+        { data: currentWindow.value.rms_v }
+      ]
+    })
+  }
+
+  // ... 更新其他圖表
+}
+
+// Watch for feature updates
+watch(featureCount, (newCount) => {
+  if (newCount > 0) {
+    updateCharts()
+  }
+})
+```
+
+#### 生命週期
+
+```javascript
+onMounted()
+  ├─ initCharts()
+  └─ window resize 監聽
+
+onUnmounted()
+  ├─ dispose charts
+  └─ disconnect WebSocket
+```
+
+#### 樣式特點
+
+- 深色主題 (Apple Keynote 風格)
+- 卡片發光陰影效果
+- 響應式文字大小
+- 動畫過渡效果
+
+```css
+.realtime-analysis {
+  background: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  box-shadow: 0 2px 12px var(--shadow-glow);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+```
+
+## 資料流程
+
+### 1. 數據採集與緩衝
+
+```
+感測器數據
+    │
+    ▼
+┌──────────────────┐
+│  BufferManager  │
+│  .add_data()    │
+└────────┬─────────┘
+         │
+         ├─► 記憶體循環緩衝區 (25,600 樣本)
+         │
+         └─► Redis Streams (批量寫入)
+            (臨時持久化, 24h TTL)
+```
+
+### 2. 即時分析循環
+
+```
+分析任務 (10 Hz)
+    │
+    ▼
+┌─────────────────────┐
+│  獲取窗口數據      │
+│  (1秒, >=10000樣本)│
+└────────┬──────────┘
+         │
+         ▼
+┌─────────────────────┐
+│  特徵提取          │
+│  - 時域特徵        │
+│  - 頻域特徵        │
+└────────┬──────────┘
+         │
+         ├─► PostgreSQL (持久化)
+         │
+         ├─► Redis Cache (快速查詢)
+         │
+         ├─► WebSocket (推送到前端)
+         │
+         └─► 閾值檢查
+             │
+             ▼
+         警報生成
+             │
+             ├─► PostgreSQL (警報記錄)
+             │
+             └─► WebSocket (推送到前端)
+```
+
+### 3. WebSocket 通訊
+
+```
+前端 ←─→ 後端
+
+連接建立:
+  前端: connect(sensorId)
+    └─► ws://localhost:8081/ws/realtime/{sensorId}
+        └─► manager.connect()
+            └─► analyzer.start_analysis()
+
+數據推送:
+  後端: analyzer._analysis_loop()
+    └─► manager.broadcast_feature_update()
+        └─► 所有訂閱該感測器的客戶端
+
+警報推送:
+  後端: analyzer._create_alert()
+    └─► manager.broadcast_alert()
+        └─► 所有客戶端 (sensor_id=0)
+
+連接斷開:
+  前端: disconnect()
+    └─► manager.disconnect()
+        └─► analyzer.stop_analysis() (如果是最後一個連線)
+```
+
 ## 監控流程詳解
 
 ### 完整數據流
@@ -1217,11 +1676,11 @@ ws://localhost:8081/ws/alerts
      └─► analyzer.start_analysis(sensorId)
          └─► 創建異步分析任務
 
-3. 數據採集 (假設外部數據源)
-   感測器 → BufferManager.add_data()
+3. 數據採集 (模擬機台)
+   模擬器 → BufferManager.add_data()
      │
      ├─► 記憶體循環緩衝區
-     └─► Redis Streams
+     └─► Redis Streams (批量寫入)
 
 4. 分析循環 (10 Hz)
    analyzer._analysis_loop()
@@ -1254,7 +1713,8 @@ ws://localhost:8081/ws/alerts
      ├─► realtimeStore.updateFeatures(data)
      │   ├─► 更新 latestFeatures
      │   ├─► 更新 featureBuffer
-     │   └─► trimBuffers() (保持 100 點)
+     │   ├─► trimBuffers() (保持 1000 點)
+     │   └─► scrollWindow() (自動滾動)
      │
      └─► Vue watch → updateCharts()
          └─► ECharts 更新
@@ -1295,7 +1755,7 @@ T=2.1s:  特徵推送
 T=10s:   檢測到異常
 T=10.1s: 生成警報
 T=10.1s: 警報推送
-T=10.2s:  前端警報面板更新
+T=10.2s: 前端警報面板更新
 ...
 T=Ns:    用戶斷開
 ```
@@ -1308,7 +1768,7 @@ T=Ns:    用戶斷開
 
 ```sql
 CREATE TABLE alert_configurations (
-    id SERIAL PRIMARY KEY,
+    config_id SERIAL PRIMARY KEY,
     sensor_id INTEGER,
     feature_name VARCHAR(50),      -- 特徵名稱 (rms_h, kurtosis_v, etc.)
     threshold_min NUMERIC,         -- 下限閾值
@@ -1424,31 +1884,26 @@ CREATE INDEX idx_sensor_data_timestamp ON sensor_data(sensor_id, timestamp);
 
 ### 4. 數據傳輸優化
 
+**Redis 批量寫入**:
+```python
+# 使用 pipeline 減少網路往返
+pipeline = self.redis.pipeline()
+for data in data_list:
+    pipeline.xadd(key, data)
+await pipeline.execute()
+```
+
 **WebSocket**:
 - 二進制數據壓縮 (可選)
 - 批量消息合併
 - 心跳檢測 (ping/pong)
 
-**Redis Streams**:
-- 自動過期 (24h TTL)
-- 流截斷 (保留最近 10000 條)
-- 高效追加操作
+**前端優化**:
+- 緩衝區大小優化：1000 點 (原 100)
+- 滾動窗口：自動顯示最新數據
+- 虛擬滾動：只渲染可見範圍
 
-### 5. 前端優化
-
-**虛擬滾動**:
-- 圖表只渲染 100 個點
-- 超過後自動截斷
-
-**響應式更新**:
-- 使用 Vue 的響應式系統
-- 局部更新避免全量重渲染
-
-**請求防抖**:
-- 用戶輸入防抖
-- 滾動事件節流
-
-### 6. 監控指標
+### 5. 監控指標
 
 **系統指標**:
 ```
@@ -1589,23 +2044,6 @@ logger.info(
 )
 ```
 
-**Prometheus 指標** (建議擴展):
-```python
-from prometheus_client import Counter, Histogram
-
-feature_extraction_counter = Counter(
-    'feature_extraction_total',
-    'Total feature extractions',
-    ['sensor_id']
-)
-
-analysis_duration_histogram = Histogram(
-    'analysis_duration_seconds',
-    'Analysis duration',
-    ['sensor_id']
-)
-```
-
 ## 總結
 
 本專案的即時分析與監控系統採用了現代化的異步架構，具備以下特點：
@@ -1616,5 +2054,6 @@ analysis_duration_histogram = Histogram(
 ✅ **實時性**: WebSocket 推送，Redis 快取，低延遲
 ✅ **監控性**: 完整的警報機制，狀態追蹤
 ✅ **可維護**: 模塊化設計，清晰的資料流
+✅ **優化**: 批量寫入、滾動窗口、深色主題
 
 系統透過精心的架構設計和效能優化，能夠穩定地處理高頻振動數據，並提供即時的監控與警報功能。

@@ -89,6 +89,43 @@ class RedisClient:
         except Exception as e:
             logger.error(f"Error adding to stream: {e}")
 
+    # 原程式碼沒有批量添加方法，為了優化性能添加此方法
+    # 批量添加可以大幅減少 Redis 網路往返次數
+    async def add_sensor_data_batch(self, sensor_id: int, data_list: List[Dict]):
+        """
+        Add multiple data points to sensor stream in batch
+
+        使用 pipeline 批量添加以提高性能，特別適用於高頻數據推送場景
+
+        Args:
+            sensor_id: Sensor identifier
+            data_list: List of data dictionaries with timestamp, h_acc, v_acc
+        """
+        if not self._is_connected:
+            logger.warning("Redis not connected, skipping stream batch add")
+            return
+
+        if not data_list:
+            return
+
+        try:
+            key = f"stream:sensor:{sensor_id}"
+            # 使用 pipeline 批量執行，減少網路往返
+            pipeline = self.redis.pipeline()
+
+            for data in data_list:
+                pipeline.xadd(key, data)
+
+            # 批量執行所有命令
+            await pipeline.execute()
+
+            # Auto-cleanup after 24 hours
+            await self.redis.expire(key, 86400)
+
+            logger.debug(f"Added {len(data_list)} samples to Redis stream for sensor {sensor_id}")
+        except Exception as e:
+            logger.error(f"Error batch adding to stream: {e}")
+
     async def get_sensor_stream(self, sensor_id: int, count: int = 100) -> List[Dict]:
         """
         Read recent data from sensor stream

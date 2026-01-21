@@ -197,6 +197,13 @@ class ConnectionManager:
             "data": features
         }
 
+        # 調試日誌
+        conn_count = self.get_connection_count(sensor_id)
+        logger.info(
+            f"Broadcasting feature_update for sensor {sensor_id} "
+            f"to {conn_count} connections"
+        )
+
         await self.broadcast_to_sensor(sensor_id, message)
 
     def get_connection_count(self, sensor_id: int = None) -> int:

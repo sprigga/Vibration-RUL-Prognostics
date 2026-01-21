@@ -46,6 +46,14 @@ services:
     volumes:
       # Development: Mount backend source code for hot reload
       - ./backend:/app/backend_src:ro
+      # Mount main.py separately for hot reload
+      - ./backend/main.py:/app/main.py:ro
+      # Mount realtime modules for hot reload
+      - ./backend/buffer_manager.py:/app/buffer_manager.py:ro
+      - ./backend/database_async.py:/app/database_async.py:ro
+      - ./backend/redis_client.py:/app/redis_client.py:ro
+      - ./backend/websocket_manager.py:/app/websocket_manager.py:ro
+      - ./backend/realtime_analyzer.py:/app/realtime_analyzer.py:ro
       # Mount PHM analysis results
       - ./phm_analysis_results:/app/phm_analysis_results:rw
       # Mount database files (persistent storage) - Legacy SQLite

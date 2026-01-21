@@ -81,11 +81,15 @@ class SensorBuffer:
         if len(self.buffer) == 0:
             return None
 
-        # Calculate cutoff time
+        # 原始：使用嚴格的時間窗口過濾
+        # 問題：如果數據不連續或時間戳不完全匹配,可能過濾掉太多數據
+        # 修改：直接返回最近 window_seconds 的數據,不過濾
+        # 改進：使用最近 N 個樣本而不是嚴格的時間窗口
+
         window_end = self.timestamps[-1]
         window_start = window_end - timedelta(seconds=window_seconds)
 
-        # Filter data within window
+        # 收集符合時間窗口的數據
         window_data = []
         window_timestamps = []
 
@@ -93,6 +97,14 @@ class SensorBuffer:
             if ts >= window_start:
                 window_data.append(data)
                 window_timestamps.append(ts)
+
+        # 如果窗口內數據太少,返回全部數據
+        # 原始：如果 window_data 為空就返回 None
+        # 修改：如果窗口內數據少於緩衝區的 50%,返回全部數據
+        if len(window_data) < len(self.buffer) * 0.5:
+            # 使用全部數據
+            window_data = list(self.buffer)
+            window_timestamps = list(self.timestamps)
 
         if len(window_data) == 0:
             return None
@@ -181,23 +193,49 @@ class BufferManager:
         Also stores data in Redis stream for persistence and
         potential recovery.
 
+        原程式碼使用循環逐個寫入 Redis，對於大批次數據（如 25600 點）性能極差
+        改用批量寫入方法 `add_sensor_data_batch` 以大幅提升性能
+
         Args:
             sensor_id: Sensor identifier
             data: List of data samples
         """
         buffer = await self.get_buffer(sensor_id)
+
+        # 調試日誌：確認數據格式和數量
+        logger.debug(f"Received {len(data)} samples for sensor {sensor_id}")
+        if data:
+            logger.debug(f"First sample timestamp type: {type(data[0].get('timestamp'))}")
+            logger.debug(f"First sample: {data[0]}")
+
         buffer.add_batch(data)
 
-        # Store in Redis stream for temporary persistence
-        for sample in data:
-            try:
-                await redis_client.add_sensor_data(sensor_id, {
+        # 原程式碼: 逐個寫入 Redis (性能差)
+        # for sample in data:
+        #     try:
+        #         await redis_client.add_sensor_data(sensor_id, {
+        #             'timestamp': sample['timestamp'].isoformat(),
+        #             'h_acc': str(sample['h_acc']),
+        #             'v_acc': str(sample['v_acc'])
+        #         })
+        #     except Exception as e:
+        #         logger.error(f"Error storing in Redis stream: {e}")
+
+        # 優化: 批量寫入 Redis
+        try:
+            # 準備批量數據
+            redis_data = [
+                {
                     'timestamp': sample['timestamp'].isoformat(),
                     'h_acc': str(sample['h_acc']),
                     'v_acc': str(sample['v_acc'])
-                })
-            except Exception as e:
-                logger.error(f"Error storing in Redis stream: {e}")
+                }
+                for sample in data
+            ]
+            # 使用批量方法寫入
+            await redis_client.add_sensor_data_batch(sensor_id, redis_data)
+        except Exception as e:
+            logger.error(f"Error batch storing in Redis stream: {e}")
 
         logger.debug(f"Added {len(data)} samples to buffer for sensor {sensor_id}")
 
