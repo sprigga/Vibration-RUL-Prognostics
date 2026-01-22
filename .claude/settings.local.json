@@ -21,7 +21,8 @@
       "Bash(find:*)",
       "Bash(docker compose:*)",
       "Bash(docker exec:*)",
-      "Bash(uv run python:*)"
+      "Bash(uv run python:*)",
+      "Bash(uv run pytest:*)"
     ],
     "deny": [],
     "ask": []

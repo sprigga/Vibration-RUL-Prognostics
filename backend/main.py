@@ -5,6 +5,7 @@ Now includes real-time streaming capabilities with PostgreSQL, Redis, and WebSoc
 """
 from fastapi import FastAPI, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 import numpy as np
@@ -87,6 +88,7 @@ def get_db_connection(db_path: str = PHM_DATABASE_PATH) -> Generator[sqlite3.Con
 
     使用線程本地存儲確保每個線程有自己的連接，
     並在上下文退出時自動關閉連接。
+    並在上下文退出時自動關閉連接。
 
     Args:
         db_path: 資料庫路徑，預設使用 PHM_DATABASE_PATH
@@ -116,18 +118,19 @@ def close_db_connection():
         conn.close()
         _db_local.conn = None
 
-app = FastAPI(
-    title="Linear Guide Vibration Analysis API",
-    description="API for CPC Linear Guide health monitoring and fault diagnosis with real-time streaming",
-    version="2.0.0"
-)
+# ========================================
+# Lifespan event handler (replaces deprecated on_event)
+# ========================================
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    應用生命週期管理
 
-# NEW - Phase 1: Startup event for async components
-@app.on_event("startup")
-async def startup_event():
-    """Initialize async database and Redis connections"""
+    取代已棄用的 @app.on_event("startup") 和 @app.on_event("shutdown")
+    """
     logger = logging.getLogger(__name__)
 
+    # ==================== Startup ====================
     if REALTIME_AVAILABLE:
         try:
             # Initialize PostgreSQL connection pool
@@ -150,17 +153,13 @@ async def startup_event():
     else:
         logger.info("Real-time components not available, running in legacy mode")
 
+    yield  # 應用運行期間
 
-# 在應用關閉時清理連接
-@app.on_event("shutdown")
-async def shutdown_event():
-    """應用關閉時清理資料庫連接"""
-    logger = logging.getLogger(__name__)
-
+    # ==================== Shutdown ====================
     # Close legacy SQLite connections
     close_db_connection()
 
-    # NEW - Phase 1: Close async connections
+    # Close async connections
     if REALTIME_AVAILABLE:
         try:
             # 原程式碼沒有停止 Pub/Sub 監聽器，新增此功能
@@ -174,6 +173,13 @@ async def shutdown_event():
             logger.info("Redis connection closed")
         except Exception as e:
             logger.error(f"Error closing async connections: {e}")
+
+app = FastAPI(
+    title="Linear Guide Vibration Analysis API",
+    description="API for CPC Linear Guide health monitoring and fault diagnosis with real-time streaming",
+    version="2.0.0",
+    lifespan=lifespan  # 使用新的 lifespan 事件處理器
+)
 
 # CORS middleware for Vue.js frontend
 app.add_middleware(
@@ -1769,7 +1775,9 @@ if REALTIME_AVAILABLE:
         Receives all alerts from all sensors.
         Use sensor_id=0 for global subscription.
         """
-        await websocket.accept()
+        # 原程式碼：先調用 await websocket.accept()，再調用 await manager.connect()
+        # 問題：manager.connect() 內部也會調用 websocket.accept()，導致重複 accept
+        # 修復：直接由 manager.connect() 處理連接接受
         await manager.connect(websocket, sensor_id=0)  # Use 0 for global
 
         try:
