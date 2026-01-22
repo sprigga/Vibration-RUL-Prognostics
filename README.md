@@ -104,16 +104,34 @@
 ### 前端（Frontend）
 - **框架**: Vue 3 (Composition API) ^3.3.8
 - **UI 組件**: Element Plus ^2.4.3
-- **路由**: Vue Router 4 ^4.2.5
+- **路由**: Vue Router 4 ^4.2.5 (77 行，12 個路由映射)
 - **狀態管理**: Pinia ^2.1.7
+  - `stores/api.js` (82 行): API 狀態管理
+  - `stores/realtime.js` (333 行): 即時數據狀態管理
 - **圖表**: Chart.js ^4.4.0 + vue-chartjs ^5.3.0, ECharts ^6.0.0
 - **建構工具**: Vite ^5.0.4
 - **HTTP 客戶端**: Axios ^1.6.2
 - **圖標**: @element-plus/icons-vue ^2.3.1
 - **反向代理**: Nginx（生產環境，Port 18880）
+- **主要視圖組件** (11 個):
+  - `Dashboard.vue` (2,491 行): 系統儀表板
+  - `ProjectAnalysis.vue` (1,618 行): 專案分析
+  - `EnvelopeAnalysis.vue` (1,328 行): 包絡分析
+  - `Algorithms.vue` (1,218 行): 演算法說明
+  - `FrequencyDomainAnalysis.vue` (1,181 行): 頻域分析
+  - `TimeFrequencyAnalysis.vue` (1,142 行): 時頻分析
+  - `TimeDomainAnalysis.vue` (942 行): 時域分析
+  - `HigherOrderStatistics.vue` (933 行): 高階統計
+  - `RealtimeAnalysis.vue` (853 行): 即時分析
+  - `PHMDatabase.vue` (835 行): PHM 資料庫管理
+  - `PHMTraining.vue` (434 行): PHM 訓練數據
 
 ### 後端（Backend）
 - **框架**: FastAPI 0.104.1
+- **API 主入口**: `main.py` (2,106 行)
+  - 71 個函式端點（包含 PHM、演算法、溫度、即時監控、告警、發布/訂閱等）
+  - 4 個 WebSocket 端點（即時感測器數據推送、告警通知）
+  - 13 個 Pydantic 數據模型
 - **伺服器**: Uvicorn 0.24.0
 - **資料庫**:
   - SQLite（批次分析：PHM 振動數據庫 + 溫度數據庫）
@@ -138,7 +156,7 @@
 
 ### 核心演算法模組
 
-#### 時域分析（timedomain.py - 39 行）
+#### 時域分析（timedomain.py）
 | 方法 | 功能 | 說明 |
 |------|------|------|
 | `peak(x)` | 峰值 | max(x) - min(x) |
@@ -183,12 +201,12 @@
 
 ### PHM 數據查詢模組
 - `phm_query.py` (370 行) - PHM 振動數據庫查詢
-- `phm_temperature_query.py` - PHM 溫度數據庫查詢
+- `phm_temperature_query.py` (252 行) - PHM 溫度數據庫查詢
 - `phm_processor.py` (210 行) - PHM 數據處理器
 
 ### 即時分析模組（Real-time Stack）🆕
 
-#### WebSocket 連線管理（websocket_manager.py - 251 行）
+#### WebSocket 連線管理（websocket_manager.py - 492 行）
 ```python
 ConnectionManager 類別:
 - active_connections: Dict[int, Set[WebSocket]]  # sensor_id -> connections
@@ -202,7 +220,7 @@ ConnectionManager 類別:
 - broadcast_to_all(message)              # 廣播給所有連線
 ```
 
-#### 緩衝管理（buffer_manager.py - 231 行）
+#### 緩衝管理（buffer_manager.py - 355 行）
 ```python
 SensorBuffer 類別:
 - buffer: deque(maxlen=25600)      # 循環緩衝區（約 1 秒數據）
@@ -234,7 +252,7 @@ RedisClient 類別:
 - Sensor Status: update_sensor_status, get_sensor_status
 ```
 
-#### PostgreSQL 異步資料庫（database_async.py - 350+ 行）
+#### PostgreSQL 異步資料庫（database_async.py - 416 行）
 ```python
 AsyncDatabase 類別:
 - pool: asyncpg.Pool
@@ -277,7 +295,7 @@ RealTimeAnalyzer 類別:
 - _check_alerts(sensor_id, features) # 檢查告警
 ```
 
-#### 前端即時狀態管理（stores/realtime.js - 334 行）
+#### 前端即時狀態管理（stores/realtime.js - 333 行）
 ```javascript
 useRealtimeStore (Pinia Store):
 State:
@@ -300,7 +318,7 @@ Actions:
 - scrollWindow()            # 滾動窗口
 ```
 
-#### 前端 WebSocket 服務（services/websocket.js）
+#### 前端 WebSocket 服務（services/websocket.js - 199 行）
 ```javascript
 RealtimeService 類別:
 - ws: WebSocket
@@ -327,7 +345,7 @@ RealtimeService 類別:
 ## 📦 安裝與運行
 
 ### 前置需求
-- Python 3.10+（推薦使用 uv 套件管理器）
+- Python 3.11+（推薦使用 uv 套件管理器）
 - Node.js 16+
 - Docker & Docker Compose（推薦用於容器化部署）
 - PostgreSQL 15+（即時分析功能）
@@ -546,11 +564,13 @@ v_sensor_status (感測器狀態摘要視圖)
 
 ## 🔌 API 端點
 
-### PHM 數據管理
+**API 端點統計** (共 71 個函式端點 + 4 個 WebSocket 端點)
+
+### PHM 數據管理 (2 個端點)
 - `GET /api/phm/training-summary` - 獲取訓練集摘要
 - `GET /api/phm/analysis-data` - 獲取預處理分析數據
 
-### PHM 數據庫查詢
+### PHM 數據庫查詢 (7 個端點)
 - `GET /api/phm/database/bearings` - 獲取所有軸承列表
 - `GET /api/phm/database/bearing/{bearing_name}` - 獲取特定軸承資訊
 - `GET /api/phm/database/bearing/{bearing_name}/files` - 獲取檔案列表（分頁）
@@ -559,31 +579,31 @@ v_sensor_status (感測器狀態摘要視圖)
 - `GET /api/phm/database/bearing/{bearing_name}/statistics` - 獲取統計資訊
 - `GET /api/phm/database/bearing/{bearing_name}/anomalies` - 搜尋異常振動數據
 
-### 時域分析
+### 時域分析 (2 個端點)
 - `GET /api/algorithms/time-domain/{bearing_name}/{file_number}` - 計算時域特徵
 - `GET /api/algorithms/time-domain-trend/{bearing_name}` - 計算時域特徵趨勢
 
-### 頻域分析
+### 頻域分析 (4 個端點)
 - `GET /api/algorithms/frequency-domain/{bearing_name}/{file_number}` - 計算 FFT 頻譜
 - `GET /api/algorithms/frequency-domain-trend/{bearing_name}` - 計算頻域特徵趨勢
 - `GET /api/algorithms/frequency-fft/{bearing_name}/{file_number}` - 計算低頻 FM0 特徵
 - `GET /api/algorithms/frequency-tsa/{bearing_name}/{file_number}` - 計算 TSA 高頻 FFT
 
-### 包絡分析
+### 包絡分析 (2 個端點)
 - `GET /api/algorithms/envelope/{bearing_name}/{file_number}` - 計算包絡頻譜
 - `GET /api/algorithms/hilbert/{bearing_name}/{file_number}` - 希爾伯特轉換與 NB4
 
-### 時頻分析
+### 時頻分析 (3 個端點)
 - `GET /api/algorithms/stft/{bearing_name}/{file_number}` - 短時傅立葉轉換
 - `GET /api/algorithms/cwt/{bearing_name}/{file_number}` - 連續小波轉換
 - `GET /api/algorithms/spectrogram/{bearing_name}/{file_number}` - 頻譜圖分析
 
-### 高階統計分析
+### 高階統計分析 (3 個端點)
 - `GET /api/algorithms/higher-order/{bearing_name}/{file_number}` - 計算高階統計特徵（舊版）
 - `GET /api/algorithms/filter-features/{bearing_name}/{file_number}` - 計算進階濾波特徵（NA4, FM4, M6A, M8A, ER）
 - `GET /api/algorithms/filter-trend/{bearing_name}` - 計算進階濾波特徵趨勢
 
-### 溫度數據查詢
+### 溫度數據查詢 (7 個端點)
 - `GET /api/temperature/bearings` - 獲取所有有溫度資料的軸承
 - `GET /api/temperature/bearing/{bearing_name}` - 獲取特定軸承溫度資訊
 - `GET /api/temperature/data/{bearing_name}` - 獲取溫度測量資料
@@ -592,7 +612,7 @@ v_sensor_status (感測器狀態摘要視圖)
 - `GET /api/temperature/search` - 搜尋溫度資料
 - `GET /api/temperature/database/info` - 獲取溫度資料庫資訊
 
-### 即時分析與監控（Real-time Analysis）🆕
+### 即時分析與監控 (9 個端點)
 - `POST /api/sensor/data` - 接收機台推送的感測器數據（批量）
 - `POST /api/sensor/data/stream` - 流式接收機台推送的感測器數據
 - `GET /api/stream/status` - 獲取串流狀態
@@ -603,9 +623,20 @@ v_sensor_status (感測器狀態摘要視圖)
 - `GET /api/sensors/{sensor_id}/status` - 獲取感測器狀態
 - `GET /api/sensors/{sensor_id}/data` - 獲取感測器數據
 
-### WebSocket 端點🆕
+### Redis 發布/訂閱 (3 個端點)
+- `POST /api/pubsub/publish` - 發布訊息到 Redis 頻道
+- `POST /api/pubsub/features/{sensor_id}` - 發布特徵更新
+- `POST /api/pubsub/alert` - 發布告警訊息
+
+### 其他端點 (2 個)
+- `GET /` - 根路由（健康檢查）
+- `POST /api/stream/start` - 啟動即時串流
+
+### WebSocket 端點 (4 個) 🆕
 - `WS /ws/realtime/{sensor_id}` - 即時感測器數據推送
 - `WS /ws/alerts` - 告警通知推送
+- `WS /ws/pubsub/{channel}` - Redis Pub/Sub 代理
+- `WS /ws/stream/{sensor_id}` - 即時串流數據推送
 
 ## 🎯 使用流程
 
@@ -801,56 +832,56 @@ VIBRATION_THRESHOLD = 20.0   # 振動閾值 (g)
 
 ```
 Viberation-RUL-Prognostics/
-├── backend/                            # FastAPI 後端
-│   ├── main.py                        # API 主入口（~2,000 行）
-│   │                                   # 70+ API 端點，WebSocket 管理
-│   ├── config.py                      # 全域配置（60 行）
+├── backend/                            # FastAPI 後端 (7,220 行 Python 代碼)
+│   ├── main.py                        # API 主入口（2,106 行）
+│   │                                   # 71 個函式端點 + 4 個 WebSocket 端點
+│   ├── config.py                      # 全域配置（59 行）
 │   │                                   # API、CORS、採樣率、濾波器配置
-│   ├── models.py                      # SQLAlchemy 數據模型
-│   ├── phm_models.py                  # PHM 數據模型
-│   ├── phm_temperature_models.py      # 溫度數據模型
-│   ├── timedomain.py                  # 時域分析模組（39 行）
+│   ├── models.py                      # SQLAlchemy 數據模型（79 行）
+│   ├── phm_models.py                  # PHM 數據模型（59 行）
+│   ├── phm_temperature_models.py      # 溫度數據模型（56 行）
+│   ├── timedomain.py                  # 時域分析模組
 │   ├── frequencydomain.py             # 頻域分析模組（367 行）
 │   ├── filterprocess.py               # 高階統計濾波（214 行）
 │   ├── timefrequency.py               # 時頻分析（507 行）
 │   ├── hilberttransform.py            # 希爾伯特轉換（152 行）
 │   ├── phm_query.py                   # PHM 振動數據庫查詢（370 行）
-│   ├── phm_temperature_query.py       # 溫度數據庫查詢
+│   ├── phm_temperature_query.py       # 溫度數據庫查詢（252 行）
 │   ├── phm_processor.py               # PHM 數據處理器（210 行）
 │   ├── realtime_analyzer.py           # 🆕 即時分析引擎（415 行）
-│   ├── buffer_manager.py              # 🆕 緩衝管理（231 行）
-│   ├── websocket_manager.py           # 🆕 WebSocket 管理（251 行）
+│   ├── buffer_manager.py              # 🆕 緩衝管理（355 行）
+│   ├── websocket_manager.py           # 🆕 WebSocket 管理（492 行）
 │   ├── redis_client.py                # 🆕 Redis 客戶端（497 行）
-│   ├── database_async.py              # 🆕 異步資料庫（350+ 行）
-│   ├── harmonic_sildband_table.py     # 諧波分析表
-│   ├── initialization.py              # 系統初始化
+│   ├── database_async.py              # 🆕 異步資料庫（416 行）
+│   ├── harmonic_sildband_table.py     # 諧波分析表（179 行）
+│   ├── initialization.py              # 系統初始化（292 行）
 │   ├── phm_data.db                    # SQLite PHM 數據庫（1.4 GB）
 │   ├── phm_temperature_data.db        # SQLite 溫度數據庫（32 KB）
 │   └── requirements.txt               # Python 依賴
-├── frontend/                           # Vue 3 前端
+├── frontend/                           # Vue 3 前端 (14,024 行代碼)
 │   ├── src/
-│   │   ├── views/                      # 頁面組件（11 個）
-│   │   │   ├── Dashboard.vue           # 儀表板
-│   │   │   ├── Algorithms.vue          # 演算法說明
-│   │   │   ├── TimeDomainAnalysis.vue  # 時域分析
-│   │   │   ├── FrequencyDomainAnalysis.vue # 頻域分析
-│   │   │   ├── EnvelopeAnalysis.vue    # 包絡分析
-│   │   │   ├── TimeFrequencyAnalysis.vue # 時頻分析
-│   │   │   ├── HigherOrderStatistics.vue # 高階統計
-│   │   │   ├── PHMTraining.vue         # PHM 訓練數據
-│   │   │   ├── PHMDatabase.vue         # PHM 資料庫管理
-│   │   │   ├── ProjectAnalysis.vue     # 專案分析
+│   │   ├── views/                      # 頁面組件（11 個，共 13,178 行）
+│   │   │   ├── Dashboard.vue           # 儀表板（2,491 行）
+│   │   │   ├── Algorithms.vue          # 演算法說明（1,218 行）
+│   │   │   ├── TimeDomainAnalysis.vue  # 時域分析（942 行）
+│   │   │   ├── FrequencyDomainAnalysis.vue # 頻域分析（1,181 行）
+│   │   │   ├── EnvelopeAnalysis.vue    # 包絡分析（1,328 行）
+│   │   │   ├── TimeFrequencyAnalysis.vue # 時頻分析（1,142 行）
+│   │   │   ├── HigherOrderStatistics.vue # 高階統計（933 行）
+│   │   │   ├── PHMTraining.vue         # PHM 訓練數據（434 行）
+│   │   │   ├── PHMDatabase.vue         # PHM 資料庫管理（835 行）
+│   │   │   ├── ProjectAnalysis.vue     # 專案分析（1,618 行）
 │   │   │   └── RealtimeAnalysis.vue    # 🆕 即時分析（853 行）
-│   │   ├── router/                     # 路由配置（78 行）
+│   │   ├── router/                     # 路由配置（77 行）
 │   │   │   └── index.js                # 12 個路由映射
-│   │   ├── stores/                     # Pinia 狀態管理
-│   │   │   ├── api.js                  # API 狀態
-│   │   │   └── realtime.js             # 🆕 即時數據狀態（334 行）
-│   │   ├── services/                   # 服務層
-│   │   │   └── websocket.js            # 🆕 WebSocket 服務
-│   │   ├── config/                     # API 配置
-│   │   ├── App.vue                     # 主組件
-│   │   └── main.js                     # 入口文件
+│   │   ├── stores/                     # Pinia 狀態管理（415 行）
+│   │   │   ├── api.js                  # API 狀態（82 行）
+│   │   │   └── realtime.js             # 🆕 即時數據狀態（333 行）
+│   │   ├── services/                   # 服務層（199 行）
+│   │   │   └── websocket.js            # 🆕 WebSocket 服務（199 行）
+│   │   ├── config/                     # API 配置（33 行）
+│   │   ├── App.vue                     # 主組件（295 行）
+│   │   └── main.js                     # 入口文件（30 行）
 │   ├── package.json                    # Node 依賴（25 行）
 │   ├── vite.config.js                  # Vite 配置
 │   ├── Dockerfile                      # 生產環境 Dockerfile（36 行）
@@ -914,18 +945,32 @@ Viberation-RUL-Prognostics/
 ### 程式碼分析工具（LSP）
 本專案使用 Language Server Protocol (LSP) 工具進行程式碼分析和文檔整理：
 
-#### 後端分析（main.py - ~2,000 行）
-- **API 端點數量**: 70+ 個路由
+#### 後端分析（main.py - 2,106 行）
+- **API 端點數量**: 71 個函式端點
+- **WebSocket 端點**: 4 個實時數據推送端點
 - **核心模組**: 振動分析、PHM 數據查詢、即時串流、溫度監測、告警系統
-- **WebSocket 端點**: 2 個實時數據推送端點
+- **數據模型**: 13 個 Pydantic 模型
 - **異步支持**: 完整的 async/await 模式
 - **數據驗證**: Pydantic 模型驗證
+- **函式符號**:
+  - PHM 數據管理: 2 個函式
+  - PHM 數據庫查詢: 7 個函式
+  - 時域分析: 2 個函式
+  - 頻域分析: 4 個函式
+  - 包絡分析: 2 個函式
+  - 時頻分析: 3 個函式
+  - 高階統計: 3 個函式
+  - 溫度查詢: 7 個函式
+  - 即時監控: 9 個函式
+  - 發布/訂閱: 3 個函式
+  - WebSocket: 2 個函式
+  - 其他: 2 個函式
 
-#### 前端分析（12 個路由，11 個視圖組件）
-- **路由配置**: Vue Router 4 with History Mode
-- **狀態管理**: Pinia stores（API + Realtime）
-- **組件數量**: 11 個主要分析頁面
-- **WebSocket 服務**: 自動重連、事件監聽、錯誤處理
+#### 前端分析（12 個路由，11 個視圖組件，共 14,024 行代碼）
+- **路由配置**: Vue Router 4 (77 行，12 個路由映射)
+- **狀態管理**: Pinia stores（API: 82 行 + Realtime: 333 行）
+- **組件數量**: 11 個主要分析頁面（共 13,178 行）
+- **WebSocket 服務**: 自動重連、事件監聽、錯誤處理（199 行）
 - **緩衝管理**: 1000 點滾動窗口，自動數據修剪
 
 ### 技術架構演進
